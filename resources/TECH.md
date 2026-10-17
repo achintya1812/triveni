@@ -1,0 +1,186 @@
+# Triveni: Tech Stack
+
+This is the technical companion to [IDEA.md](IDEA.md). It covers what we build Triveni with, how the pieces connect, and how we spend our $500 of Claude API credits.
+
+## Principles
+
+- **One language everywhere.** TypeScript on the phone, the server and the shared rules.
+- **Rules decide; AI reads and writes.** Grouping, concept-map tracing and scheduling are plain code that runs on the phone. AI is used only to read things (slates, speech), write things (briefs, content) and, in Hindi only, speak (Bulbul audio).
+- **Human audio for anything a child is checked on, and for anything in Bhili.** Synthetic speech is only for Hindi audio that informs or teaches.
+- **API keys never reach the phone.** Every AI call goes through our server.
+
+## Overview
+
+```
+Teacher's phone (offline web app)          Server                              Outside services
+┌─────────────────────────────┐   sync    ┌──────────────────────────┐       ┌──────────────────────────┐
+│ React app, works offline    │ ───────▶  │ Hono API (Node, TS)      │ ────▶ │ Claude API               │
+│ IndexedDB (Dexie): records  │ ◀───────  │  · slate reading         │       │   slates, briefs, content│
+│ Rules engine (shared code)  │           │  · brief wording         │ ────▶ │ Sarvam Saaras v4         │
+│ Cached audio clips          │           │  · voice note → text     │       │   speech to text         │
+└─────────────────────────────┘           │  · WhatsApp webhook      │ ────▶ │ Sarvam Bulbul            │
+                                          └──────────┬───────────────┘       │   Hindi text to speech   │
+                                                     │                ◀────▶ │ WhatsApp Cloud API       │
+                                          Supabase: Postgres + Storage       └──────────────────────────┘
+```
+
+## Repository layout
+
+A pnpm workspace with four packages:
+
+| Path | Contents |
+| --- | --- |
+| `apps/web` | The teacher's web app (PWA) |
+| `apps/api` | The Hono server |
+| `packages/core` | The rules engine: answer patterns, grouping, concept-map tracing, the brief template, and the shared types (Zod). The phone and the server run the same code. |
+| `packages/content` | The concept map, question bank, wrong-answer lists, key-word tags and the audio manifest, as JSON in git. Changes are reviewed in pull requests and loaded into the database. |
+
+## Teacher's app (phone)
+
+| Need | Choice | Notes |
+| --- | --- | --- |
+| Framework | React + Vite + TypeScript | |
+| Offline and installable | vite-plugin-pwa (Workbox) | Caches the app shell and the audio for upcoming checks |
+| Local data | Dexie.js (IndexedDB) | Class list, attendance, answers, child records, and an outbox of changes waiting to sync |
+| Camera | `<input type="file" accept="image/*" capture="environment">` | Most reliable on Android. Photos are resized to about 1500 px on the long side before upload, which saves tokens and data. |
+| Voice notes | Browser `MediaRecorder` (Opus audio) | Saved locally and uploaded when there is a signal |
+| Audio playback | HTML5 `Audio` from the cache | |
+| UI | Tailwind + shadcn/ui | Large tap targets |
+| Interface language | i18next | Hindi interface |
+
+## Server
+
+| Need | Choice | Notes |
+| --- | --- | --- |
+| API | Hono on Node + TypeScript | Holds every external API key |
+| Database and files | Supabase (Postgres, Storage, Auth), free tier | Photos, audio clips, records |
+| Hosting | API on Railway or Fly.io (about $5, paid separately); web app on Vercel or Cloudflare Pages (free) | Avoid hosts that put free apps to sleep, because the first request after waking is slow during a live demo |
+
+## AI services
+
+### Claude (Anthropic)
+
+SDK: `@anthropic-ai/sdk`, server-side only. Model: `claude-opus-5-5`.
+
+| Job | When | How |
+| --- | --- | --- |
+| Reading slates | After check day, once there is a signal | One photo per request, `effort: "low"`, structured outputs returning one entry per slate: `{roll, answers: [{row, version, value, confidence}]}`. Each concept in the check has its own row of three boxes, and each box symbol always maps to the same version (circle is A). Low-confidence reads go to the review screen. The fixed instructions and example images are cached. |
+| Wording the brief | Nightly, when there is a signal | `effort: "low"`. The rules engine has already chosen the groups; Claude only rewrites the template in plain Hindi. Without a signal, the template is shown as is. |
+| Mapping voice-note text to a concept | Only when the note has no page number | A short call on the Saaras transcript |
+| Writing content | Before the demo | Message Batches API (half price): matched questions, wrong-answer lists, key-word cards and scripts. All output is reviewed before it goes into `packages/content`. |
+| Explaining unknown wrong answers | Rare | A short call |
+
+Requests use the server-side fallback option (`fallbacks: "default"`), so a declined request is retried on another model automatically.
+
+### Sarvam Saaras v4 (speech to text)
+
+| Job | How |
+| --- | --- |
+| The teacher's daily voice note ("borrowing in subtraction, page 34") | The voice note is uploaded and sent to the Saaras REST API with keyterms (concept names, "page"). A page number in the text is matched to a concept in code; if there is none, Claude maps the text. |
+| Probe results logged by voice | Same flow; Claude turns the transcript into results for each child |
+| Parents' WhatsApp replies | Hindi only. Replies in Bhili are stored, not transcribed. |
+
+### Sarvam Bulbul (text to speech, Hindi only)
+
+| Allowed | Not allowed |
+| --- | --- |
+| Reading the morning brief aloud to the teacher | **B questions in the check:** B and C must both be human voices, so a difference in answers reflects language, not voice |
+| Step-by-step prompts in the app | **The listening check:** it measures understanding |
+| The Hindi side of key-word cards | **Anything in Bhili** |
+| Hindi reteaching audio | |
+| Voice notes to parents whose home language is Hindi | |
+| Stand-in clips during development, replaced before the demo | |
+
+Clips are generated once, when content is built, stored in Supabase Storage and cached on the phone. Only the morning brief's audio is generated daily on the server.
+
+Check in the Sarvam console whether `bulbul:v4` is available on the standalone text-to-speech API. As of October 2026, the changelog lists it only for Voice Agents, with `bulbul:v3` remaining on the text-to-speech API. Use v3 if v4 is not available.
+
+### Human recordings
+
+Every B and C question, every Bhili clip (reteaching audio, key-word audio, parent activities) and the listening check are recorded by people. In the audio manifest, every clip has a `source` field (`human` or `bulbul`). The check runner refuses to play a clip unless its source is `human`, so the rule is enforced in code, not just by convention. The one exception is a `DEV_ALLOW_STANDINS` setting, which lets Bulbul stand-in clips play in the check so the flow can be tested before the recordings arrive. It is off in every build used with children and in the demo.
+
+The B and C questions should be recorded by the same bilingual Hindi–Bhili speaker, so that language is the only difference between them.
+
+## WhatsApp
+
+- **Meta WhatsApp Cloud API**, called directly. The free test number can message up to five verified numbers, which is enough for the demo. Incoming messages arrive at the Hono server as webhooks.
+- Voice notes are stored as `.ogg` (Opus), converted once with ffmpeg. This is WhatsApp's native voice-note format.
+- If Meta's business verification holds us up, use the **Twilio WhatsApp sandbox** instead. It is quicker to set up but charges a little per message.
+
+## Data model
+
+| Table | Key fields |
+| --- | --- |
+| `classes` | id, school, grade, textbook |
+| `children` | id, class_id, roll_no, name, home_language, parent_phone, parent_opt_in_at (WhatsApp requires an opt-in before we message a parent) |
+| `attendance` | class_id, date, child_id, present. Stored by date, so absences are recorded even on days with no logged concept. |
+| `lessons` | id, class_id, date, concept_id, source (`dropdown`, `voice`), transcript |
+| `checks` | id, class_id, date, kind (`weekly`, `recheck`), concept_ids, version_order |
+| `answers` | check_id, child_id, question_id, row, version (`A`, `B`, `C`), value, status (`right`, `wrong`, `no_data`), cause, confidence, reviewed |
+| `probe_results` | id, child_id, concept_id, date, passed_at_once, restart_concept_id, form (`concrete`, `pictorial`, `abstract`) |
+| `audio_clips` | id, kind, language, source (`human`, `bulbul`), url, approved |
+| `child_records` | child_id, language_profile, word_evidence, concept_status. This is derived data, recomputed by the rules engine. |
+
+Questions, the concept map and wrong-answer lists live in `packages/content` and are loaded into the database.
+
+## Offline and sync
+
+- Everything the teacher does is written to Dexie first, then queued in the outbox.
+- When a signal returns, the outbox uploads attendance, answers, photos and voice notes. The server reads the slates and transcribes the notes, then sends the results back.
+- The rules engine runs on the phone, so groups and the template brief are always available. Only slate reading, transcription and the brief's wording wait for a signal.
+
+## Testing
+
+- **Vitest** for the rules engine, which is where correctness matters most and which costs nothing to run.
+- **Simulation script:** a seeded class of made-up children with planted causes, run through the rules engine. It measures how often Triveni finds the true cause, with no API cost.
+- **Slate-reading test:** about 50 real slate photos with the correct answers written down, run through Claude to measure accuracy. **Do this first.** If accuracy is poor, switch to a tap-to-enter grid early.
+- **Voice-note test:** about 20 recorded voice notes run through Saaras with keyterms, to check that the concept is matched correctly.
+
+## Budget
+
+### Claude credits ($500)
+
+Estimates use Opus 5.5 pricing ($4 per million input tokens, $20 per million output tokens).
+
+| Use | Cost per item | Hackathon total |
+| --- | --- | --- |
+| Reading one slate photo (about 2k tokens in, 0.7k out) | about $0.025 | about $10 for 400 photos |
+| Wording one brief | about $0.02 | about $4 for 200 runs |
+| Content generation (batch, about three rounds) | | about $20 |
+| Slate-reading test runs | | about $5 |
+| Concept mapping and wrong-answer explanations | | under $2 |
+| **Product total** | | **about $40; set aside $75** |
+| **AI coding assistance** | | **about $425** |
+
+- Use two Console workspaces with separate keys and spending limits: `triveni-app` capped at $75, and `coding` for the rest.
+- Claude Code is the fastest way to spend credits. A heavy day on Opus can cost $10 to $40 per developer. Check `/cost`, start a fresh session for each task, and keep CLAUDE.md short.
+- A teammate with a Claude Pro or Max subscription can run Claude Code on that instead, which leaves the credits for the product.
+- If money runs short, Sonnet 5.5 ($2 / $10) and Haiku 5.5 ($0.10 / $0.50) are cheaper options to test for the brief and for routine coding. Compare quality before switching.
+
+### Sarvam (billed separately, in rupees)
+
+Voice notes are about ten seconds each, and Bulbul clips are generated once, so the hackathon cost should be small. Confirm current rates in the Sarvam console, because the official speech-to-text prices could not be verified when this was written.
+
+### Hosting
+
+About $5 for the API host. Supabase, Vercel or Cloudflare Pages, and the WhatsApp test number are free.
+
+## MVP versus full build
+
+| | Bare minimum MVP | Full hackathon build |
+| --- | --- | --- |
+| App | Web app (offline optional) | PWA with offline caching and a sync outbox |
+| Claude | Slate reading, brief wording | Plus content batches, concept mapping, wrong-answer explanations |
+| Saaras v4 | Not used (concept dropdown) | Voice notes and spoken probe logs |
+| Bulbul | Stand-in clips only | Hindi key-word audio, reteaching audio, brief read aloud, Hindi parent notes |
+| Human audio | B and C questions (one bilingual speaker if possible), Bhili key-word audio, one Bhili reteaching clip per concept | All check audio and all Bhili audio |
+| WhatsApp | Optional: one parent voice note | Parents, catch-up lessons, recorder bot |
+| Data | Supabase + Dexie | Same |
+
+## Open checks before building
+
+1. Slate-reading accuracy on real children's handwriting (the slate-reading test above).
+2. Whether `bulbul:v4` is on Sarvam's text-to-speech API, or only `bulbul:v3`.
+3. Sarvam's current speech-to-text and text-to-speech prices.
+4. Meta WhatsApp Cloud API setup time; fall back to Twilio if needed.
+5. A bilingual Hindi–Bhili speaker available to record both the B and C questions, plus the Bhili key-word and reteaching clips.
