@@ -1,0 +1,56 @@
+[
+  {
+    "id": "q-numbers-to-20",
+    "conceptId": "numbers-to-20",
+    "keywordIds": ["ginna", "ke-baad"],
+    "A": { "prompt": "15, 16, 17, ?", "answer": 18 },
+    "B": {
+      "hindi": "मीना बकरियाँ गिन रही है: 11, 12, 13। इसके बाद कौन-सी संख्या आएगी?",
+      "english": "Meena is counting goats: 11, 12, 13. Which number comes after this?",
+      "answer": 14,
+      "audio": "check-b-numbers-to-20"
+    },
+    "C": {
+      "scriptHi": "मीना बकरियाँ गिन रही है: 16, 17, 18। इसके बाद कौन-सी संख्या आएगी?",
+      "english": "Meena is counting goats: 16, 17, 18. Which number comes after this?",
+      "answer": 19,
+      "audio": "check-c-numbers-to-20"
+    }
+  },
+  {
+    "id": "q-subtraction-within-20",
+    "conceptId": "subtraction-within-20",
+    "keywordIds": ["ud-gayin", "ab-kitni"],
+    "A": { "prompt": "17 − 4 = ?", "answer": 13 },
+    "B": {
+      "hindi": "पेड़ पर 18 चिड़ियाँ बैठी थीं। 3 चिड़ियाँ उड़ गईं। अब पेड़ पर कितनी चिड़ियाँ हैं?",
+      "english": "18 birds were sitting on a tree. 3 birds flew away. How many birds are on the tree now?",
+      "answer": 15,
+      "audio": "check-b-subtraction-within-20"
+    },
+    "C": {
+      "scriptHi": "पेड़ पर 16 चिड़ियाँ बैठी थीं। 5 चिड़ियाँ उड़ गईं। अब पेड़ पर कितनी चिड़ियाँ हैं?",
+      "english": "16 birds were sitting on a tree. 5 birds flew away. How many birds are on the tree now?",
+      "answer": 11,
+      "audio": "check-c-subtraction-within-20"
+    }
+  },
+  {
+    "id": "q-borrowing",
+    "conceptId": "borrowing",
+    "keywordIds": ["de-diye", "bache"],
+    "A": { "prompt": "14 − 5 = ?", "answer": 9 },
+    "B": {
+      "hindi": "रवि के पास 15 आम थे। उसने 7 आम दे दिए। अब उसके पास कितने आम बचे?",
+      "english": "Ravi had 15 mangoes. He gave away 7 mangoes. How many mangoes are left with him now?",
+      "answer": 8,
+      "audio": "check-b-borrowing"
+    },
+    "C": {
+      "scriptHi": "रवि के पास 13 आम थे। उसने 7 आम दे दिए। अब उसके पास कितने आम बचे?",
+      "english": "Ravi had 13 mangoes. He gave away 7 mangoes. How many mangoes are left with him now?",
+      "answer": 6,
+      "audio": "check-c-borrowing"
+    }
+  }
+]

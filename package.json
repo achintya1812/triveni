@@ -1,0 +1,13 @@
+{
+  "name": "triveni",
+  "private": true,
+  "packageManager": "pnpm@10.18.3",
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
+  }
+}

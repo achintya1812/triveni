@@ -1,0 +1,17 @@
+[
+  { "id": "check-b-numbers-to-20", "kind": "check_b", "language": "hindi", "source": "human" },
+  { "id": "check-c-numbers-to-20", "kind": "check_c", "language": "bhili", "source": "human" },
+  { "id": "check-b-subtraction-within-20", "kind": "check_b", "language": "hindi", "source": "human" },
+  { "id": "check-c-subtraction-within-20", "kind": "check_c", "language": "bhili", "source": "human" },
+  { "id": "check-b-borrowing", "kind": "check_b", "language": "hindi", "source": "human" },
+  { "id": "check-c-borrowing", "kind": "check_c", "language": "bhili", "source": "human" },
+  { "id": "kw-ginna", "kind": "keyword", "language": "bhili", "source": "human" },
+  { "id": "kw-ke-baad", "kind": "keyword", "language": "bhili", "source": "human" },
+  { "id": "kw-ud-gayin", "kind": "keyword", "language": "bhili", "source": "human" },
+  { "id": "kw-ab-kitni", "kind": "keyword", "language": "bhili", "source": "human" },
+  { "id": "kw-de-diye", "kind": "keyword", "language": "bhili", "source": "human" },
+  { "id": "kw-bache", "kind": "keyword", "language": "bhili", "source": "human" },
+  { "id": "reteach-numbers-to-20", "kind": "reteach", "language": "bhili", "source": "human" },
+  { "id": "reteach-subtraction-within-20", "kind": "reteach", "language": "bhili", "source": "human" },
+  { "id": "reteach-borrowing", "kind": "reteach", "language": "bhili", "source": "human" }
+]

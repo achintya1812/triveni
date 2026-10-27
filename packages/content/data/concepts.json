@@ -1,0 +1,5 @@
+[
+  { "id": "numbers-to-20", "name": "Numbers to 20", "prerequisites": [], "reteachAudio": "reteach-numbers-to-20" },
+  { "id": "subtraction-within-20", "name": "Subtraction within 20", "prerequisites": ["numbers-to-20"], "reteachAudio": "reteach-subtraction-within-20" },
+  { "id": "borrowing", "name": "Borrowing (subtraction crossing a ten)", "prerequisites": ["subtraction-within-20"], "reteachAudio": "reteach-borrowing" }
+]

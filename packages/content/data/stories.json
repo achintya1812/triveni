@@ -1,0 +1,11 @@
+[
+  { "id": "s-numbers-to-20-1", "conceptId": "numbers-to-20", "hindi": "राजू सीढ़ियाँ गिन रहा है: 7, 8, 9। इसके बाद कौन-सी संख्या आएगी?", "english": "Raju is counting steps: 7, 8, 9. Which number comes after this?", "answer": 10 },
+  { "id": "s-numbers-to-20-2", "conceptId": "numbers-to-20", "hindi": "गीता पत्थर गिन रही है: 12, 13, 14। इसके बाद कौन-सी संख्या आएगी?", "english": "Geeta is counting stones: 12, 13, 14. Which number comes after this?", "answer": 15 },
+  { "id": "s-numbers-to-20-3", "conceptId": "numbers-to-20", "hindi": "सोनू मुर्गियाँ गिन रहा है: 17, 18, 19। इसके बाद कौन-सी संख्या आएगी?", "english": "Sonu is counting hens: 17, 18, 19. Which number comes after this?", "answer": 20 },
+  { "id": "s-subtraction-within-20-1", "conceptId": "subtraction-within-20", "hindi": "थाली में 9 रोटियाँ थीं। बच्चों ने 4 रोटियाँ खा लीं। अब थाली में कितनी रोटियाँ बचीं?", "english": "There were 9 rotis on the plate. The children ate 4. How many rotis are left on the plate now?", "answer": 5 },
+  { "id": "s-subtraction-within-20-2", "conceptId": "subtraction-within-20", "hindi": "तालाब में 17 बत्तखें थीं। 5 बत्तखें बाहर निकल गईं। अब तालाब में कितनी बत्तखें हैं?", "english": "There were 17 ducks in the pond. 5 ducks came out. How many ducks are in the pond now?", "answer": 12 },
+  { "id": "s-subtraction-within-20-3", "conceptId": "subtraction-within-20", "hindi": "पेड़ पर 19 तोते बैठे थे। 6 तोते उड़ गए। अब पेड़ पर कितने तोते हैं?", "english": "19 parrots were sitting on a tree. 6 parrots flew away. How many parrots are on the tree now?", "answer": 13 },
+  { "id": "s-borrowing-1", "conceptId": "borrowing", "hindi": "सीमा के पास 12 टॉफ़ियाँ थीं। उसने 5 टॉफ़ियाँ दोस्तों को दे दीं। अब उसके पास कितनी टॉफ़ियाँ बचीं?", "english": "Seema had 12 toffees. She gave 5 toffees to her friends. How many toffees does she have left now?", "answer": 7 },
+  { "id": "s-borrowing-2", "conceptId": "borrowing", "hindi": "खेत में 16 गायें थीं। 8 गायें घर चली गईं। अब खेत में कितनी गायें हैं?", "english": "There were 16 cows in the field. 8 cows went home. How many cows are in the field now?", "answer": 8 },
+  { "id": "s-borrowing-3", "conceptId": "borrowing", "hindi": "अजय के पास 11 कंचे थे। उसने 4 कंचे खो दिए। अब उसके पास कितने कंचे बचे?", "english": "Ajay had 11 marbles. He lost 4 marbles. How many marbles does he have left now?", "answer": 7 }
+]
