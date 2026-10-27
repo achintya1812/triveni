@@ -3,15 +3,22 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "start": "tsx src/index.ts",
-    "typecheck": "tsc"
+    "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
+    "start": "tsx --env-file-if-exists=.env src/index.ts",
+    "seed:audio": "tsx --env-file=.env scripts/seed-audio.ts",
+    "typecheck": "tsc",
+    "test": "vitest run"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.5",
-    "hono": "^4.13.14"
+    "@supabase/supabase-js": "^2.118.0",
+    "@triveni/content": "workspace:*",
+    "@triveni/core": "workspace:*",
+    "hono": "^4.13.14",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "tsx": "^4.23.15"
+    "tsx": "^4.23.15",
+    "vitest": "^5.0.5"
   }
 }

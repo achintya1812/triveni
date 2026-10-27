@@ -50,7 +50,7 @@ Stages 0–2 are done. This file is for whoever picks up a stage next, working w
 
 ---
 
-## [ ] Stage 3: Database + API
+## [x] Stage 3: Database + API
 
 **Goal:** Supabase holds the MVP data, and the Hono API can create and read every entity.
 
@@ -103,10 +103,10 @@ SUPABASE_SERVICE_ROLE_KEY=...
    - There is no auth in the MVP: it has one teacher and one demo class. Note this in the PR.
 
 **Verify:**
-- [ ] `pnpm supabase db push` applies cleanly to the hosted project.
-- [ ] `apps/api/src/app.test.ts` uses `app.request()` to create a class, children, attendance, a lesson, a check and its answers. It reads each one back, compares the result, then deletes the test class.
-- [ ] Bad input (for example `homeLanguage: "french"`) returns 400.
-- [ ] `pnpm typecheck` and `pnpm test` pass.
+- [x] `pnpm supabase db push` applies cleanly to the hosted project.
+- [x] `apps/api/src/app.test.ts` uses `app.request()` to create a class, children, attendance, a lesson, a check and its answers. It reads each one back, compares the result, then deletes the test class.
+- [x] Bad input (for example `homeLanguage: "french"`) returns 400.
+- [x] `pnpm typecheck` and `pnpm test` pass.
 
 ---
 
