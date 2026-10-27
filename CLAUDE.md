@@ -18,7 +18,7 @@ Stage 3 is assigned to a teammate. If you were asked to build Stage 3, go ahead.
 0. [done] Scaffold: pnpm workspace (`apps/web`, `apps/api`, `packages/core`, `packages/content`). Verify: typecheck + tests pass, web shows a page, `GET /health` is ok.
 1. [done] Content + types: Zod schemas in core; concept map, A/B/C questions, key words, practice stories, audio manifest in content. Verify: all content parses; every audio ref resolves.
 2. [done] Rules engine (core): mark answers, pattern → 5 groups, never taught vs taught-not-learned from attendance, template brief. Verify: Vitest covers all 8 patterns, blanks, absent/present split, brief.
-3. [teammate] Database + API: Supabase migrations for the MVP tables; Hono CRUD routes validated with core types. Verify: migrations apply; each entity round-trips.
+3. [done] Database + API: Supabase migrations for the MVP tables; Hono CRUD routes validated with core types. Verify: migrations apply; each entity round-trips.
 4. Class setup + daily log (web): Dexie store, setup screen, tap-absent + concept dropdown, demo seed (20 children, 2 weeks, Ravi and Meena). Verify: rows reach Supabase; seed shows Meena's absences.
 5. Check runner + answer grid (web): show A, play B then C (human clips only unless `DEV_ALLOW_STANDINS`), tap grid, Hindi-home children skip C. Verify: full check in browser; stand-ins blocked with flag off.
 6. Results + brief: five groups with what to do; template brief, reworded by Claude with template fallback. Verify: Ravi → Language gap, Meena → Never taught; works with API off.

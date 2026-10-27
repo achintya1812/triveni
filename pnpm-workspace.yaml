@@ -1,3 +1,7 @@
 packages:
   - apps/*
   - packages/*
+
+# The Supabase CLI downloads its binary in a postinstall script.
+onlyBuiltDependencies:
+  - supabase
