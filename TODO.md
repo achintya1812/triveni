@@ -2,19 +2,26 @@
 
 Stages 0–2 are done. This file is for whoever picks up a stage next, working with a Claude Code instance. Each stage below lists what to build, the files it touches, and how to check it is done.
 
-## Before you start (every stage)
+## Workflow
 
-1. Read `CLAUDE.md`, then the "Bare minimum MVP" section of `resources/IDEA.md` and `resources/TECH.md`.
-2. Install and confirm the repo is green:
-   ```bash
-   pnpm install
-   pnpm typecheck
-   pnpm test
-   ```
-3. Work on one stage per Claude session, on its own branch (`stage-3-db-api`, …).
-4. When its verify check passes, mark the stage `[done]` in `CLAUDE.md`, tick it below, and open a PR.
+**Once per teammate**
+1. Clone the repo, install pnpm 10, and run `pnpm install`.
+2. Run `pnpm typecheck && pnpm test` to confirm everything passes before you change anything.
+3. Create your own `apps/api/.env` with the keys your stage needs. It is gitignored, so get keys from a teammate privately and never commit them.
 
-**Prompt to give Claude:** "Read CLAUDE.md and TODO.md, then build Stage N. Ask me before doing anything outside that stage."
+**For each stage**
+1. Pull the latest `main` and branch from it: `git checkout -b stage-3-db-api` (use your stage's number and name).
+2. Read `CLAUDE.md`, then the "Bare minimum MVP" section of `resources/IDEA.md` and `resources/TECH.md`.
+3. Start a fresh Claude Code session with this prompt: "Read CLAUDE.md and TODO.md, then build Stage N. Ask me before doing anything outside that stage."
+4. Build until every box in the stage's verify checklist below passes, along with `pnpm typecheck` and `pnpm test`.
+5. In the same branch, mark the stage `[done]` in `CLAUDE.md` and tick it below.
+6. Push and open a PR. CI runs typecheck and tests on every PR. A teammate reviews it, checking that it stays within MVP scope and doesn't change the rules in `rules.ts`, then merges it into `main`.
+7. Everyone pulls `main` before starting their next stage.
+
+**Working in parallel**
+- Stage 3 and the Stage 4 screens and Dexie store can run at the same time. Only Stage 4's sync to the API waits for Stage 3.
+- After Stage 5, Stages 6 and 7 can run in parallel.
+- Parallel PRs both edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts there. Resolve them by keeping both sets of ticks.
 
 ## What already exists
 
