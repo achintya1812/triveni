@@ -86,6 +86,12 @@ export const app = new Hono()
     await run(db().from("lessons").upsert(snake(lesson)));
     return c.json(lesson, 201);
   })
+  // When the teacher clears a day's concept, so the rules no longer count it as taught.
+  .delete("/classes/:id/lessons/:lessonId", async (c) => {
+    const { id, lessonId } = c.req.param();
+    await run(db().from("lessons").delete().eq("id", lessonId).eq("class_id", id));
+    return c.body(null, 204);
+  })
   .get("/classes/:id/lessons", async (c) => {
     const rows = await run(db().from("lessons").select().eq("class_id", c.req.param("id")).order("date"));
     return c.json(Lesson.array().parse(rows.map(camel)));
