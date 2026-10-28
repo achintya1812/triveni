@@ -13,7 +13,6 @@ MVP decisions:
 ## Build Stages
 We build one stage at a time. A stage is done only when its verify check passes.
 Detailed instructions for every remaining stage, plus repo conventions, are in TODO.md. Read it before starting a stage, and when a stage is done, mark it `[done]` here and tick it in TODO.md.
-Stage 3 is assigned to a teammate. If you were asked to build Stage 3, go ahead. Otherwise don't start it, and don't build anything that needs its routes or tables to exist yet.
 
 0. [done] Scaffold: pnpm workspace (`apps/web`, `apps/api`, `packages/core`, `packages/content`). Verify: typecheck + tests pass, web shows a page, `GET /health` is ok.
 1. [done] Content + types: Zod schemas in core; concept map, A/B/C questions, key words, practice stories, audio manifest in content. Verify: all content parses; every audio ref resolves.
