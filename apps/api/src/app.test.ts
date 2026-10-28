@@ -68,6 +68,11 @@ describe.skipIf(!process.env.SUPABASE_URL)("round trip through Supabase", () => 
     expect(await get(`/classes/${classId}/lessons`)).toEqual([lesson]);
   });
 
+  it("deleting a lesson", async () => {
+    expect((await app.request(`/classes/${classId}/lessons/${lesson.id}`, { method: "DELETE" })).status).toBe(204);
+    expect(await get(`/classes/${classId}/lessons`)).toEqual([]);
+  });
+
   it("check and answers", async () => {
     const { classId: _, ...checkBody } = check;
     expect((await send("POST", `/classes/${classId}/checks`, checkBody)).status).toBe(201);

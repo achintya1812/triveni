@@ -110,7 +110,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ---
 
-## [ ] Stage 4: Class setup + daily log (web)
+## [x] Stage 4: Class setup + daily log (web)
 
 **Depends on:** Stage 3 for syncing. The Dexie and UI parts can start before it lands.
 
@@ -131,9 +131,9 @@ SUPABASE_SERVICE_ROLE_KEY=...
 - Use shadcn components (`pnpm dlx shadcn@latest add …` from `apps/web`) with large tap targets. The app is used on a phone, so build for a narrow screen.
 
 **Verify:**
-- [ ] Setting up a class and logging a day in the browser creates the matching rows in Supabase.
-- [ ] The demo seed loads, and the daily log history shows Meena absent on the borrowing days.
-- [ ] `pnpm typecheck` passes.
+- [x] Setting up a class and logging a day in the browser creates the matching rows in Supabase.
+- [x] The demo seed loads, and the daily log history shows Meena absent on the borrowing days.
+- [x] `pnpm typecheck` passes.
 
 ---
 
