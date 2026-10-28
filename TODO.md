@@ -137,7 +137,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ---
 
-## [ ] Stage 5: Check runner + answer grid (web)
+## [x] Stage 5: Check runner + answer grid (web)
 
 **Depends on:** Stage 4.
 
@@ -159,9 +159,9 @@ SUPABASE_SERVICE_ROLE_KEY=...
 - This grid is also where Stage 7's photo reading will fill in answers, so keep it a separate component.
 
 **Verify:**
-- [ ] With `VITE_DEV_ALLOW_STANDINS=true`, a full check runs end to end in the browser.
-- [ ] With the flag off, stand-in clips are blocked.
-- [ ] Saved answers have the right status, and blanks are `no_data`.
+- [x] With `VITE_DEV_ALLOW_STANDINS=true`, a full check runs end to end in the browser.
+- [x] With the flag off, stand-in clips are blocked.
+- [x] Saved answers have the right status, and blanks are `no_data`.
 
 ---
 

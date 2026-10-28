@@ -54,3 +54,13 @@ export async function saveDay(classId: string, date: string, absentChildIds: str
   if (lesson) await api("POST", `/classes/${classId}/lessons`, lesson);
   for (const l of cleared) await api("DELETE", `/classes/${classId}/lessons/${l.id}`);
 }
+
+// Saving again with the same check id overwrites the earlier answers.
+export async function saveCheck(check: Check, answers: Answer[]) {
+  await db.transaction("rw", db.checks, db.answers, async () => {
+    await db.checks.put(check);
+    await db.answers.bulkPut(answers);
+  });
+  await api("POST", `/classes/${check.classId}/checks`, check);
+  await api("POST", `/checks/${check.id}/answers`, answers);
+}

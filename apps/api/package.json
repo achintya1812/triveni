@@ -6,6 +6,7 @@
     "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
     "start": "tsx --env-file-if-exists=.env src/index.ts",
     "seed:audio": "tsx --env-file=.env scripts/seed-audio.ts",
+    "make:standins": "tsx --env-file=.env scripts/make-standins.ts",
     "typecheck": "tsc",
     "test": "vitest run"
   },
