@@ -32,14 +32,14 @@ export const Keyword = z.object({
 export type Keyword = z.infer<typeof Keyword>;
 
 // One question asked three ways, each with its own numbers.
-// C has no Bhili text: the speaker translates `scriptHi` when recording.
+// C is spoken live from `bhili` (Devanagari), which services/bhili/translate.py makes from `english`.
 export const Question = z.object({
   id: z.string(),
   conceptId: z.string(),
   keywordIds: z.array(z.string()),
   A: z.object({ prompt: z.string(), answer: z.number().int() }),
   B: z.object({ hindi: z.string(), english: z.string(), answer: z.number().int(), audio: z.string() }),
-  C: z.object({ scriptHi: z.string(), english: z.string(), answer: z.number().int(), audio: z.string() }),
+  C: z.object({ scriptHi: z.string(), bhili: z.string(), english: z.string(), answer: z.number().int() }),
 });
 export type Question = z.infer<typeof Question>;
 

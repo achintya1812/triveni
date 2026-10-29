@@ -12,9 +12,9 @@
     },
     "C": {
       "scriptHi": "मीना बकरियाँ गिन रही है: 16, 17, 18। इसके बाद कौन-सी संख्या आएगी?",
+      "bhili": "मीना बोकड्या मोजेहे: 16, 17, 18. इया फासला केल्लो नंबर आवेहे?",
       "english": "Meena is counting goats: 16, 17, 18. Which number comes after this?",
-      "answer": 19,
-      "audio": "check-c-numbers-to-20"
+      "answer": 19
     }
   },
   {
@@ -30,9 +30,9 @@
     },
     "C": {
       "scriptHi": "पेड़ पर 16 चिड़ियाँ बैठी थीं। 5 चिड़ियाँ उड़ गईं। अब पेड़ पर कितनी चिड़ियाँ हैं?",
+      "bhili": "16 चिडें एका चाडाव बोठले आथे. 5 चिडें उडीं गिये. आमी चाडाव कोते चिडें हाय?",
       "english": "16 birds were sitting on a tree. 5 birds flew away. How many birds are on the tree now?",
-      "answer": 11,
-      "audio": "check-c-subtraction-within-20"
+      "answer": 11
     }
   },
   {
@@ -48,9 +48,9 @@
     },
     "C": {
       "scriptHi": "रवि के पास 13 आम थे। उसने 7 आम दे दिए। अब उसके पास कितने आम बचे?",
+      "bhili": "रवि 13 आंबा आथा. तियाय 7 आंबा देद्या. आमी तियाही कोता आंबा रेताहा.",
       "english": "Ravi had 13 mangoes. He gave away 7 mangoes. How many mangoes are left with him now?",
-      "answer": 6,
-      "audio": "check-c-borrowing"
+      "answer": 6
     }
   }
 ]

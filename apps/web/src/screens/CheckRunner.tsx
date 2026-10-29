@@ -3,7 +3,7 @@ import type { ClassRecord } from "@triveni/core";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { AnswerGrid, symbols } from "@/components/AnswerGrid";
-import { ClipButton } from "@/components/ClipButton";
+import { ClipButton, SpeakButton } from "@/components/ClipButton";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -75,7 +75,7 @@ export function CheckRunner({ klass, onError }: { klass: ClassRecord; onError: (
 
           <section className="space-y-2">
             <h2 className="font-semibold">3. Play the Bhili question ({symbols.C} box)</h2>
-            <ClipButton clipId={question.C.audio} label="Play C (Bhili)" />
+            <SpeakButton text={question.C.bhili} label="Play C (Bhili)" />
             <p className="text-sm text-muted-foreground">
               {question.C.english} Children who speak Hindi at home skip this box.
             </p>

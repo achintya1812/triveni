@@ -166,6 +166,8 @@ SUPABASE_SERVICE_ROLE_KEY=...
 - [x] With the flag off, stand-in clips are blocked.
 - [x] Saved answers have the right status, and blanks are `no_data`.
 
+**Changed after Stage 5:** we dropped recorded clips and the human-only rule, along with `VITE_DEV_ALLOW_STANDINS`. C is now spoken live in Bhili by `services/bhili` through `POST /speak`, from `C.bhili` in `questions.json`. B still plays its Bulbul file. See "Bhili text to speech" in TECH.md.
+
 ---
 
 ## [ ] Stage 6: Results + brief
@@ -184,6 +186,8 @@ SUPABASE_SERVICE_ROLE_KEY=...
   | Word-problem gap | The three `stories` for the concept |
   | Never taught | "Recap the lesson" |
   | Taught but not learned | The concept's `reteachAudio` clip and "use real objects" |
+
+  The Bhili key-word and reteaching audio have no files and no Bhili text yet. Add Bhili text for them (extend `services/bhili/translate.py`) and play them with `SpeakButton`, like C in the check. Ask before changing the content schema.
 
 - **Brief:**
   - Show `buildBrief(...)` straight away.
@@ -227,7 +231,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 **Build:**
 - **Hosting:** the API on Railway or Fly.io (a host that doesn't sleep), and the web app on Vercel or Cloudflare Pages.
 - **Settings:** set `VITE_API_URL`, and set the CORS origin to the deployed web URL.
-- **Audio:** swap in the real human recordings with `source: "human"`, and leave `VITE_DEV_ALLOW_STANDINS` off.
+- **Bhili speech:** run `services/bhili/tts_server.py` on a GPU host (Modal or a Hugging Face endpoint) and set `TTS_URL` on the API, or open every concept before the demo so its C clip is cached.
 - **Rehearsal:** practise the 3-minute demo in IDEA.md (Bare minimum MVP → Demo).
 
 **Verify:**
@@ -238,9 +242,6 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ## Open items for people, not code
 
 - [ ] A Hindi speaker reviews all the Hindi in `packages/content/data/questions.json` and `stories.json`. Claude wrote it.
-- [ ] Find a bilingual Hindi–Bhili speaker to record:
-  - the 3 B and 3 C questions (C: translate `scriptHi` into Bhili, keeping the numbers)
-  - the 6 key words
-  - the 3 reteaching clips.
+- [ ] A Bhili speaker from the target area reviews `C.bhili` in `questions.json` (machine-translated, Dehvali dialect) and listens to how bhili-tts says it, especially the numbers.
 - [x] Get keys: Supabase (Stage 3), Sarvam (Stage 5 stand-ins).
 - [ ] Get the Anthropic `triveni-app` key (Stage 6).

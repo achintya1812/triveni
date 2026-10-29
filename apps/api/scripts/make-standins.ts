@@ -4,15 +4,13 @@ import { AudioClip } from "@triveni/core";
 import { questions } from "@triveni/content";
 import { db } from "../src/db";
 
-// Makes Sarvam Bulbul stand-ins for the check clips (B and C) until the human recordings arrive,
-// uploads them to the public `audio` bucket, and sets `file` and `source: "bulbul"` in audio.json.
-// C has no Bhili text, so its stand-in reads the Hindi script: it only tests the flow.
-// The check refuses stand-ins unless VITE_DEV_ALLOW_STANDINS=true.
+// Makes Sarvam Bulbul clips for the Hindi B questions, uploads them to the public `audio` bucket,
+// and sets `file` and `source: "bulbul"` in audio.json. C is spoken live in Bhili (POST /speak).
 // Skips clips that already have a file. Run seed:audio afterwards.
 
 const manifest = fileURLToPath(new URL("../../../packages/content/data/audio.json", import.meta.url));
 const clips = AudioClip.array().parse(JSON.parse(await readFile(manifest, "utf8")));
-const scripts = new Map(questions.flatMap((q) => [[q.B.audio, q.B.hindi], [q.C.audio, q.C.scriptHi]]));
+const scripts = new Map(questions.map((q) => [q.B.audio, q.B.hindi]));
 
 const key = process.env.SARVAM_API_KEY;
 if (!key) throw new Error("Set SARVAM_API_KEY in apps/api/.env");

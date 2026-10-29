@@ -17,6 +17,10 @@ describe("bad input", () => {
     const res = await send("PUT", `/classes/${crypto.randomUUID()}/attendance/27-10-2026`, { absentChildIds: [] });
     expect(res.status).toBe(400);
   });
+
+  it("rejects speech with no text", async () => {
+    expect((await send("POST", "/speak", { text: "  " })).status).toBe(400);
+  });
 });
 
 // Needs apps/api/.env with Supabase keys; skipped without them (as in CI).
