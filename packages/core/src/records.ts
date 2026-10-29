@@ -55,5 +55,9 @@ export const Answer = z.object({
   version: z.enum(["A", "B", "C"]),
   value: z.number().int().nullable(),
   status: z.enum(["right", "wrong", "no_data"]),
+  // Claude's confidence (0 to 1) for a box read from a slate photo; null when the teacher typed it.
+  confidence: z.number().min(0).max(1).nullable(),
+  // False only for a photo read the teacher hasn't checked.
+  reviewed: z.boolean(),
 });
 export type Answer = z.infer<typeof Answer>;
