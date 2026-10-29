@@ -110,7 +110,7 @@ describe("placeChild", () => {
 });
 
 describe("buildBrief", () => {
-  const bache: Keyword = { id: "bache", hindi: "बचे", roman: "bache", meaning: "left over", bhiliAudio: "kw-bache" };
+  const bache: Keyword = { id: "bache", hindi: "बचे", roman: "bache", meaning: "left over", bhili: "…" };
 
   it("lists non-empty groups in a fixed order", () => {
     const brief = buildBrief({

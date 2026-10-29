@@ -1,6 +1,6 @@
 # Triveni: remaining work
 
-Stages 0–5 are done. This file is for whoever picks up a stage next, working with a Claude Code instance. Each stage below lists what to build, the files it touches, and how to check it is done.
+Stages 0–6 are done. This file is for whoever picks up a stage next, working with a Claude Code instance. Each stage below lists what to build, the files it touches, and how to check it is done.
 
 ## Workflow
 
@@ -170,7 +170,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ---
 
-## [ ] Stage 6: Results + brief
+## [x] Stage 6: Results + brief
 
 **Depends on:** Stage 5.
 
@@ -187,7 +187,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
   | Never taught | "Recap the lesson" |
   | Taught but not learned | The concept's `reteachAudio` clip and "use real objects" |
 
-  The Bhili key-word and reteaching audio have no files and no Bhili text yet. Add Bhili text for them (extend `services/bhili/translate.py`) and play them with `SpeakButton`, like C in the check. Ask before changing the content schema.
+  Key words have a `bhili` field and concepts a `reteach: { english, bhili }` script (Claude wrote the English), both filled by `services/bhili/translate.py` and played with `SpeakButton`, like C in the check.
 
 - **Brief:**
   - Show `buildBrief(...)` straight away.
@@ -198,9 +198,9 @@ SUPABASE_SERVICE_ROLE_KEY=...
   - If the call fails or times out, keep showing the template.
 
 **Verify:**
-- [ ] On the demo class, Ravi lands in Language gap with the word card, and Meena lands in Never taught. To get these results, enter answers that produce those patterns.
-- [ ] The reworded brief appears.
-- [ ] With the API stopped, the template brief still shows.
+- [x] On the demo class, Ravi lands in Language gap with the word card, and Meena lands in Never taught. To get these results, enter answers that produce those patterns.
+- [x] The reworded brief appears.
+- [x] With the API stopped, the template brief still shows.
 
 ---
 
@@ -242,6 +242,6 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ## Open items for people, not code
 
 - [ ] A Hindi speaker reviews all the Hindi in `packages/content/data/questions.json` and `stories.json`. Claude wrote it.
-- [ ] A Bhili speaker from the target area reviews `C.bhili` in `questions.json` (machine-translated, Dehvali dialect) and listens to how bhili-tts says it, especially the numbers.
+- [ ] A Bhili speaker from the target area reviews every `bhili` field (machine-translated, Dehvali dialect): `C.bhili` in `questions.json`, the key words and the reteaching scripts. They also listen to how bhili-tts says them, especially the numbers and the single key words.
 - [x] Get keys: Supabase (Stage 3), Sarvam (Stage 5 stand-ins).
 - [ ] Get the Anthropic `triveni-app` key (Stage 6).

@@ -6,6 +6,7 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
 import { z } from "zod";
+import { rewordBrief } from "./brief";
 import { db } from "./db";
 
 // No auth in the MVP: one teacher and one demo class.
@@ -123,6 +124,10 @@ export const app = new Hono()
     if (!speaking.has(file)) speaking.set(file, makeSpeech(file, text).finally(() => speaking.delete(file)));
     await speaking.get(file);
     return c.json({ file });
+  })
+
+  .post("/brief/reword", json(z.object({ brief: z.string().trim().min(1).max(4000) })), async (c) => {
+    return c.json({ brief: await rewordBrief(c.req.valid("json").brief) });
   });
 
 // Speech takes up to a minute on CPU, so a second request for the same text waits for the first.

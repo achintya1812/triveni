@@ -7,10 +7,12 @@
     "start": "tsx --env-file-if-exists=.env src/index.ts",
     "seed:audio": "tsx --env-file=.env scripts/seed-audio.ts",
     "make:standins": "tsx --env-file=.env scripts/make-standins.ts",
+    "warm:speech": "tsx scripts/warm-speech.ts",
     "typecheck": "tsc",
     "test": "vitest run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
     "@hono/node-server": "^2.1.5",
     "@supabase/supabase-js": "^2.118.0",
     "@triveni/content": "workspace:*",
