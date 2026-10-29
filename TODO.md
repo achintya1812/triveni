@@ -1,6 +1,6 @@
 # Triveni: remaining work
 
-Stages 0–5 are done. This file is for whoever picks up a stage next, working with a Claude Code instance. Each stage below lists what to build, the files it touches, and how to check it is done.
+Stages 0–6 are done. This file is for whoever picks up a stage next, working with a Claude Code instance. Each stage below lists what to build, the files it touches, and how to check it is done.
 
 ## Workflow
 
@@ -170,7 +170,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ---
 
-## [ ] Stage 6: Results + brief
+## [x] Stage 6: Results + brief
 
 **Depends on:** Stage 5.
 
@@ -198,9 +198,9 @@ SUPABASE_SERVICE_ROLE_KEY=...
   - If the call fails or times out, keep showing the template.
 
 **Verify:**
-- [ ] On the demo class, Ravi lands in Language gap with the word card, and Meena lands in Never taught. To get these results, enter answers that produce those patterns.
-- [ ] The reworded brief appears.
-- [ ] With the API stopped, the template brief still shows.
+- [x] On the demo class, Ravi lands in Language gap with the word card, and Meena lands in Never taught. To get these results, enter answers that produce those patterns.
+- [x] The reworded brief appears.
+- [x] With the API stopped, the template brief still shows.
 
 ---
 

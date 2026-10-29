@@ -21,7 +21,7 @@ Detailed instructions for every remaining stage, plus repo conventions, are in T
 3. [done] Database + API: Supabase migrations for the MVP tables; Hono CRUD routes validated with core types. Verify: migrations apply; each entity round-trips.
 4. [done] Class setup + daily log (web): Dexie store, setup screen, tap-absent + concept dropdown, demo seed (20 children, 2 weeks, Ravi and Meena). Verify: rows reach Supabase; seed shows Meena's absences.
 5. [done] Check runner + answer grid (web): show A, play B then C (C now spoken live in Bhili), tap grid, Hindi-home children skip C. Verify: full check in browser; saved answers marked right, blanks `no_data`.
-6. Results + brief: five groups with what to do; template brief, reworded by Claude with template fallback. Verify: Ravi → Language gap, Meena → Never taught; works with API off.
+6. [done] Results + brief: five groups with what to do; template brief, reworded by Claude with template fallback. Verify: Ravi → Language gap, Meena → Never taught; works with API off.
 7. Slate photo reading: camera, resize, Claude structured read into the grid, flag low-confidence/missing/duplicate rolls, accuracy script. Verify: sample photos fill the grid with flags.
 8. Deploy + demo: Railway/Fly + Vercel/Cloudflare, Bhili speech service on a GPU host (or every C clip cached beforehand). Verify: 3-minute demo runs on a phone.
 
