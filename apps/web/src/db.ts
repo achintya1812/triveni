@@ -21,13 +21,14 @@ db.version(1).stores({
   answers: "[checkId+childId+version], checkId",
 });
 
-async function api(method: string, path: string, body?: unknown) {
+export async function api(method: string, path: string, body?: unknown) {
   const res = await fetch(`${import.meta.env.VITE_API_URL}${path}`, {
     method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`Server said ${res.status} for ${method} ${path}`);
+  return res;
 }
 
 export async function saveClass(klass: ClassRecord, children: Child[]) {

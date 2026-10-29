@@ -9,7 +9,7 @@ const question: Question = {
   keywordIds: ["bache"],
   A: { prompt: "14 − 5 = ?", answer: 9 },
   B: { hindi: "…", english: "…", answer: 8, audio: "check-b-borrowing" },
-  C: { scriptHi: "…", english: "…", answer: 6, audio: "check-c-borrowing" },
+  C: { scriptHi: "…", bhili: "…", english: "…", answer: 6 },
 };
 
 const lessons: LessonLog[] = [

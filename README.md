@@ -9,7 +9,12 @@ pnpm install
 pnpm typecheck && pnpm test
 pnpm --filter @triveni/api dev   # API on http://localhost:8787
 pnpm --filter @triveni/web dev   # web app on http://localhost:5173
+uv run services/bhili/tts_server.py   # Bhili speech on http://localhost:8790
 ```
+
+The Bhili speech service needs [uv](https://docs.astral.sh/uv/). The first run installs PyTorch (CPU) and downloads the 3.6 GB model. On a CPU, each new sentence takes up to a minute to speak; the API caches it after that. After the first run, start it with `HF_HUB_OFFLINE=1` in front: otherwise it checks Hugging Face for model updates at startup, which can hang on a poor connection.
+
+`uv run services/bhili/translate.py` rewrites the Bhili text of the C questions in `packages/content/data/questions.json`. Run it only after changing a C question, and with the speech service stopped, since it needs about 10 GB of free RAM.
 
 ## Environment variables
 
@@ -22,6 +27,7 @@ Both `.env` files are gitignored. Get the keys from a teammate privately and nev
 | `SUPABASE_URL` | The API, `seed:audio`, `make:standins` and the API round-trip test |
 | `SUPABASE_SERVICE_ROLE_KEY` | Same. Server-side only: never put it in `apps/web`. |
 | `SARVAM_API_KEY` | `make:standins` only |
+| `TTS_URL` | Optional. The Bhili speech service, `http://localhost:8790` by default. |
 
 `apps/web/.env`:
 
@@ -29,6 +35,5 @@ Both `.env` files are gitignored. Get the keys from a teammate privately and nev
 | --- | --- |
 | `VITE_API_URL` | `http://localhost:8787` locally |
 | `VITE_AUDIO_BASE_URL` | `https://<project-ref>.supabase.co/storage/v1/object/public/audio/` (public bucket URL, with the trailing slash) |
-| `VITE_DEV_ALLOW_STANDINS` | `true` lets Bulbul stand-in clips play in the check. Leave it unset or `false` in any build used with children or in the demo. |
 
 Vite reads `apps/web/.env` only at startup, so restart the dev server after changing it.

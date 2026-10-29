@@ -9,6 +9,7 @@ MVP decisions:
 - Data: Supabase + Dexie. Writes go to Dexie, then straight to the API (no outbox yet).
 - Answers: tap-to-enter grid first; Claude slate-photo reading comes later (Stage 7).
 - UI in English. No i18next, PWA/offline, voice notes or WhatsApp. Stretch goals only when I ask.
+- Audio is generated, not recorded: B from Bulbul files, C spoken live in Bhili by `services/bhili` (AI4Bharat bhili-tts) through `POST /speak`. No human-only rule.
 
 ## Build Stages
 We build one stage at a time. A stage is done only when its verify check passes.
@@ -19,10 +20,10 @@ Detailed instructions for every remaining stage, plus repo conventions, are in T
 2. [done] Rules engine (core): mark answers, pattern → 5 groups, never taught vs taught-not-learned from attendance, template brief. Verify: Vitest covers all 8 patterns, blanks, absent/present split, brief.
 3. [done] Database + API: Supabase migrations for the MVP tables; Hono CRUD routes validated with core types. Verify: migrations apply; each entity round-trips.
 4. [done] Class setup + daily log (web): Dexie store, setup screen, tap-absent + concept dropdown, demo seed (20 children, 2 weeks, Ravi and Meena). Verify: rows reach Supabase; seed shows Meena's absences.
-5. [done] Check runner + answer grid (web): show A, play B then C (human clips only unless `VITE_DEV_ALLOW_STANDINS`), tap grid, Hindi-home children skip C. Verify: full check in browser; stand-ins blocked with flag off.
+5. [done] Check runner + answer grid (web): show A, play B then C (C now spoken live in Bhili), tap grid, Hindi-home children skip C. Verify: full check in browser; saved answers marked right, blanks `no_data`.
 6. Results + brief: five groups with what to do; template brief, reworded by Claude with template fallback. Verify: Ravi → Language gap, Meena → Never taught; works with API off.
 7. Slate photo reading: camera, resize, Claude structured read into the grid, flag low-confidence/missing/duplicate rolls, accuracy script. Verify: sample photos fill the grid with flags.
-8. Deploy + demo: Railway/Fly + Vercel/Cloudflare, real clips, stand-ins off. Verify: 3-minute demo runs on a phone.
+8. Deploy + demo: Railway/Fly + Vercel/Cloudflare, Bhili speech service on a GPU host (or every C clip cached beforehand). Verify: 3-minute demo runs on a phone.
 
 Follow these rules when you are building: 
 

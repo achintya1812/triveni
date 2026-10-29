@@ -16,7 +16,7 @@ describe("content", () => {
     const refs = [
       ...concepts.map((c) => c.reteachAudio),
       ...keywords.map((k) => k.bhiliAudio),
-      ...questions.flatMap((q) => [q.B.audio, q.C.audio]),
+      ...questions.map((q) => q.B.audio),
     ];
     for (const ref of refs) expect(clipIds).toContain(ref);
   });

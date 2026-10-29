@@ -4,9 +4,9 @@ This is the technical companion to [IDEA.md](IDEA.md). It covers what we build T
 
 ## Principles
 
-- **One language everywhere.** TypeScript on the phone, the server and the shared rules.
-- **Rules decide; AI reads and writes.** Grouping, concept-map tracing and scheduling are plain code that runs on the phone. AI is used only to read things (slates, speech), write things (briefs, content) and, in Hindi only, speak (Bulbul audio).
-- **Human audio for anything a child is checked on, and for anything in Bhili.** Synthetic speech is only for Hindi audio that informs or teaches.
+- **One language everywhere.** TypeScript on the phone, the server and the shared rules. The one exception is the Bhili speech service (`services/bhili`), which is Python because the model is.
+- **Rules decide; AI reads and writes.** Grouping, concept-map tracing and scheduling are plain code that runs on the phone. AI is used only to read things (slates, speech), write things (briefs, content) and speak (Bulbul for Hindi, AI4Bharat's bhili-tts for Bhili).
+- **Speech is generated, not recorded.** Check questions and Bhili audio come from text-to-speech, so there are no recordings to collect. Bhili text is machine-translated, so a Bhili speaker should review it.
 - **API keys never reach the phone.** Every AI call goes through our server.
 
 ## Overview
@@ -34,6 +34,7 @@ A pnpm workspace with four packages:
 | `apps/api` | The Hono server |
 | `packages/core` | The rules engine: answer patterns, grouping, concept-map tracing, the brief template, and the shared types (Zod). The phone and the server run the same code. |
 | `packages/content` | The concept map, question bank, wrong-answer lists, key-word tags and the audio manifest, as JSON in git. Changes are reviewed in pull requests and loaded into the database. |
+| `services/bhili` | Not part of the pnpm workspace: Python scripts, run with `uv`, for Bhili speech and translation (see Bhili text to speech below) |
 
 ## Teacher's app (phone)
 
@@ -82,24 +83,25 @@ Requests use the server-side fallback option (`fallbacks: "default"`), so a decl
 
 ### Sarvam Bulbul (text to speech, Hindi only)
 
-| Allowed | Not allowed |
-| --- | --- |
-| Reading the morning brief aloud to the teacher | **B questions in the check:** B and C must both be human voices, so a difference in answers reflects language, not voice |
-| Step-by-step prompts in the app | **The listening check:** it measures understanding |
-| The Hindi side of key-word cards | **Anything in Bhili** |
-| Hindi reteaching audio | |
-| Voice notes to parents whose home language is Hindi | |
-| Stand-in clips during development, replaced before the demo | |
+Bulbul speaks all the Hindi audio: the B questions, reading the morning brief aloud, step-by-step prompts, the Hindi side of key-word cards, Hindi reteaching audio and voice notes to parents whose home language is Hindi. It does not speak Bhili; see the next section.
 
-Clips are generated once, when content is built, stored in Supabase Storage and cached on the phone. Only the morning brief's audio is generated daily on the server.
+The B clips are generated once by `pnpm --filter @triveni/api make:standins`, stored in Supabase Storage and listed in the audio manifest. Only the morning brief's audio is generated daily on the server.
 
 Check in the Sarvam console whether `bulbul:v4` is available on the standalone text-to-speech API. As of October 2026, the changelog lists it only for Voice Agents, with `bulbul:v3` remaining on the text-to-speech API. Use v3 if v4 is not available.
 
-### Human recordings
+### Bhili text to speech (AI4Bharat bhili-tts)
 
-Every B and C question, every Bhili clip (reteaching audio, key-word audio, parent activities) and the listening check are recorded by people. In the audio manifest, every clip has a `source` field (`human` or `bulbul`). The check runner refuses to play a clip unless its source is `human`, so the rule is enforced in code, not just by convention. The one exception is a `VITE_DEV_ALLOW_STANDINS` setting, which lets Bulbul stand-in clips play in the check so the flow can be tested before the recordings arrive. It is off in every build used with children and in the demo.
+Bhili audio is generated live from Devanagari text with [ai4bharat/bhili-tts](https://huggingface.co/ai4bharat/bhili-tts) (Parler-TTS, about 0.9B parameters, MIT licence, Dehvali dialect, trained mostly on farming speech).
 
-The B and C questions should be recorded by the same bilingual Hindi–Bhili speaker, so that language is the only difference between them.
+| Piece | How |
+| --- | --- |
+| `services/bhili/tts_server.py` | A small Python server that loads the model once and answers `POST /speak` with a WAV. Every clip uses the same voice description. Run with `uv run services/bhili/tts_server.py`. |
+| `POST /speak` in `apps/api` | Takes the text, returns its path in the `audio` bucket. The first request for a text calls the Python server (up to a minute on a CPU) and caches the WAV by a hash of the text, so later requests are instant. |
+| `services/bhili/translate.py` | Run once whenever a C question changes. There is no Hindi → Bhili model, so it feeds the English text of C to AI4Bharat's `bhili-translate-mar-bhb` adapter on `sarvamai/sarvam-translate`, and writes `C.bhili` in `questions.json`. Going through Marathi first was tried and was less reliable. It stops if any number changes in translation. |
+
+The check app asks for the C audio as soon as the question shows, so it is usually ready by the time the teacher reaches step 3. For the demo, open each concept once beforehand so every clip is cached, or run the Python server on a GPU host (Modal or a Hugging Face endpoint) and set `TTS_URL`.
+
+Known limits: B (Bulbul) and C (bhili-tts) are different voices, so a difference in answers could partly come from the voice. The translations and the dialect have not yet been reviewed by a Bhili speaker from the target area.
 
 ## WhatsApp
 
@@ -172,8 +174,8 @@ About $5 for the API host. Supabase, Vercel or Cloudflare Pages, and the WhatsAp
 | App | Web app (offline optional) | PWA with offline caching and a sync outbox |
 | Claude | Slate reading, brief wording | Plus content batches, concept mapping, wrong-answer explanations |
 | Saaras v4 | Not used (concept dropdown) | Voice notes and spoken probe logs |
-| Bulbul | Stand-in clips only | Hindi key-word audio, reteaching audio, brief read aloud, Hindi parent notes |
-| Human audio | B and C questions (one bilingual speaker if possible), Bhili key-word audio, one Bhili reteaching clip per concept | All check audio and all Bhili audio |
+| Bulbul | B questions | Plus Hindi key-word audio, reteaching audio, brief read aloud, Hindi parent notes |
+| bhili-tts | C questions, spoken live | All Bhili audio |
 | WhatsApp | Optional: one parent voice note | Parents, catch-up lessons, recorder bot |
 | Data | Supabase + Dexie | Same |
 
@@ -183,4 +185,4 @@ About $5 for the API host. Supabase, Vercel or Cloudflare Pages, and the WhatsAp
 2. Whether `bulbul:v4` is on Sarvam's text-to-speech API, or only `bulbul:v3`.
 3. Sarvam's current speech-to-text and text-to-speech prices.
 4. Meta WhatsApp Cloud API setup time; fall back to Twilio if needed.
-5. A bilingual Hindi–Bhili speaker available to record both the B and C questions, plus the Bhili key-word and reteaching clips.
+5. A Bhili speaker from the target area to review the machine-translated Bhili text and how bhili-tts says it.

@@ -43,16 +43,12 @@ describe("clipProblem", () => {
     file,
   });
 
-  it("plays human recordings", () => {
-    expect(clipProblem(clip("human", "b.mp3"), false)).toBeUndefined();
+  it("plays clips with a file, human or generated", () => {
+    expect(clipProblem(clip("human", "b.mp3"))).toBeUndefined();
+    expect(clipProblem(clip("bulbul", "b.mp3"))).toBeUndefined();
   });
 
-  it("blocks stand-ins unless the dev flag is on", () => {
-    expect(clipProblem(clip("bulbul", "b.mp3"), false)).toMatch(/stand-in/);
-    expect(clipProblem(clip("bulbul", "b.mp3"), true)).toBeUndefined();
-  });
-
-  it("blocks clips with no file, even with the flag on", () => {
-    expect(clipProblem(clip("human"), true)).toMatch(/not been recorded/);
+  it("blocks clips with no file", () => {
+    expect(clipProblem(clip("human"))).toMatch(/not been made/);
   });
 });

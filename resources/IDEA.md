@@ -48,7 +48,7 @@ The organisers set four conditions that any realistic solution must meet, and ea
 | Teachers cannot spend extra time designing tests, giving repeated assessments or entering data | Long assessments and manual data entry | All data comes from things she already does: taking attendance (a few taps), checking slates, a ten-second voice note |
 | Teachers are wary of tools that seem to monitor their performance | Dashboards of individual teacher scores | Her class data and her own progress are never shared with supervisors |
 
-A fifth constraint comes from the problem itself: many tribal home languages have no script of their own and almost no AI speech support. So Triveni never asks anyone to read in the home language, and never uses AI-generated speech for it. AI speech is used only for Hindi audio that informs or teaches, such as how a key word sounds or the brief read aloud to the teacher, and never for check questions, which are always recorded by people.
+A fifth constraint comes from the problem itself: many tribal home languages have no script of their own and almost no AI speech support. So Triveni never asks anyone to read in the home language. All audio, including check questions and Bhili, is generated from text with AI speech: Bulbul for Hindi, and AI4Bharat's Bhili model for Bhili, with the Bhili text checked by a local speaker.
 
 ## What Triveni aims for
 
@@ -98,13 +98,13 @@ Once a week, on a fixed day such as Friday, the class answers questions on the c
 | --- | --- | --- |
 | A: Numbers only | No language at all, written on the board | 14 − 5 = ? |
 | B: School language | A word problem played as audio from the teacher's phone | "Ravi had 15 mangoes and gave away 6. How many are left?" in Hindi |
-| C: Home language | The same word problem, translated, with new numbers, played as audio | "Ravi had 13 mangoes and gave away 7. How many are left?" in Bhili, recorded once by a local speaker |
+| C: Home language | The same word problem, translated, with new numbers, played as audio | "Ravi had 13 mangoes and gave away 7. How many are left?" in Bhili, generated with AI speech |
 
 Four design choices keep the comparison fair:
 
 - **Different numbers, same difficulty.** Each version uses its own numbers (14 − 5, 15 − 6, 13 − 7), all of the same kind (here, subtraction within 20 that crosses a ten). A child who has just solved A cannot copy that answer into B or C.
 - **C is a translation of B.** The story, the people and the verbs stay the same; only the numbers change. Otherwise a child could do better on C simply because it was an easier story. The speaker says the numbers the way local children count, which for many Bhili speakers means Hindi number words above ten.
-- **Both word problems are recorded.** B and C are both played from the phone, ideally recorded by the same bilingual speaker. If the teacher read B aloud and C came from a recording, a difference in answers could come from the voice rather than the language.
+- **Both word problems are played from the phone.** B and C both come from AI speech, so neither depends on the teacher's reading. If the teacher read B aloud and C came from the phone, a difference in answers could come from the voice rather than the language. B (Bulbul) and C (the Bhili model) are still different voices, which is a known limit.
 - **The order rotates.** The version that comes first changes on each check day, so no version always benefits from coming last. Each box symbol always belongs to one version (the circle is always A), and the app tells the class which box to fill next.
 
 Version A stays in numbers and symbols only. Pictures and real objects belong to the step-down probe (Step 2), where moving between forms is the point.
@@ -246,16 +246,16 @@ The child moves toward the school language; Triveni also moves the teacher towar
 
 The realistic goal is a few hundred words a year: about 10 words per topic × 2 topics a week × 30 weeks ≈ 600 words met, of which she will keep fewer. That will not make her fluent, but it is enough to give instructions, praise children and explain core ideas partly in their language. Her progress is private and optional.
 
-### Community-recorded audio
+### Generated home-language audio, checked by people
 
-AI speech for small languages and dialects is poor or missing, and many, such as Bhili, Gondi and Kurukh, have no widely used script. So home-language audio is always recorded by people:
+AI speech now exists for Bhili (AI4Bharat's bhili-tts), written in Devanagari. So home-language audio is generated from text, not recorded:
 
 1. The AI writes the script in the school language.
-2. A local speaker (the teacher, the anganwadi worker, a parent or an older student) records each line once as a WhatsApp voice note.
-3. A second speaker approves or rejects the recording.
-4. Approved clips go into a shared library and are reused across classes. The teacher can flag any clip the children did not follow.
+2. A translation model turns it into Bhili, and a local speaker (the teacher, the anganwadi worker, a parent or an older student) corrects the text.
+3. The Bhili model speaks it on demand, and the audio is cached for reuse across classes.
+4. The teacher can flag any clip the children did not follow.
 
-Over time, this builds classroom audio in languages that currently have almost none.
+Other home languages, such as Gondi and Kurukh, need their own speech models before they can be added.
 
 ## How it runs
 
@@ -278,7 +278,7 @@ The AI reads, writes and, in Hindi only, speaks; fixed rules make the decisions.
 | --- | --- |
 | **AI reads** | Children's handwritten answers and wrong answers that are not in a question's list (Claude); the teacher's voice notes, turned into text (Sarvam Saaras) |
 | **AI writes** | Matched questions with controlled key words, the list of likely wrong answers for each question, reteaching scripts, key-word cards and the text of the morning brief (Claude) |
-| **AI speaks** | Hindi audio that informs or teaches: how key words sound, Hindi reteaching audio, the brief read aloud and voice notes to Hindi-speaking parents (Sarvam Bulbul). Never check questions, and never Bhili. |
+| **AI speaks** | Hindi audio, including the B check questions (Sarvam Bulbul), and all Bhili audio, including the C check questions (AI4Bharat bhili-tts) |
 | **Rules decide** | Grouping children by answer pattern, tracing the concept map, the language profile and the spaced-review schedule |
 
 This keeps every decision explainable to the teacher, and testable.
@@ -339,7 +339,7 @@ If time runs short, this is the smallest version that still shows the core idea:
 - **One language pair:** Hindi (school language) and Bhili (home language).
 - **One short chain of concepts:** numbers to 20, subtraction within 20, borrowing.
 - **One user:** the teacher, using a web app on her phone. The demo assumes a signal; offline support comes later.
-- **Audio:** about 15 to 20 clips, recorded once by people: the Hindi B questions and the Bhili C questions, both by the same bilingual speaker so that language is the only difference; the Bhili key-word audio; and one reteaching clip per concept. If no bilingual speaker is available, the team records B, and we name this as a known limit in the demo.
+- **Audio:** generated, not recorded. The Hindi B questions come from Bulbul; the Bhili C questions are machine-translated and spoken live by bhili-tts. B and C being different voices is a known limit we name in the demo.
 
 ### The flow
 
