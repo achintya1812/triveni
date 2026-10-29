@@ -1,13 +1,13 @@
 # Triveni: remaining work
 
-Stages 0–2 are done. This file is for whoever picks up a stage next, working with a Claude Code instance. Each stage below lists what to build, the files it touches, and how to check it is done.
+Stages 0–5 are done. This file is for whoever picks up a stage next, working with a Claude Code instance. Each stage below lists what to build, the files it touches, and how to check it is done.
 
 ## Workflow
 
 **Once per teammate**
 1. Clone the repo, install pnpm 10, and run `pnpm install`.
 2. Run `pnpm typecheck && pnpm test` to confirm everything passes before you change anything.
-3. Create your own `apps/api/.env` with the keys your stage needs. It is gitignored, so get keys from a teammate privately and never commit them.
+3. Create your own `apps/api/.env` and `apps/web/.env` with the variables your stage needs (listed in `README.md`). They are gitignored, so get keys from a teammate privately and never commit them.
 
 **For each stage**
 1. Pull the latest `main` and branch from it: `git checkout -b stage-3-db-api` (use your stage's number and name).
@@ -30,10 +30,13 @@ Stages 0–2 are done. This file is for whoever picks up a stage next, working w
 | `packages/core/src/content.ts` | Zod schemas: `Language`, `AudioClip`, `Concept`, `Keyword`, `Question`, `PracticeStory` |
 | `packages/core/src/rules.ts` | `markAnswer`, `patternGroup`, `wasTaught`, `placeChild`. These are the grouping rules, covered by tests in `rules.test.ts`. |
 | `packages/core/src/brief.ts` | `buildBrief`: the template morning brief |
-| `packages/content/data/*.json` | 3 concepts, one A/B/C question per concept, 6 key words, 9 practice stories, 15 audio clips (none recorded yet) |
+| `packages/core/src/records.ts` | Zod schemas for stored records: `ClassRecord`, `Child`, `Attendance`, `Lesson`, `Check`, `Answer` |
+| `packages/content/data/*.json` | 3 concepts, one A/B/C question per concept, 6 key words, 9 practice stories, 15 audio clips (the 6 check clips are Bulbul stand-ins; nothing is human-recorded yet) |
 | `packages/content/src/index.ts` | Parses the JSON with the core schemas and exports `concepts`, `questions`, `keywords`, `stories`, `audioClips` |
-| `apps/api/src/index.ts` | Hono server with `GET /health` only (port 8787, or `PORT`) |
-| `apps/web` | Vite + React + Tailwind + shadcn/ui (Base UI style). A placeholder page only. |
+| `apps/api/src/app.ts` | Hono routes for classes, children, attendance, lessons, checks and answers, backed by Supabase (port 8787, or `PORT`) |
+| `apps/api/scripts` | `seed:audio` (manifest → `audio_clips`) and `make:standins` (Bulbul stand-ins for the check clips) |
+| `supabase/migrations` | The MVP tables |
+| `apps/web` | Vite + React + Tailwind + shadcn/ui (Base UI style). Dexie store (`db.ts`), class setup, daily log, demo seed (`seed.ts`), and the check runner with its answer grid (`components/AnswerGrid.tsx`) |
 
 ### Conventions
 
@@ -137,7 +140,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ---
 
-## [ ] Stage 5: Check runner + answer grid (web)
+## [x] Stage 5: Check runner + answer grid (web)
 
 **Depends on:** Stage 4.
 
@@ -159,9 +162,9 @@ SUPABASE_SERVICE_ROLE_KEY=...
 - This grid is also where Stage 7's photo reading will fill in answers, so keep it a separate component.
 
 **Verify:**
-- [ ] With `VITE_DEV_ALLOW_STANDINS=true`, a full check runs end to end in the browser.
-- [ ] With the flag off, stand-in clips are blocked.
-- [ ] Saved answers have the right status, and blanks are `no_data`.
+- [x] With `VITE_DEV_ALLOW_STANDINS=true`, a full check runs end to end in the browser.
+- [x] With the flag off, stand-in clips are blocked.
+- [x] Saved answers have the right status, and blanks are `no_data`.
 
 ---
 
@@ -239,4 +242,5 @@ SUPABASE_SERVICE_ROLE_KEY=...
   - the 3 B and 3 C questions (C: translate `scriptHi` into Bhili, keeping the numbers)
   - the 6 key words
   - the 3 reteaching clips.
-- [ ] Get keys: Supabase (Stage 3), Sarvam (Stage 5 stand-ins), Anthropic `triveni-app` (Stage 6).
+- [x] Get keys: Supabase (Stage 3), Sarvam (Stage 5 stand-ins).
+- [ ] Get the Anthropic `triveni-app` key (Stage 6).

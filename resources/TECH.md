@@ -97,7 +97,7 @@ Check in the Sarvam console whether `bulbul:v4` is available on the standalone t
 
 ### Human recordings
 
-Every B and C question, every Bhili clip (reteaching audio, key-word audio, parent activities) and the listening check are recorded by people. In the audio manifest, every clip has a `source` field (`human` or `bulbul`). The check runner refuses to play a clip unless its source is `human`, so the rule is enforced in code, not just by convention. The one exception is a `DEV_ALLOW_STANDINS` setting, which lets Bulbul stand-in clips play in the check so the flow can be tested before the recordings arrive. It is off in every build used with children and in the demo.
+Every B and C question, every Bhili clip (reteaching audio, key-word audio, parent activities) and the listening check are recorded by people. In the audio manifest, every clip has a `source` field (`human` or `bulbul`). The check runner refuses to play a clip unless its source is `human`, so the rule is enforced in code, not just by convention. The one exception is a `VITE_DEV_ALLOW_STANDINS` setting, which lets Bulbul stand-in clips play in the check so the flow can be tested before the recordings arrive. It is off in every build used with children and in the demo.
 
 The B and C questions should be recorded by the same bilingual Hindi–Bhili speaker, so that language is the only difference between them.
 
