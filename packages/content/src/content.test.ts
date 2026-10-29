@@ -13,12 +13,7 @@ describe("content", () => {
   });
 
   it("resolves every audio ref to a manifest entry", () => {
-    const refs = [
-      ...concepts.map((c) => c.reteachAudio),
-      ...keywords.map((k) => k.bhiliAudio),
-      ...questions.map((q) => q.B.audio),
-    ];
-    for (const ref of refs) expect(clipIds).toContain(ref);
+    for (const ref of questions.map((q) => q.B.audio)) expect(clipIds).toContain(ref);
   });
 
   it("resolves every concept and keyword ref", () => {

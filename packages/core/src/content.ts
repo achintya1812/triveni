@@ -3,8 +3,8 @@ import { z } from "zod";
 export const Language = z.enum(["hindi", "bhili"]);
 export type Language = z.infer<typeof Language>;
 
-// Clips a child is checked on, and anything in Bhili, must be source "human".
-// `file` is absent until the clip has been recorded.
+// Pre-made clips: only the Hindi B questions now. Bhili is spoken live from text (POST /speak).
+// `file` is absent until the clip has been made.
 export const AudioClip = z.object({
   id: z.string(),
   kind: z.enum(["check_b", "check_c", "keyword", "reteach"]),
@@ -18,7 +18,9 @@ export const Concept = z.object({
   id: z.string(),
   name: z.string(),
   prerequisites: z.array(z.string()),
-  reteachAudio: z.string(),
+  // Played to children who were taught the concept but didn't learn it, while the teacher uses real objects.
+  // `bhili` is spoken live; services/bhili/translate.py makes it from `english`.
+  reteach: z.object({ english: z.string(), bhili: z.string() }),
 });
 export type Concept = z.infer<typeof Concept>;
 
@@ -27,7 +29,8 @@ export const Keyword = z.object({
   hindi: z.string(),
   roman: z.string(),
   meaning: z.string(),
-  bhiliAudio: z.string(),
+  // Spoken live; services/bhili/translate.py makes it from `meaning`.
+  bhili: z.string(),
 });
 export type Keyword = z.infer<typeof Keyword>;
 

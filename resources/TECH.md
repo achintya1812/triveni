@@ -97,9 +97,9 @@ Bhili audio is generated live from Devanagari text with [ai4bharat/bhili-tts](ht
 | --- | --- |
 | `services/bhili/tts_server.py` | A small Python server that loads the model once and answers `POST /speak` with a WAV. Every clip uses the same voice description. Run with `uv run services/bhili/tts_server.py`. |
 | `POST /speak` in `apps/api` | Takes the text, returns its path in the `audio` bucket. The first request for a text calls the Python server (up to a minute on a CPU) and caches the WAV by a hash of the text, so later requests are instant. |
-| `services/bhili/translate.py` | Run once whenever a C question changes. There is no Hindi → Bhili model, so it feeds the English text of C to AI4Bharat's `bhili-translate-mar-bhb` adapter on `sarvamai/sarvam-translate`, and writes `C.bhili` in `questions.json`. Going through Marathi first was tried and was less reliable. It stops if any number changes in translation. |
+| `services/bhili/translate.py` | Run after adding or changing content. There is no Hindi → Bhili model, so it feeds English text to AI4Bharat's `bhili-translate-mar-bhb` adapter on `sarvamai/sarvam-translate`, and fills in every missing `bhili` field: C questions, key words and reteaching scripts. Going through Marathi first was tried and was less reliable. It never overwrites existing Bhili, so a speaker's corrections are kept, and it stops if any number changes in translation. |
 
-The check app asks for the C audio as soon as the question shows, so it is usually ready by the time the teacher reaches step 3. For the demo, open each concept once beforehand so every clip is cached, or run the Python server on a GPU host (Modal or a Hugging Face endpoint) and set `TTS_URL`.
+The app asks for each Bhili clip (C questions, key words, reteaching scripts) as soon as it shows. After the content changes, `pnpm --filter @triveni/api warm:speech` makes and caches every clip in one go, so none waits on the model. For the demo, run that beforehand, or run the Python server on a GPU host (Modal or a Hugging Face endpoint) and set `TTS_URL`.
 
 Known limits: B (Bulbul) and C (bhili-tts) are different voices, so a difference in answers could partly come from the voice. The translations and the dialect have not yet been reviewed by a Bhili speaker from the target area.
 

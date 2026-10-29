@@ -21,6 +21,10 @@ describe("bad input", () => {
   it("rejects speech with no text", async () => {
     expect((await send("POST", "/speak", { text: "  " })).status).toBe(400);
   });
+
+  it("rejects an empty brief", async () => {
+    expect((await send("POST", "/brief/reword", { brief: "" })).status).toBe(400);
+  });
 });
 
 // Needs apps/api/.env with Supabase keys; skipped without them (as in CI).
