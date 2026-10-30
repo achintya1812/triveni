@@ -43,7 +43,7 @@ A pnpm workspace with four packages:
 | Framework | React + Vite + TypeScript | |
 | Offline and installable | vite-plugin-pwa (Workbox) | Caches the app shell and the audio for upcoming checks |
 | Local data | Dexie.js (IndexedDB) | Class list, attendance, answers, child records, and an outbox of changes waiting to sync |
-| Camera | `<input type="file" accept="image/*" capture="environment">` | Most reliable on Android. Photos are resized to about 1500 px on the long side before upload, which saves tokens and data. |
+| Camera | A gallery picker (`<input type="file" accept="image/*" multiple>`, no `capture`) and an in-app camera (`getUserMedia`) for several shots in a row | `capture` makes Android take one shot and ignore `multiple`. Photos are resized to about 1500 px on the long side and uploaded in parallel. |
 | Voice notes | Browser `MediaRecorder` (Opus audio) | Saved locally and uploaded when there is a signal |
 | Audio playback | HTML5 `Audio` from the cache | |
 | UI | Tailwind + shadcn/ui | Large tap targets |
@@ -55,7 +55,7 @@ A pnpm workspace with four packages:
 | --- | --- | --- |
 | API | Hono on Node + TypeScript | Holds every external API key |
 | Database and files | Supabase (Postgres, Storage, Auth), free tier | Photos, audio clips, records |
-| Hosting | API on Render (free, or $7/month Starter); web app on Vercel (free). Railway was the first choice, but its sign-ups were paused. | Render's free plan sleeps after 15 minutes idle and takes up to a minute to wake: open the API's `/health` before a live demo, or use Starter, which doesn't sleep |
+| Hosting | API on Render, web app on Vercel. The MVP deploys from `mvp` (Render free plan); the full build has its own Render service (Starter, $7/month) and Vercel project from `main`, on its own Supabase project. Railway was the first choice, but its sign-ups were paused. | The free plan sleeps after 15 minutes idle; Starter doesn't, so WhatsApp webhooks always land |
 
 ## AI services
 
@@ -99,29 +99,35 @@ Bhili audio is generated live from Devanagari text with [ai4bharat/bhili-tts](ht
 | `POST /speak` in `apps/api` | Takes the text, returns its path in the `audio` bucket. The first request for a text calls the Python server (up to a minute on a CPU) and caches the WAV by a hash of the text, so later requests are instant. |
 | `services/bhili/translate.py` | Run after adding or changing content. There is no Hindi → Bhili model, so it feeds English text to AI4Bharat's `bhili-translate-mar-bhb` adapter on `sarvamai/sarvam-translate`, and fills in every missing `bhili` field: C questions, key words and reteaching scripts. Going through Marathi first was tried and was less reliable. It never overwrites existing Bhili, so a speaker's corrections are kept, and it stops if any number changes in translation. |
 
-The app asks for each Bhili clip (C questions, key words, reteaching scripts) as soon as it shows. After the content changes, `pnpm --filter @triveni/api warm:speech` makes and caches every clip in one go, so none waits on the model. For the demo, run that beforehand, or run the Python server on a GPU host (Modal or a Hugging Face endpoint) and set `TTS_URL`.
+The app asks for each Bhili clip (C questions, key words, reteaching scripts) as soon as it shows. After the content changes, `pnpm --filter @triveni/api warm:speech` makes and caches every clip in one go, so none waits on the model. The full build runs the server on a Modal GPU (`services/bhili/modal_app.py`, scales to zero, kept warm on demo days) and sets `TTS_URL`; the MVP has no speech service and relies on the cache.
 
 Known limits: B (Bulbul) and C (bhili-tts) are different voices, so a difference in answers could partly come from the voice. The translations and the dialect have not yet been reviewed by a Bhili speaker from the target area.
 
 ## WhatsApp
 
-- **Meta WhatsApp Cloud API**, called directly. The free test number can message up to five verified numbers, which is enough for the demo. Incoming messages arrive at the Hono server as webhooks.
-- Voice notes are stored as `.ogg` (Opus), converted once with ffmpeg. This is WhatsApp's native voice-note format.
-- If Meta's business verification holds us up, use the **Twilio WhatsApp sandbox** instead. It is quicker to set up but charges a little per message.
+- **Meta WhatsApp Cloud API**, called with `fetch` from `apps/api/src/routes/whatsapp.ts`. The free test number can message up to five verified numbers, which is enough for the demo. Incoming messages and delivery statuses arrive at the Hono server as webhooks, checked with `X-Hub-Signature-256`.
+- **Opt-in:** the app shows a QR code per child (`wa.me/<number>?text=JOIN <code>`). The parent's JOIN message records their number and consent, and opens WhatsApp's 24-hour window.
+- **24-hour window:** inside it we send voice notes freely; outside it we first send one approved utility template ("Reply OK to hear it"), and the reply reopens the window.
+- Voice notes are `.ogg` (Opus), converted once with `ffmpeg-static` from the cached Bulbul or bhili-tts audio. This is WhatsApp's native voice-note format.
+- Parents' voice replies are stored in the private `wa-media` bucket; Hindi ones are transcribed with Saaras.
+- If Meta's setup holds us up, use the **Twilio WhatsApp sandbox** instead. It is quicker to set up but charges a little per message.
 
 ## Data model
 
 | Table | Key fields |
 | --- | --- |
 | `classes` | id, school, grade, textbook |
-| `children` | id, class_id, roll_no, name, home_language, parent_phone, parent_opt_in_at (WhatsApp requires an opt-in before we message a parent) |
+| `children` | id, class_id, roll_no, name, home_language, hindi_understanding (the teacher's view), parent_phone, parent_opt_in_at (WhatsApp requires an opt-in before we message a parent), parent_last_message_at (the 24-hour window) |
 | `attendance` | class_id, date, child_id, present. Stored by date, so absences are recorded even on days with no logged concept. |
-| `lessons` | id, class_id, date, concept_id, source (`dropdown`, `voice`), transcript |
-| `checks` | id, class_id, date, kind (`weekly`, `recheck`), concept_ids, version_order |
+| `lessons` | id, class_id, date, concept_id, source (`dropdown`, `voice`), transcript, page |
+| `checks` | id, class_id, date, kind (`weekly`, `recheck`), question_ids (row order), version_order, child_ids (re-checks only) |
 | `answers` | check_id, child_id, question_id, row, version (`A`, `B`, `C`), value, status (`right`, `wrong`, `no_data`), cause, confidence, reviewed |
+| `listening_results` | child_id, date, item_id, language, value, status |
 | `probe_results` | id, child_id, concept_id, date, passed_at_once, restart_concept_id, form (`concrete`, `pictorial`, `abstract`) |
 | `audio_clips` | id, kind, language, source (`human`, `bulbul`), url, approved |
-| `child_records` | child_id, language_profile, word_evidence, concept_status. This is derived data, recomputed by the rules engine. |
+| `parent_messages`, `parent_replies` | WhatsApp messages sent to and received from parents, with delivery status |
+
+Each child's running record (language profile, word evidence, concept status) is derived on the phone by the rules engine, not stored.
 
 Questions, the concept map and wrong-answer lists live in `packages/content` and are loaded into the database.
 
