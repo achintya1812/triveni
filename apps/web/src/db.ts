@@ -59,7 +59,7 @@ export async function api(method: string, path: string, body?: unknown) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`Server said ${res.status} for ${method} ${path}`);
+  if (!res.ok) throw Object.assign(new Error(`Server said ${res.status} for ${method} ${path}`), { status: res.status });
   return res;
 }
 

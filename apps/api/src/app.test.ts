@@ -22,6 +22,10 @@ describe("bad input", () => {
     expect((await send("POST", "/speak", { text: "  " })).status).toBe(400);
   });
 
+  it("rejects speech in a language other than Bhili or Hindi", async () => {
+    expect((await send("POST", "/speak", { text: "नमस्ते", language: "marathi" })).status).toBe(400);
+  });
+
   it("rejects an empty brief", async () => {
     expect((await send("POST", "/brief/reword", { brief: "" })).status).toBe(400);
   });
@@ -41,6 +45,25 @@ describe("bad input", () => {
 });
 
 // Needs apps/api/.env with Supabase keys; skipped without them (as in CI).
+describe.skipIf(!process.env.SUPABASE_URL)("speech cache", () => {
+  const text = `Not spoken yet ${crypto.randomUUID()}`;
+
+  it("says an uncached clip isn't made yet, without making it", async () => {
+    expect((await send("POST", "/speak", { text, cachedOnly: true })).status).toBe(404);
+  });
+
+  it("answers 503 at once for uncached Bhili when the speech service isn't running", async () => {
+    const before = process.env.TTS_URL;
+    process.env.TTS_URL = "http://127.0.0.1:9"; // nothing listens here
+    try {
+      expect((await send("POST", "/speak", { text, language: "bhili" })).status).toBe(503);
+    } finally {
+      if (before === undefined) delete process.env.TTS_URL;
+      else process.env.TTS_URL = before;
+    }
+  });
+});
+
 describe.skipIf(!process.env.SUPABASE_URL)("round trip through Supabase", () => {
   const classId = crypto.randomUUID();
   const checkId = crypto.randomUUID();
