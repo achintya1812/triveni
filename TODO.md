@@ -543,52 +543,65 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 **Goal:** parents get home-language voice notes on WhatsApp (catch-up lessons and home activities), and their replies come back.
 
-**You need:**
-- **A Meta developer app** with WhatsApp added, and its test number.
-- **In `apps/api/.env`:**
-  - `WA_PHONE_NUMBER_ID`
-  - `WA_TOKEN` (a System User permanent token: the temporary one expires in 24 hours)
-  - `WA_APP_SECRET`
-  - `WA_VERIFY_TOKEN`
-  - `WA_TEMPLATE_NAME`
-- **In the web app:** `VITE_WA_NUMBER`.
-- **Recipients:** the demo phones, added as verified recipients.
-- **Template:** one approved utility template, submitted on Day 1 because approval can take hours. Its text: "A new home activity for {{1}} is ready. Reply OK to hear it."
-- If Meta blocks us, switch to the Twilio WhatsApp sandbox. Don't build an adapter layer up front.
+**Provider:** the **Twilio WhatsApp sandbox**. Meta's Cloud API was the first choice, but our new Meta business account was locked (error 131031), so we use Twilio. If Meta unlocks later, only how messages are sent changes.
 
-**Build** in `apps/api/src/routes/whatsapp.ts`, using `fetch` against the Graph API (no SDK):
-- **Opt-in:**
-  - In the app, each child has a QR code for `wa.me/<VITE_WA_NUMBER>?text=JOIN <code>`, where the code is the first 8 characters of the child's id.
-  - When the parent sends that message, the webhook sets `children.parent_phone` and `parent_opt_in_at` and replies with a welcome.
+**You need:**
+- **In `apps/api/.env`:**
+  - `TWILIO_ACCOUNT_SID`
+  - `TWILIO_AUTH_TOKEN`
+  - `TWILIO_WHATSAPP_FROM=whatsapp:+14155238886`
+  - `PUBLIC_API_URL`: the address Twilio calls (a tunnel while developing, the Render URL once deployed). The signature check needs the exact URL.
+- **In `apps/web/.env`:**
+  - `VITE_WA_NUMBER=14155238886`
+  - `VITE_WA_SANDBOX_JOIN`: the sandbox's `join <two-words>` phrase, from the Twilio Console.
+- **Every demo phone** has joined the sandbox. Membership lasts 3 days, so rejoin on the morning of the demo.
+
+**Sandbox limits to design around:**
+- Only phones that have joined can receive messages; anything else fails with error 63015.
+- About one message every 3 seconds.
+- Outside the 24-hour window, only Twilio's three ready-made templates are allowed (no custom template).
+- Media must be at a public URL. `.ogg` audio must use the Opus codec.
+
+**Build** in `apps/api/src/routes/whatsapp.ts`, with the `twilio` npm package (`messages.create` and `validateRequest`):
+- **Opt-in, in two steps:**
+  - The class screen shows one QR code for joining the sandbox (`wa.me/<VITE_WA_NUMBER>?text=<VITE_WA_SANDBOX_JOIN>`).
+  - Each child then has a QR code for `wa.me/<VITE_WA_NUMBER>?text=JOIN <code>`, where the code is the first 8 characters of the child's id.
+  - When the webhook receives `JOIN <code>`, it sets `children.parent_phone` and `parent_opt_in_at`, and replies with a welcome.
 - **The 24-hour window:**
   - Add a migration with `children.parent_last_message_at`, updated on every message from the parent.
-  - Inside 24 hours, send a voice note straight away.
-  - Outside it, send the template, mark the message `awaiting_reply`, and send it when the parent replies.
+  - Inside 24 hours, send at once.
+  - Outside it, save the message as `awaiting_reply`, and list those parents in the app ("ask the parent to send any message"). Send the queued messages when the parent next writes.
 - **Voice notes:**
   - Make the audio with `/speak`'s cache, in the child's home language.
-  - Convert it once to `.ogg` Opus with `ffmpeg-static` and cache it next to the original.
-  - Upload it to `/<phone-number-id>/media` and send it as an audio message. If the current Graph API version supports it, set the flag that marks it as a voice note, so it plays like one.
-  - Then send a short text with the activity steps.
+  - Convert it once to `.ogg` Opus with `ffmpeg-static`, and store it in the public `audio` bucket (`wa/<hash>.ogg`, content type `audio/ogg`).
+  - Send it with `mediaUrl`, then a short text with the activity steps.
+  - Pass `statusCallback` (`<PUBLIC_API_URL>/whatsapp/status`) on every send.
 - **Sending:** `POST /parents/send` with `{ kind, conceptId, childIds }`, called from:
   - "Send catch-up to N parents" (never-taught children)
   - "Send activity to parents" (the kit)
 
-  Each send is a `parent_messages` row. Children without an opt-in are listed, not sent.
-- **Webhook:**
-  - `GET /whatsapp/webhook` answers Meta's verify challenge.
-  - `POST /whatsapp/webhook` checks `X-Hub-Signature-256` (HMAC-SHA256 of the raw body with `WA_APP_SECRET`) before parsing, answers 200 at once, then handles the message:
-    - a `JOIN` code
-    - a text, reaction or button reply
-    - a voice reply, which is downloaded to the private `wa-media` bucket and transcribed with Saaras if the child is Hindi-home (stored as is for Bhili)
-    - a delivery or read status, which updates `parent_messages.status`
-  - Replies go in a new `parent_replies` table (`id`, `child_id`, `received_at`, `type`, `text`, `file`, `transcript`).
-- **Optional:** the teacher's own number can receive the morning brief the same way.
+  Each send is a `parent_messages` row; `waMessageId` holds Twilio's message SID. Send one at a time, about 3 seconds apart. Children without an opt-in are listed, not sent.
+- **Webhooks** (both form-encoded):
+  - **`POST /whatsapp/webhook`**, for incoming messages.
+    1. First check `X-Twilio-Signature` with `validateRequest`, using `PUBLIC_API_URL` and the form fields. Reject anything that fails.
+    2. Answer with an empty `<Response/>` at once.
+    3. Then handle the message:
+       - a `JOIN` code
+       - a text, a reaction or a button reply (`Body`)
+       - a voice reply (`NumMedia` and `MediaUrl0`, downloaded with the account SID and auth token): store it in the private `wa-media` bucket, and transcribe it with Saaras if the child is Hindi-home (store it as is for Bhili)
+    4. Replies go in a new `parent_replies` table (`id`, `child_id`, `received_at`, `type`, `text`, `file`, `transcript`).
+  - **`POST /whatsapp/status`**, for delivery updates: checked the same way, it updates `parent_messages.status` from `MessageStatus` (`sent`, `delivered`, `read` or `failed`).
+- **Developing locally:**
+  - Run a tunnel (`cloudflared tunnel --url http://localhost:8787`) and set `PUBLIC_API_URL` to its address.
+  - In the Twilio Console's **Sandbox settings**, set **When a message comes in** to `<PUBLIC_API_URL>/whatsapp/webhook` (POST).
+- **Optional:** the teacher's own phone (joined to the sandbox) can receive the morning brief the same way.
 
 **Verify:**
-- [ ] A demo phone scans a child's QR code and is opted in.
-- [ ] It receives a Bhili catch-up voice note that plays as a voice note, followed by the activity text.
+- [ ] A demo phone joins the sandbox, scans a child's QR code, and is opted in.
+- [ ] It receives a Bhili catch-up voice note that plays, followed by the activity text, and the message's status reaches `delivered` or `read`.
 - [ ] A 👍 reply and a Hindi voice reply (with its transcript) are stored.
-- [ ] More than 24 hours after the parent's last message, the template goes out first, and the voice note follows the reply.
+- [ ] A request with a bad signature is rejected.
+- [ ] More than 24 hours after a parent's last message, the voice note waits as `awaiting_reply`, and goes out when the parent writes.
 
 ---
 
@@ -600,9 +613,10 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 **Build:**
 - **Hosting** (the MVP's Render service and Vercel project stay on `mvp`, untouched):
-  - **API:** a second Render service from `main`, on the Starter plan (it doesn't sleep, so webhooks always land). Set the full-build Supabase keys, `ANTHROPIC_API_KEY`, `SARVAM_API_KEY`, `TTS_URL`, `TTS_TOKEN`, the `WA_*` variables and `WEB_ORIGIN`.
-  - **Web app:** a second Vercel project from `main`, with `VITE_API_URL`, `VITE_AUDIO_BASE_URL` and `VITE_WA_NUMBER`.
-  - **Webhook:** register `https://<api>/whatsapp/webhook` in the Meta app, and subscribe to messages.
+  - **API:** a second Render service from `main`, on the Starter plan (it doesn't sleep, so webhooks always land). Set the full-build Supabase keys, `ANTHROPIC_API_KEY`, `SARVAM_API_KEY`, `TTS_URL`, `TTS_TOKEN`, the `TWILIO_*` variables, `PUBLIC_API_URL` (the Render URL) and `WEB_ORIGIN`.
+  - **Web app:** a second Vercel project from `main`, with `VITE_API_URL`, `VITE_AUDIO_BASE_URL`, `VITE_WA_NUMBER` and `VITE_WA_SANDBOX_JOIN`.
+  - **Webhook:** in the Twilio Console's **Sandbox settings**, set **When a message comes in** to `https://<api>/whatsapp/webhook` (POST).
+  - **Demo phones:** rejoin the sandbox on the morning of the demo, because membership lasts 3 days.
   - **Bhili speech:** set Modal's `min_containers=1` an hour before the demo, and run `warm:speech` against the deployed API.
   - **README:** add a "Deploy (full build)" section.
 - **Designs:** two static mock screens or slides for what IDEA.md says is shown only as designs:
@@ -629,7 +643,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - [ ] A new Supabase project for the full build (URL and service-role key, shared privately).
 - [ ] A Modal account and token (Stage 18).
 - [ ] A Sarvam key with Saaras speech-to-text (Stages 21, 22). Confirm the Bulbul version.
-- [ ] Meta WhatsApp: app, test number, permanent token, app secret, verified demo phones, and the utility template submitted on Day 1 (Stage 22).
+- [ ] Twilio: an account with the WhatsApp sandbox activated, its account SID, auth token and join phrase, and every demo phone joined (Stage 22).
 - [ ] The textbook and page numbers for the 4 concepts (Stages 19, 21).
 - [ ] The notebook slate test set with `answers.csv` (Stage 20).
 - [ ] About 10 recorded voice-note test files (Stage 21).

@@ -32,7 +32,9 @@ Both `.env` files are gitignored. Get the keys from a teammate privately and nev
 | `ANTHROPIC_API_KEY` | Slate reading, rewording the brief, and the other Claude calls. Use the `triveni-app` workspace key. Without it the app shows the template brief. |
 | `TTS_URL` | Optional. The Bhili speech service: `http://localhost:8790` by default, or the Modal URL (Stage 18). |
 | `TTS_TOKEN` | The shared secret for the Modal speech service (Stage 18). |
-| `WA_PHONE_NUMBER_ID`, `WA_TOKEN`, `WA_APP_SECRET`, `WA_VERIFY_TOKEN`, `WA_TEMPLATE_NAME` | WhatsApp Cloud API (Stage 22). `WA_TOKEN` is a System User permanent token. |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` | The Twilio WhatsApp sandbox (Stage 22), from the Twilio Console home page |
+| `TWILIO_WHATSAPP_FROM` | `whatsapp:+14155238886` (the sandbox number) |
+| `PUBLIC_API_URL` | The API's public address, which Twilio calls and signs requests for: a tunnel while developing, the Render URL once deployed (Stage 22) |
 | `WEB_ORIGIN` | Deployed only: the web app's address, which the API accepts requests from. `http://localhost:5173` by default. |
 
 `apps/web/.env`:
@@ -41,7 +43,8 @@ Both `.env` files are gitignored. Get the keys from a teammate privately and nev
 | --- | --- |
 | `VITE_API_URL` | `http://localhost:8787` locally |
 | `VITE_AUDIO_BASE_URL` | `https://<project-ref>.supabase.co/storage/v1/object/public/audio/` (public bucket URL, with the trailing slash) |
-| `VITE_WA_NUMBER` | The WhatsApp test number, digits with the country code, for the parent opt-in QR codes (Stage 22) |
+| `VITE_WA_NUMBER` | `14155238886`, the sandbox number, for the parent opt-in QR codes (Stage 22) |
+| `VITE_WA_SANDBOX_JOIN` | The sandbox's `join <two-words>` phrase, from the Twilio Console (Stage 22) |
 
 Vite reads `apps/web/.env` only at startup, so restart the dev server after changing it.
 

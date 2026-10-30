@@ -20,7 +20,7 @@ Teacher's phone (offline web app)          Server                              O
 │ Cached audio clips          │           │  · voice note → text     │       │   speech to text         │
 └─────────────────────────────┘           │  · WhatsApp webhook      │ ────▶ │ Sarvam Bulbul            │
                                           └──────────┬───────────────┘       │   Hindi text to speech   │
-                                                     │                ◀────▶ │ WhatsApp Cloud API       │
+                                                     │                ◀────▶ │ WhatsApp (Twilio sandbox)│
                                           Supabase: Postgres + Storage       └──────────────────────────┘
 ```
 
@@ -105,12 +105,13 @@ Known limits: B (Bulbul) and C (bhili-tts) are different voices, so a difference
 
 ## WhatsApp
 
-- **Meta WhatsApp Cloud API**, called with `fetch` from `apps/api/src/routes/whatsapp.ts`. The free test number can message up to five verified numbers, which is enough for the demo. Incoming messages and delivery statuses arrive at the Hono server as webhooks, checked with `X-Hub-Signature-256`.
-- **Opt-in:** the app shows a QR code per child (`wa.me/<number>?text=JOIN <code>`). The parent's JOIN message records their number and consent, and opens WhatsApp's 24-hour window.
-- **24-hour window:** inside it we send voice notes freely; outside it we first send one approved utility template ("Reply OK to hear it"), and the reply reopens the window.
-- Voice notes are `.ogg` (Opus), converted once with `ffmpeg-static` from the cached Bulbul or bhili-tts audio. This is WhatsApp's native voice-note format.
-- Parents' voice replies are stored in the private `wa-media` bucket; Hindi ones are transcribed with Saaras.
-- If Meta's setup holds us up, use the **Twilio WhatsApp sandbox** instead. It is quicker to set up but charges a little per message.
+- **Twilio WhatsApp sandbox**, using the `twilio` npm package from `apps/api/src/routes/whatsapp.ts`. We first chose Meta's Cloud API, but a brand-new Meta business account was locked (error 131031), so we switched. Twilio's sandbox works within minutes and is enough for the demo.
+- **Sandbox rules:** a phone must send the sandbox's `join <two-words>` phrase to +1 415 523 8886 before it can receive anything, and must rejoin every 3 days. The sandbox sends about one message every 3 seconds.
+- **Opt-in:** after joining the sandbox, the parent scans the child's QR code (`JOIN <code>`), which records their number and consent and opens WhatsApp's 24-hour window.
+- **24-hour window:** inside it we send voice notes and text freely. Outside it the sandbox allows only Twilio's three ready-made templates, so messages wait until the parent writes again.
+- Voice notes are `.ogg` (Opus), converted once with `ffmpeg-static` from the cached Bulbul or bhili-tts audio, and sent from a public URL in the `audio` bucket.
+- Incoming messages and delivery statuses arrive as form-encoded webhooks, checked with `X-Twilio-Signature`. Voice replies are stored in the private `wa-media` bucket; Hindi ones are transcribed with Saaras.
+- Messages cost a little each (a trial account includes some free ones).
 
 ## Data model
 
@@ -171,7 +172,7 @@ Voice notes are about ten seconds each, and Bulbul clips are generated once, so 
 
 ### Hosting
 
-About $5 for the API host. Supabase, Vercel or Cloudflare Pages, and the WhatsApp test number are free.
+About $5 for the API host. Supabase, Vercel or Cloudflare Pages, are free; Twilio WhatsApp messages cost a little each.
 
 ## MVP versus full build
 
@@ -190,5 +191,5 @@ About $5 for the API host. Supabase, Vercel or Cloudflare Pages, and the WhatsAp
 1. Slate-reading accuracy on real children's handwriting (the slate-reading test above).
 2. Whether `bulbul:v4` is on Sarvam's text-to-speech API, or only `bulbul:v3`.
 3. Sarvam's current speech-to-text and text-to-speech prices.
-4. Meta WhatsApp Cloud API setup time; fall back to Twilio if needed.
+4. WhatsApp: Meta's Cloud API was blocked by an account lock, so we use the Twilio sandbox.
 5. A Bhili speaker from the target area to review the machine-translated Bhili text and how bhili-tts says it.

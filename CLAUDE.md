@@ -14,7 +14,7 @@ Full-build decisions:
   - Bhili from bhili-tts on Modal, through `/speak`.
   - No human-only rule.
 - Interface in Hindi by default, with an English toggle (i18next).
-- Parents are reached through the Meta WhatsApp Cloud API, with the Twilio sandbox as the fallback.
+- Parents are reached through the Twilio WhatsApp sandbox. Meta's Cloud API was dropped because our new business account was locked.
 - Feature work never goes to `mvp`. Fixes are cherry-picked there only when I ask.
 
 ## Build Stages
@@ -47,7 +47,7 @@ Full build (on `main`; lane in brackets):
 19. Full content [C]: two-digit subtraction, pages, weekly and re-check questions, wrong-answer lists, probes, kit, listening items, catch-up scripts; translated and warmed. Verify: parses; numbers survive translation; reviewed by a person.
 20. Slate reading v2 [C]: roster in each request, Devanagari rules, roll confidence, name matching, unplaced slates, per-roll accuracy. Verify: roll accuracy beats `mvp-demo-v1`; no slate goes to the wrong child.
 21. Voice notes [C]: record, Saaras, page → concept, Claude fallback. Verify: page and no-page notes both map correctly.
-22. WhatsApp parent notes [C]: QR opt-in, 24-hour window with a template, `.ogg` voice notes, webhook for replies and statuses. Verify: a demo phone receives a Bhili catch-up voice note; replies are stored.
+22. WhatsApp parent notes [C]: Twilio sandbox, two-step QR opt-in, 24-hour window (queue until the parent writes), `.ogg` voice notes, signed webhooks for replies and statuses. Verify: a demo phone receives a Bhili catch-up voice note; replies are stored.
 23. Deploy + demo [all]: a second Render service and Vercel project from `main`, Modal kept warm, design slides, the 5-minute demo. Verify: the demo runs twice in a row on a phone.
 
 Follow these rules when you are building: 
