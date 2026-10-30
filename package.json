@@ -2,7 +2,11 @@
   "name": "triveni",
   "private": true,
   "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
+    "start": "pnpm --filter @triveni/api start",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test"
   },
