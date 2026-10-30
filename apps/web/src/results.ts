@@ -15,9 +15,14 @@ export type Placed = { child: Child; placement: Placement };
 export const groupOrder: Placement[] = [
   "language_gap",
   "word_problem_gap",
+  "symbol_gap",
+  "language_symbol_gap",
   "never_taught",
   "taught_not_learned",
+  "clip_failed",
+  "inconsistent",
   "unclear",
+  "not_checked",
   "ready",
 ];
 
@@ -28,6 +33,7 @@ export function placeChildren(
   answers: Answer[],
   lessons: LessonLog[],
   attendance: AttendanceLog[],
+  checkDate: string,
 ): Placed[] {
   return children.flatMap((child) => {
     const mine = answers.filter((a) => a.childId === child.id);
@@ -40,6 +46,6 @@ export function placeChildren(
       b: value("B"),
       c: value("C"),
     };
-    return [{ child, placement: placeChild(childAnswers, question, lessons, attendance) }];
+    return [{ child, placement: placeChild(childAnswers, question, lessons, attendance, checkDate) }];
   });
 }

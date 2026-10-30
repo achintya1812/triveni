@@ -155,7 +155,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 10: Rules: marking and all eight patterns
+## [x] Stage 10: Rules: marking and all eight patterns
 
 **Lane:** A. **Depends on:** 9.
 
@@ -196,11 +196,18 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - **`versionOrder(date)`:** `ABC`, `BCA`, `CAB`, chosen by ISO week number mod 3.
 - **`pickConcepts(lessons, checks, concepts)`:** takes the concepts with a lesson since the last weekly check, at most 2. Those with the most concepts depending on them (directly or not) in the concept map come first; a tie goes to the one taught most recently.
 
+**As built:**
+- `markAnswer(value, question, version)` returns `{ status, cause }`.
+- `placeChild(...)` takes the check date.
+- `labelFor(childId, conceptId, placements, probes)` returns `{ placement, confirmed }`, or null when there's no label (including after a probe passed at once). `needsRecheck(label)` gives the re-check list.
+- `pickConcepts(lessons, concepts, since)` takes the date of the last weekly check.
+- `isoWeek` is exported too.
+
 **Verify:**
-- [ ] Vitest covers all 8 patterns with C and all 4 without it, `unclear`, copied numbers, a listed cause, an unlisted wrong answer, and absent-on-check-day (both cases).
-- [ ] Confirmation tests cover each of the three ways to confirm and the probe that clears.
-- [ ] Tests cover `versionOrder` across three weeks and `pickConcepts` with 3 taught concepts.
-- [ ] Old MVP tests that no longer apply (such as a copied number counting as wrong) are updated, and the PR says which.
+- [x] Vitest covers all 8 patterns with C and all 4 without it, `unclear`, copied numbers, a listed cause, an unlisted wrong answer, and absent-on-check-day (both cases).
+- [x] Confirmation tests cover each of the three ways to confirm and the probe that clears.
+- [x] Tests cover `versionOrder` across three weeks and `pickConcepts` with 3 taught concepts.
+- [x] Old MVP tests that no longer apply (such as a copied number counting as wrong) are updated, and the PR says which.
 
 ---
 

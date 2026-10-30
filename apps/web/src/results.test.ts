@@ -22,7 +22,7 @@ describe("placeChildren on the demo class", () => {
     [id("Pooja")]: { A: "9", B: "21" }, // Hindi at home: no C
   };
   const children = demoChildren.filter((c) => c.id in values);
-  const placed = placeChildren(question, children, markGrid("check", question, children, values), lessons, attendance);
+  const placed = placeChildren(question, children, markGrid("check", question, children, values), lessons, attendance, "2026-10-30");
   const placement = (name: string) => placed.find((p) => p.child.name === name)?.placement;
 
   it("puts Ravi in Language gap", () => expect(placement("Ravi")).toBe("language_gap"));
@@ -34,6 +34,6 @@ describe("placeChildren on the demo class", () => {
     expect(placement("Pooja")).toBe("word_problem_gap"));
 
   it("leaves out children with no answers in the check", () => {
-    expect(placeChildren(question, demoChildren, [], lessons, attendance)).toEqual([]);
+    expect(placeChildren(question, demoChildren, [], lessons, attendance, "2026-10-30")).toEqual([]);
   });
 });
