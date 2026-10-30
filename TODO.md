@@ -37,11 +37,15 @@ The diagnosis story must survive: Stages 9–11, 14–16 and 20.
 
 **For each stage**
 1. Pull the latest `main` and branch from it: `git checkout -b stage-9-contracts` (your stage's number and name).
-2. Start a fresh Claude Code session with this prompt: "Read CLAUDE.md and TODO.md, then build Stage N. Ask me before doing anything outside that stage."
-3. Build until every box in the stage's Verify list passes, along with `pnpm typecheck` and `pnpm test`.
-4. In the same branch, mark the stage `[done]` in `CLAUDE.md` and tick it here.
-5. Push and open a PR. CI runs typecheck and tests. Someone from another lane reviews it, checking that it stays inside its stage and that rules changes match IDEA.md's tables. Merge as soon as it's approved: with two days, a PR shouldn't sit for hours.
-6. Pull `main` before starting your next stage. **Everyone pulls right after Stage 9 merges.**
+2. **Claim the stage.** Run `gh pr list`; if a PR for that stage is already open, someone has it, so pick the next stage in your lane. Otherwise make an empty commit, push, and open a **draft PR** titled "Stage N: <name>" straight away, so others can see it's taken.
+3. Start a fresh Claude Code session with this prompt: "Read CLAUDE.md and TODO.md, then build Stage N. Ask me before doing anything outside that stage."
+   - Claude should first check that the stages listed under **Depends on** are ticked here and merged into `main`.
+   - If one isn't, build only the parts that don't need it, as the stage notes describe, and say what's left.
+   - The stage tells you which keys it needs ("You need"). If one is missing, ask the person who owns it rather than working around it.
+4. Build until every box in the stage's Verify list passes, along with `pnpm typecheck` and `pnpm test`.
+5. In the same branch, mark the stage `[done]` in `CLAUDE.md` and tick it here.
+6. Push and mark the PR ready for review. CI runs typecheck and tests. Someone from another lane reviews it, checking that it stays inside its stage and that rules changes match IDEA.md's tables. Merge as soon as it's approved: with two days, a PR shouldn't sit for hours.
+7. Pull `main` before starting your next stage. **Everyone pulls right after Stage 9 merges.**
 
 Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts there. Resolve them by keeping both sets of ticks.
 

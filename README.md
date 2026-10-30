@@ -26,11 +26,13 @@ Both `.env` files are gitignored. Get the keys from a teammate privately and nev
 
 | Variable | Needed for |
 | --- | --- |
-| `SUPABASE_URL` | The API, `seed:audio`, `make:standins` and the API round-trip test |
+| `SUPABASE_URL` | The API, the scripts and the API round-trip test. On `main`, use the **full-build** Supabase project, never the MVP's. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Same. Server-side only: never put it in `apps/web`. |
-| `SARVAM_API_KEY` | `make:standins` only |
-| `ANTHROPIC_API_KEY` | Rewording the morning brief (`POST /brief/reword`). Use the `triveni-app` workspace key. Without it the app shows the template brief. |
-| `TTS_URL` | Optional. The Bhili speech service, `http://localhost:8790` by default. |
+| `SARVAM_API_KEY` | `make:standins`; Hindi speech through `/speak` (Stage 18); Saaras voice notes and parent replies (Stages 21, 22) |
+| `ANTHROPIC_API_KEY` | Slate reading, rewording the brief, and the other Claude calls. Use the `triveni-app` workspace key. Without it the app shows the template brief. |
+| `TTS_URL` | Optional. The Bhili speech service: `http://localhost:8790` by default, or the Modal URL (Stage 18). |
+| `TTS_TOKEN` | The shared secret for the Modal speech service (Stage 18). |
+| `WA_PHONE_NUMBER_ID`, `WA_TOKEN`, `WA_APP_SECRET`, `WA_VERIFY_TOKEN`, `WA_TEMPLATE_NAME` | WhatsApp Cloud API (Stage 22). `WA_TOKEN` is a System User permanent token. |
 | `WEB_ORIGIN` | Deployed only: the web app's address, which the API accepts requests from. `http://localhost:5173` by default. |
 
 `apps/web/.env`:
@@ -39,6 +41,7 @@ Both `.env` files are gitignored. Get the keys from a teammate privately and nev
 | --- | --- |
 | `VITE_API_URL` | `http://localhost:8787` locally |
 | `VITE_AUDIO_BASE_URL` | `https://<project-ref>.supabase.co/storage/v1/object/public/audio/` (public bucket URL, with the trailing slash) |
+| `VITE_WA_NUMBER` | The WhatsApp test number, digits with the country code, for the parent opt-in QR codes (Stage 22) |
 
 Vite reads `apps/web/.env` only at startup, so restart the dev server after changing it.
 
