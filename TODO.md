@@ -487,7 +487,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 18: Speech everywhere
+## [x] Stage 18: Speech everywhere
 
 **Lane:** C. **Depends on:** nothing. Start at once.
 
@@ -512,10 +512,24 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - **`warm:speech --check`:** it asks the API (`API_URL`, so it also works against the deployed one) for each text without making anything, and lists every one that isn't cached. Stages 19 and 23 use it.
 - **Faster warming (optional, free):** run `tts_server.py` in a Google Colab or Kaggle notebook on its free GPU, expose it with `cloudflared tunnel --url http://localhost:8790`, and set `TTS_URL` to the tunnel's address while warming. Add a short how-to in `services/bhili/README.md`. Use it only for warming, never as part of the demo.
 
+**As built:**
+- **`/speak`** takes `{ text, language, cachedOnly }`.
+  - Clips are cached at `tts/<language>/<sha256 of text>` (`.wav` for Bhili, `.mp3` for Hindi).
+  - Uncached Bhili with no speech service answers **503**. A Bulbul failure answers 502.
+- **Bulbul:** the call lives in `apps/api/src/bulbul.ts`, shared with `make:standins`.
+- **Web:**
+  - `speak(text, language)` and `SpeakButton language`.
+  - `speechProblem` turns a 503 into "This Bhili clip hasn't been made yet".
+  - **Read aloud:** `ReadAloud` on the Hindi brief asks Bulbul only when tapped.
+- **`warm:speech`:** covers Bhili (C questions, key words, reteaching) and the Hindi key words. `--check` lists what's missing, and exits 1 if anything is.
+- **Free-GPU warming:** `services/bhili/README.md` has the Colab/Kaggle how-to.
+- **B clips:** the three Hindi B clips were copied from the MVP's bucket to the full-build one.
+- **Not done yet:** nothing is warmed. That happens after Stage 19's content, when `warm:speech --check` reports 18 of 18 missing today.
+
 **Verify:**
-- [ ] Hindi text speaks through Bulbul, and a second request is served from the cache.
-- [ ] With the speech service stopped, an uncached Bhili text gets the 503 message in the app, and a cached one still plays.
-- [ ] `warm:speech --check` lists exactly the uncached texts.
+- [x] Hindi text speaks through Bulbul, and a second request is served from the cache.
+- [x] With the speech service stopped, an uncached Bhili text gets the 503 message in the app, and a cached one still plays.
+- [x] `warm:speech --check` lists exactly the uncached texts.
 
 ---
 

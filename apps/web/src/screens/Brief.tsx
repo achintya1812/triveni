@@ -15,7 +15,7 @@ import {
 } from "@triveni/core";
 import { useEffect, useState } from "react";
 import { symbols } from "@/components/AnswerGrid";
-import { ClipButton, SpeakButton } from "@/components/ClipButton";
+import { ClipButton, ReadAloud, SpeakButton } from "@/components/ClipButton";
 import { Button } from "@/components/ui/button";
 import { versionsFor } from "@/check";
 import { content, useClassData } from "@/classData";
@@ -80,6 +80,7 @@ function Reworded({ template, language }: { template: string; language: BriefLan
       <p className="text-xs text-muted-foreground">
         {text ? "Reworded by Claude." : failed ? "Couldn't reach Claude, so this is the template." : "Rewording…"}
       </p>
+      {language === "hi" && <ReadAloud text={text ?? template} />}
     </section>
   );
 }

@@ -43,7 +43,7 @@ Full build (on `main`; lane in brackets):
 15. [done] Results, brief and quick re-check [B]: all groups with causes and actions, a daily brief screen with read-aloud, tap re-check. Verify: Ravi confirmed, Meena never taught; a re-check confirms Sita; the brief works with the API off.
 16. Group time [B]: probe runner, reteaching kit in the profile's language, listening check. Verify: Arjun's restart point; the kit's language follows the profile.
 17. Offline [B, first to cut]: PWA cache and Dexie outbox for writes, photos and voice notes. Verify: an airplane-mode check syncs on reconnect.
-18. Speech everywhere [C]: `/speak` with `language` (Bulbul for Hindi, made on request), a clear 503 for uncached Bhili, `warm:speech --check`, an optional Colab/Kaggle warming how-to. Verify: Hindi is cached; uncached Bhili shows the message; the check lists exactly the uncached texts.
+18. [done] Speech everywhere [C]: `/speak` with `language` (Bulbul for Hindi, made on request), a clear 503 for uncached Bhili, `warm:speech --check`, an optional Colab/Kaggle warming how-to. Verify: Hindi is cached; uncached Bhili shows the message; the check lists exactly the uncached texts.
 19. Full content [C]: two-digit subtraction, pages, weekly and re-check questions, wrong-answer lists, probes, kit, listening items, catch-up scripts; translated and warmed. Verify: parses; numbers survive translation; reviewed by a person.
 20. Slate reading v2 [C]: roster in each request, Devanagari rules, roll confidence, name matching, unplaced slates, per-roll accuracy. Verify: roll accuracy beats `mvp-demo-v1`; no slate goes to the wrong child.
 21. Voice notes [C]: record, Saaras, page → concept, Claude fallback. Verify: page and no-page notes both map correctly.

@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { AudioClip } from "@triveni/core";
 import { questions } from "@triveni/content";
+import { bulbul } from "../src/bulbul";
 import { db } from "../src/db";
 
 // Makes Sarvam Bulbul clips for the Hindi B questions, uploads them to the public `audio` bucket,
@@ -12,9 +13,6 @@ const manifest = fileURLToPath(new URL("../../../packages/content/data/audio.jso
 const clips = AudioClip.array().parse(JSON.parse(await readFile(manifest, "utf8")));
 const scripts = new Map(questions.map((q) => [q.B.audio, q.B.hindi]));
 
-const key = process.env.SARVAM_API_KEY;
-if (!key) throw new Error("Set SARVAM_API_KEY in apps/api/.env");
-
 const { data: bucket } = await db().storage.getBucket("audio");
 if (!bucket) {
   const { error } = await db().storage.createBucket("audio", { public: true });
@@ -24,18 +22,8 @@ if (!bucket) {
 for (const clip of clips) {
   const text = scripts.get(clip.id);
   if (!text || clip.file) continue;
-  const res = await fetch("https://api.sarvam.ai/text-to-speech", {
-    method: "POST",
-    headers: { "api-subscription-key": key, "Content-Type": "application/json" },
-    body: JSON.stringify({ text, language_code: "hi-IN", model: "bulbul:v3", output_audio_codec: "mp3" }),
-  });
-  if (!res.ok) throw new Error(`Sarvam said ${res.status} for ${clip.id}: ${await res.text()}`);
-  const { audios } = (await res.json()) as { audios: string[] };
-
   const file = `standins/${clip.id}.mp3`;
-  const { error } = await db()
-    .storage.from("audio")
-    .upload(file, Buffer.from(audios.join(""), "base64"), { contentType: "audio/mpeg", upsert: true });
+  const { error } = await db().storage.from("audio").upload(file, await bulbul(text), { contentType: "audio/mpeg", upsert: true });
   if (error) throw new Error(error.message);
   clip.file = file;
   clip.source = "bulbul";
