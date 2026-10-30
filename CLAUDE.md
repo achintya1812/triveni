@@ -3,17 +3,25 @@
 Refer to resources/IDEA.md and resources/TECH.md for the core app idea and tech stack. 
 
 ## Current Scope
-Build only what IDEA.md "Bare minimum MVP" lists. Everything under "Left out of the MVP" (probe, language profile, offline outbox, multi-language classes, voice notes...) is out of scope unless I ask. If a task seems to need it, stop and ask.
+The MVP is done and frozen on the `mvp` branch (tag `mvp-demo-v1`). `main` is the full hackathon build: IDEA.md "Full hackathon build", plus the language profile with its listening check, word evidence, a Hindi interface and rotating version order. Three teammates build it in parallel lanes (see TODO.md). Build only your stage. If a task seems to need another stage's work, or anything IDEA.md shows only as a design (the teacher's language learning, the community recorder bot), stop and ask.
 
-MVP decisions:
-- Data: Supabase + Dexie. Writes go to Dexie, then straight to the API (no outbox yet).
-- Answers: tap-to-enter grid first; Claude slate-photo reading comes later (Stage 7).
-- UI in English. No i18next, PWA/offline, voice notes or WhatsApp. Stretch goals only when I ask.
-- Audio is generated, not recorded: B from Bulbul files, C spoken live in Bhili by `services/bhili` (AI4Bharat bhili-tts) through `POST /speak`. No human-only rule.
+Full-build decisions:
+- One language pair (Hindi and Bhili) and one concept chain: numbers to 20, subtraction within 20, borrowing, two-digit subtraction.
+- No login: one teacher and one demo class.
+- Data: a separate full-build Supabase project, plus Dexie (database `triveni-full`). Writes go to Dexie, then the API; Stage 17 adds the outbox.
+- Audio is generated, not recorded:
+  - Hindi from Sarvam Bulbul: the B files, and `/speak` with `language: "hindi"`.
+  - Bhili from bhili-tts on Modal, through `/speak`.
+  - No human-only rule.
+- Interface in Hindi by default, with an English toggle (i18next).
+- Parents are reached through the Meta WhatsApp Cloud API, with the Twilio sandbox as the fallback.
+- Feature work never goes to `mvp`. Fixes are cherry-picked there only when I ask.
 
 ## Build Stages
-We build one stage at a time. A stage is done only when its verify check passes.
-Detailed instructions for every remaining stage, plus repo conventions, are in TODO.md. Read it before starting a stage, and when a stage is done, mark it `[done]` here and tick it in TODO.md.
+We build one stage at a time per person. A stage is done only when its verify check passes.
+Detailed instructions for every stage, the lanes, the cut line and repo conventions are in TODO.md. Read it before starting a stage, and when a stage is done, mark it `[done]` here and tick it in TODO.md.
+
+MVP (done, on `mvp`):
 
 0. [done] Scaffold: pnpm workspace (`apps/web`, `apps/api`, `packages/core`, `packages/content`). Verify: typecheck + tests pass, web shows a page, `GET /health` is ok.
 1. [done] Content + types: Zod schemas in core; concept map, A/B/C questions, key words, practice stories, audio manifest in content. Verify: all content parses; every audio ref resolves.
@@ -24,6 +32,23 @@ Detailed instructions for every remaining stage, plus repo conventions, are in T
 6. [done] Results + brief: five groups with what to do; template brief, reworded by Claude with template fallback. Verify: Ravi → Language gap, Meena → Never taught; works with API off.
 7. [done] Slate photo reading: camera, resize, Claude structured read into the grid, flag low-confidence/missing/duplicate rolls, accuracy script. Verify: sample photos fill the grid with flags.
 8. [done] Deploy + demo: Render (API) + Vercel (web) from the `mvp` branch, every Bhili clip cached beforehand. Verify: 3-minute demo runs on a phone.
+
+Full build (on `main`; lane in brackets):
+9. Contracts [A]: full-build record and content schemas, migration, Dexie `triveni-full`, API routes split into `routes/`. Verify: migrations apply to the full-build project; every entity round-trips.
+10. Rules: marking and 8 patterns [A]: wrong-answer causes, copied numbers as no data, all 8 patterns, absent on check day, "same pattern twice", version rotation, concept picking. Verify: Vitest covers each.
+11. Running record + daily brief [A]: concept status, root of a concept gap, word evidence, language profile, buddies, daily brief (en/hi). Verify: Meena and Arjun → root borrowing; Ravi confirmed across two weeks; brief has all sections.
+12. Demo seed v2 + simulation [A]: 20 children, 3 weeks, last week's check, planted causes; `simulate` script. Verify: planted children land correctly; the simulation prints an accuracy table.
+13. Hindi interface [B]: i18next, a namespace per screen, Hindi default with an English toggle. Verify: every screen fully in both languages.
+14. Check runner v2 [B]: draft kept in Dexie, 1–2 concepts, rotated order, gallery multi-pick, in-app multi-shot camera, parallel uploads. Verify: a 2-concept check on a phone; the draft survives a screen switch; 5 gallery photos all read.
+15. Results, brief and quick re-check [B]: all groups with causes and actions, a daily brief screen with read-aloud, tap re-check. Verify: Ravi confirmed, Meena never taught; a re-check confirms Sita; the brief works with the API off.
+16. Group time [B]: probe runner, reteaching kit in the profile's language, listening check. Verify: Arjun's restart point; the kit's language follows the profile.
+17. Offline [B, first to cut]: PWA cache and Dexie outbox for writes, photos and voice notes. Verify: an airplane-mode check syncs on reconnect.
+18. Speech everywhere [C]: bhili-tts on Modal, `/speak` with `language` (Bulbul for Hindi). Verify: a new Bhili sentence comes back in under 10 s once Modal is warm; Hindi is cached.
+19. Full content [C]: two-digit subtraction, pages, weekly and re-check questions, wrong-answer lists, probes, kit, listening items, catch-up scripts; translated and warmed. Verify: parses; numbers survive translation; reviewed by a person.
+20. Slate reading v2 [C]: roster in each request, Devanagari rules, roll confidence, name matching, unplaced slates, per-roll accuracy. Verify: roll accuracy beats `mvp-demo-v1`; no slate goes to the wrong child.
+21. Voice notes [C]: record, Saaras, page → concept, Claude fallback. Verify: page and no-page notes both map correctly.
+22. WhatsApp parent notes [C]: QR opt-in, 24-hour window with a template, `.ogg` voice notes, webhook for replies and statuses. Verify: a demo phone receives a Bhili catch-up voice note; replies are stored.
+23. Deploy + demo [all]: a second Render service and Vercel project from `main`, Modal kept warm, design slides, the 5-minute demo. Verify: the demo runs twice in a row on a phone.
 
 Follow these rules when you are building: 
 
