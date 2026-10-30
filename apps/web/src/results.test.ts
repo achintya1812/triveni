@@ -1,39 +1,57 @@
 import { questions } from "@triveni/content";
-import type { Attendance } from "@triveni/core";
+import type { Answer, Check } from "@triveni/core";
 import { describe, expect, it } from "vitest";
-import { type GridValues, markGrid } from "./check";
-import { placeChildren } from "./results";
-import { demoChildren, demoDays } from "./seed";
+import { type Grid, markGrid } from "./check";
+import { placedOnRow } from "./results";
+import { demoCheck, demoChildren, demoData } from "./seed";
 
-// The Stage 6 check: a borrowing check on the demo class (A 9, B 8, C 6).
-const question = questions.find((q) => q.conceptId === "borrowing")!;
-const lessons = demoDays.flatMap((d) => (d.lesson ? [d.lesson] : []));
-const attendance: Attendance[] = demoDays.flatMap((d) =>
-  demoChildren.map((c) => ({ classId: c.classId, date: d.date, childId: c.id, present: !d.absentChildIds.includes(c.id) })),
-);
+// This week's live check on the demo class (2 November 2026): borrowing (14 − 5 = 9, B 8, C 6) and
+// subtraction within 20 (17 − 4 = 13, B 15, C 11).
+const live: Check = { ...demoCheck, id: "00000000-0000-4000-8000-000000000301", date: "2026-11-02", questionIds: ["q-borrowing", "q-subtraction-within-20"] };
 const id = (name: string) => demoChildren.find((c) => c.name === name)!.id;
+const borrowing: Grid["values"] = {
+  [id("Ravi")]: { A: "9", B: "22", C: "6" }, // a language gap again, in a new week
+  [id("Meena")]: { A: "11", B: "9", C: "4" }, // still never taught
+  [id("Sita")]: { A: "9", B: "22", C: "4" },
+  [id("Kavita")]: { A: "9", B: "8", C: "6" },
+  [id("Pooja")]: { A: "9", B: "15" }, // copied 15 from the question
+};
+const children = demoChildren.filter((c) => c.id in borrowing);
+const answers: Answer[] = [
+  ...markGrid(live.id, questions.find((q) => q.id === "q-borrowing")!, children, borrowing, {}, 1),
+  ...markGrid(live.id, questions.find((q) => q.id === "q-subtraction-within-20")!, children, {}, {}, 2),
+];
+const data = demoData();
+const withLive = { ...data, checks: [...data.checks, live], answers: [...data.answers, ...answers] };
+const placed = placedOnRow(withLive, live, 1);
+const of = (name: string) => placed.find((p) => p.child.name === name)!;
 
-describe("placeChildren on the demo class", () => {
-  const values: GridValues = {
-    [id("Ravi")]: { A: "9", B: "21", C: "6" }, // right, wrong, right
-    [id("Meena")]: { A: "7", B: "21", C: "11" }, // all wrong, absent both borrowing days
-    [id("Sunil")]: { A: "7", B: "21", C: "11" }, // all wrong, present
-    [id("Kavita")]: { A: "9", B: "8", C: "6" },
-    [id("Pooja")]: { A: "9", B: "21" }, // Hindi at home: no C
-  };
-  const children = demoChildren.filter((c) => c.id in values);
-  const placed = placeChildren(question, children, markGrid("check", question, children, values), lessons, attendance, "2026-10-30");
-  const placement = (name: string) => placed.find((p) => p.child.name === name)?.placement;
+describe("placedOnRow on the demo class, after this week's live check", () => {
+  it("puts Ravi in a confirmed language gap", () => {
+    expect(of("Ravi")).toMatchObject({ placement: "language_gap", pending: null });
+  });
 
-  it("puts Ravi in Language gap", () => expect(placement("Ravi")).toBe("language_gap"));
-  it("puts Meena in Never taught", () => expect(placement("Meena")).toBe("never_taught"));
-  it("puts a present child who got all three wrong in Taught but not learned", () =>
-    expect(placement("Sunil")).toBe("taught_not_learned"));
-  it("puts a child with all three right in Ready", () => expect(placement("Kavita")).toBe("ready"));
-  it("treats A right, B wrong as a word-problem gap for a Hindi-home child", () =>
-    expect(placement("Pooja")).toBe("word_problem_gap"));
+  it("puts Meena in Never taught", () => {
+    expect(of("Meena").placement).toBe("never_taught");
+  });
 
-  it("leaves out children with no answers in the check", () => {
-    expect(placeChildren(question, demoChildren, [], lessons, attendance, "2026-10-30")).toEqual([]);
+  it("confirms Sita's word-problem gap, seen in last week's check too", () => {
+    expect(of("Sita")).toMatchObject({ placement: "word_problem_gap", pending: null });
+  });
+
+  it("explains a copied number", () => {
+    expect(of("Pooja")).toMatchObject({ placement: "unclear", notes: ["B: wrote 15, a number copied from the question"] });
+  });
+
+  it("only places the children on that row", () => {
+    expect(placed.map((p) => p.child.name).sort()).toEqual(["Kavita", "Meena", "Pooja", "Ravi", "Sita"]);
+    expect(placedOnRow(withLive, live, 2)).toHaveLength(5); // all blank: unclear
+  });
+
+  it("marks a pattern seen once as waiting for a re-check, and a concept gap as waiting for the probe", () => {
+    const lastWeek = placedOnRow(data, demoCheck, 2);
+    const p = (name: string) => lastWeek.find((x) => x.child.name === name)!;
+    expect(p("Sita").pending).toBe("recheck");
+    expect(p("Arjun")).toMatchObject({ placement: "taught_not_learned", pending: "probe" });
   });
 });
