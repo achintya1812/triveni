@@ -462,7 +462,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 **Goal:** all the content the full build needs, reviewed by people and with every clip cached.
 
-**You need:** the textbook and page numbers for each concept, and a Hindi reviewer (and a Bhili reviewer, if possible) for about an hour.
+**You need:** a Hindi reviewer (and a Bhili reviewer, if possible) for about an hour. The textbook pages and the Hindi the books use are in `resources/TEXTBOOKS.md`: model the questions and key words on them. `concepts.json` already has the Class 2 `pages`; add `[61, 62, 63, 67, 68]` for two-digit subtraction.
 
 **Build** in `packages/content/data/`:
 - **Concepts:**
@@ -541,7 +541,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - The note uploads to `POST /voice-notes`, in `routes/voice.ts`.
 - **Server:**
   1. Store the audio in `voice-notes`.
-  2. Send it to Sarvam Saaras (Hindi, with the concept names and "page", "पेज", "पृष्ठ" as key terms).
+  2. Send it to Sarvam's speech-to-text with `model: "saaras:v3"`, in code-mixed mode (teachers mix Hindi and English: "borrowing, page 65"), with the concept names and "page", "पेज", "पृष्ठ" as key terms if the API takes them. A request takes audio under 30 seconds.
   3. Look for a page number in the transcript and match it to a concept's `pages`.
   4. With no page number, ask Claude (`claude-opus-5-5`, low effort, structured output limited to the concept ids, or none).
   5. Return `{ transcript, page, conceptId, via: "page" | "claude" }`.
@@ -549,7 +549,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - **Accuracy script:** `apps/api/scripts/voice-accuracy.ts` runs the test notes and prints the matched concept against the true one.
 
 **Verify:**
-- [ ] "Borrowing, page 34" maps by page, and a note with no page maps through Claude, both to the right concept.
+- [ ] "Borrowing, page 65" maps by page, and a note with no page maps through Claude, both to the right concept.
 - [ ] The voice-accuracy script runs on the test notes, and the PR gives the result.
 
 ---
@@ -632,7 +632,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - the teacher's language learning (tomorrow's words, spaced review)
   - the community audio library (the recorder bot)
 - **Demo script** (about 5 minutes), written into README:
-  1. Load the demo class. Log today with a voice note ("borrowing, page 34").
+  1. Load the demo class. Log today with a voice note ("borrowing, page 65", Jyoti's garland story in the Class 2 book).
   2. Run a two-concept check in this week's rotated order. Show A, play B, then C in Bhili.
   3. Choose the slate photos from the gallery; fix one flagged box and assign one unplaced slate.
   4. On the results, Ravi is in a confirmed language gap with his key words; Meena is in Never taught; Arjun's 11 points to borrowing.
@@ -652,7 +652,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - [ ] A new Supabase project for the full build (URL and service-role key, shared privately).
 - [ ] A Sarvam key with Saaras speech-to-text (Stages 21, 22). Confirm the Bulbul version.
 - [ ] A Telegram bot made with @BotFather: its token and username (Stage 22).
-- [ ] The textbook and page numbers for the 4 concepts (Stages 19, 21).
+- [x] The textbook and page numbers for the 4 concepts (Stages 19, 21): NCERT Class 2, in `resources/TEXTBOOKS.md`.
 - [ ] The notebook slate test set with `answers.csv` (Stage 20).
 - [ ] About 10 recorded voice-note test files (Stage 21).
 - [ ] A Hindi speaker reviews the new questions, wrong-answer lists, kit and interface text on Day 2.

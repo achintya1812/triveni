@@ -16,7 +16,7 @@ Teacher's phone (offline web app)          Server                              O
 ┌─────────────────────────────┐   sync    ┌──────────────────────────┐       ┌──────────────────────────┐
 │ React app, works offline    │ ───────▶  │ Hono API (Node, TS)      │ ────▶ │ Claude API               │
 │ IndexedDB (Dexie): records  │ ◀───────  │  · slate reading         │       │   slates, briefs, content│
-│ Rules engine (shared code)  │           │  · brief wording         │ ────▶ │ Sarvam Saaras v4         │
+│ Rules engine (shared code)  │           │  · brief wording         │ ────▶ │ Sarvam Saaras v3         │
 │ Cached audio clips          │           │  · voice note → text     │       │   speech to text         │
 └─────────────────────────────┘           │  · Telegram webhook      │ ────▶ │ Sarvam Bulbul            │
                                           └──────────┬───────────────┘       │   Hindi text to speech   │
@@ -73,7 +73,7 @@ SDK: `@anthropic-ai/sdk`, server-side only. Model: `claude-opus-5-5`.
 
 Requests use the server-side fallback option (`fallbacks: "default"`), so a declined request is retried on another model automatically.
 
-### Sarvam Saaras v4 (speech to text)
+### Sarvam Saaras v3 (speech to text)
 
 | Job | How |
 | --- | --- |
@@ -87,7 +87,7 @@ Bulbul speaks all the Hindi audio: the B questions, reading the morning brief al
 
 The B clips are generated once by `pnpm --filter @triveni/api make:standins`, stored in Supabase Storage and listed in the audio manifest. Only the morning brief's audio is generated daily on the server.
 
-Check in the Sarvam console whether `bulbul:v4` is available on the standalone text-to-speech API. As of October 2026, the changelog lists it only for Voice Agents, with `bulbul:v3` remaining on the text-to-speech API. Use v3 if v4 is not available.
+We use `bulbul:v3`, the model on Sarvam's text-to-speech API. (`bulbul:v4` was listed only for Voice Agents as of October 2026.) It has cost about ₹2 for 700 characters so far.
 
 ### Bhili text to speech (AI4Bharat bhili-tts)
 
@@ -179,7 +179,7 @@ About $5 for the API host. Supabase, Vercel or Cloudflare Pages, and the Telegra
 | --- | --- | --- |
 | App | Web app (offline optional) | PWA with offline caching and a sync outbox |
 | Claude | Slate reading, brief wording | Plus content batches, concept mapping, wrong-answer explanations |
-| Saaras v4 | Not used (concept dropdown) | Voice notes and spoken probe logs |
+| Saaras v3 | Not used (concept dropdown) | Voice notes and spoken probe logs |
 | Bulbul | B questions | Plus Hindi key-word audio, reteaching audio, brief read aloud, Hindi parent notes |
 | bhili-tts | C questions, spoken live | All Bhili audio |
 | Parent messaging | Optional: one parent voice note | Telegram bot: parents and catch-up lessons (the recorder bot is a design only) |
@@ -188,7 +188,7 @@ About $5 for the API host. Supabase, Vercel or Cloudflare Pages, and the Telegra
 ## Open checks before building
 
 1. Slate-reading accuracy on real children's handwriting (the slate-reading test above).
-2. Whether `bulbul:v4` is on Sarvam's text-to-speech API, or only `bulbul:v3`.
+2. Bulbul: settled, `bulbul:v3`. Speech to text: `saaras:v3`, Sarvam's current model (Saarika is legacy).
 3. Sarvam's current speech-to-text and text-to-speech prices.
 4. Parent messaging: WhatsApp was blocked (a Meta account lock; Twilio trials are template-only), so we use a Telegram bot.
 5. A Bhili speaker from the target area to review the machine-translated Bhili text and how bhili-tts says it.
