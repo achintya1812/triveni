@@ -106,7 +106,7 @@ Known limits: B (Bulbul) and C (bhili-tts) are different voices, so a difference
 ## WhatsApp
 
 - **Twilio WhatsApp sandbox**, using the `twilio` npm package from `apps/api/src/routes/whatsapp.ts`. We first chose Meta's Cloud API, but a brand-new Meta business account was locked (error 131031), so we switched. Twilio's sandbox works within minutes and is enough for the demo.
-- **Sandbox rules:** a phone must send the sandbox's `join <two-words>` phrase to +1 415 523 8886 before it can receive anything, and must rejoin every 3 days. The sandbox sends about one message every 3 seconds.
+- **Sandbox rules:** a phone must send the sandbox's join phrase to our Twilio WhatsApp number (+1 737 250 8034) before it can receive anything, and must rejoin every 3 days. The sandbox sends about one message every 3 seconds.
 - **Opt-in:** after joining the sandbox, the parent scans the child's QR code (`JOIN <code>`), which records their number and consent and opens WhatsApp's 24-hour window.
 - **24-hour window:** inside it we send voice notes and text freely. Outside it the sandbox allows only Twilio's three ready-made templates, so messages wait until the parent writes again.
 - Voice notes are `.ogg` (Opus), converted once with `ffmpeg-static` from the cached Bulbul or bhili-tts audio, and sent from a public URL in the `audio` bucket.

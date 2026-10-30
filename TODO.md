@@ -549,11 +549,11 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - **In `apps/api/.env`:**
   - `TWILIO_ACCOUNT_SID`
   - `TWILIO_AUTH_TOKEN`
-  - `TWILIO_WHATSAPP_FROM=whatsapp:+14155238886`
+  - `TWILIO_WHATSAPP_FROM`: `whatsapp:+` and the number on the Console's WhatsApp page. Ours is `whatsapp:+17372508034`; Twilio's classic sandbox number is +1 415 523 8886.
   - `PUBLIC_API_URL`: the address Twilio calls (a tunnel while developing, the Render URL once deployed). The signature check needs the exact URL.
 - **In `apps/web/.env`:**
-  - `VITE_WA_NUMBER=14155238886`
-  - `VITE_WA_SANDBOX_JOIN`: the sandbox's `join <two-words>` phrase, from the Twilio Console.
+  - `VITE_WA_NUMBER`: the same number, digits only (`17372508034`).
+  - `VITE_WA_SANDBOX_JOIN="join twilio-trial"`: the join phrase. Keep the quotes, because it contains a space.
 - **Every demo phone** has joined the sandbox. Membership lasts 3 days, so rejoin on the morning of the demo.
 
 **Sandbox limits to design around:**
