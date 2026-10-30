@@ -84,7 +84,7 @@ flowchart TD
     NBC -- no --> Noise[Inconsistent: no label, check again]
     NXC -- yes --> LangSym[Language gap and symbol gap]
     NXC -- no --> Concept{Concept gap: absent when it was taught?}
-    Concept -- yes --> Never[Never taught: recap and WhatsApp catch-up]
+    Concept -- yes --> Never[Never taught: recap and Telegram catch-up]
     Concept -- no --> Root[Find the root] --> Probe[Step-down probe] --> Profile[Language profile] --> Kit[Reteaching kit]
 ```
 
@@ -180,7 +180,7 @@ Together, these split failure into two cases that need opposite responses:
 | Present when it was taught | Learned it: move on | **Taught but not learned:** reteach with a different method, form or language, since repeating the same lesson will likely fail again |
 | Absent when it was taught | Picked it up elsewhere: move on | **Never taught:** give the normal lesson, which may be all they need |
 
-Children who were never taught get the normal lesson as a recap in group time, and a catch-up on WhatsApp: a home-language voice note to the parent that walks through the lesson with a household activity. They are checked on the concept at the next weekly check.
+Children who were never taught get the normal lesson as a recap in group time, and a catch-up on Telegram: a home-language voice note to the parent that walks through the lesson with a household activity. They are checked on the concept at the next weekly check.
 
 A child who is absent **on check day** is not marked wrong. If they also missed the lesson, they are treated as never taught, as above. If they were present for the lesson, their result is simply "not checked yet", and they are included in the next weekly check.
 
@@ -259,14 +259,14 @@ Other home languages, such as Gondi and Kurukh, need their own speech models bef
 
 ## How it runs
 
-Triveni uses two channels: an app for everything that happens in class, and WhatsApp for everyone outside it.
+Triveni uses two channels: an app for everything that happens in class, and a Telegram bot for everyone outside it. Telegram's bot platform is free and needs no business approval. Fewer rural parents use Telegram than WhatsApp, which is a known limit.
 
 | Who | Channel | Why |
 | --- | --- | --- |
 | Teacher, in class | An installable web app (PWA) that works offline | The check has to play the B and C clips in order with no signal, and she needs the attendance list, the handwriting review screen and a cached morning brief. A web app installs on any Android phone without the Play Store and keeps working from data saved on the phone. |
-| Teacher, outside class (optional) | WhatsApp | The morning brief also arrives as a WhatsApp message, so she can read it anywhere. |
-| Parents | WhatsApp | The home-language voice note with an activity, an optional reply (a thumbs-up or a voice note of the child), and the home-language check for children whose language has no class recording yet. The teacher signs parents up with a click-to-chat QR code. |
-| Community recorders | A WhatsApp bot | The bot sends a script line, the speaker replies with a voice note, and a second speaker approves or rejects it with a button. |
+| Teacher, outside class (optional) | Telegram | The morning brief also arrives as a Telegram message, so she can read it anywhere. |
+| Parents | Telegram | The home-language voice note with an activity, an optional reply (a thumbs-up or a voice note of the child), and the home-language check for children whose language has no class recording yet. The teacher signs parents up with a QR code that opens the bot. |
+| Community recorders | A Telegram bot | The bot sends a script line, the speaker replies with a voice note, and a second speaker approves or rejects it with a button. |
 
 The grouping rules run on the phone itself, so the morning brief is always ready, built from a fixed template. When there is a signal, Claude rewrites it in plainer words. Reading handwriting from photos, turning voice notes into text and rewording the brief are the only steps that wait for a signal.
 
@@ -321,7 +321,7 @@ If time runs short, we fall back to the bare minimum MVP below. The full build c
 - Tap-to-mark attendance, and voice notes turned into text with Sarvam Saaras and matched by page number
 - The morning brief
 - A reteaching kit for one gap
-- Parent voice notes on WhatsApp, including catch-up lessons for missed concepts
+- Parent voice notes on Telegram, including catch-up lessons for missed concepts
 - Hindi audio from Sarvam Bulbul: how key words sound, the brief read aloud and voice notes to Hindi-speaking parents
 
 **Shown as designs:** the teacher's language learning, the community audio library.
@@ -369,12 +369,12 @@ Without the "same pattern twice" rule (stretch goal 3), a single check places a 
 ### Stretch goals, in order
 
 1. Wrong-answer lookup (21 means the child added; 11 means a borrowing mistake).
-2. A WhatsApp voice note to the parent.
+2. A Telegram voice note to the parent.
 3. The rule that a pattern must appear twice before a child is placed in a group.
 
 ### Left out of the MVP
 
-These stay as the full vision described above: the symbol gap and the other mixed patterns, the step-down probe, the language profile and listening check, word-by-word evidence, quick re-checks, classes with more than one home language, rotating the order of versions, voice notes, offline-first design, the teacher's language learning, the community recording bot and WhatsApp catch-up lessons.
+These stay as the full vision described above: the symbol gap and the other mixed patterns, the step-down probe, the language profile and listening check, word-by-word evidence, quick re-checks, classes with more than one home language, rotating the order of versions, voice notes, offline-first design, the teacher's language learning, the community recording bot and Telegram catch-up lessons.
 
 ### Demo (about 3 minutes)
 
