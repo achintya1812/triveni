@@ -83,7 +83,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 9: Contracts
+## [x] Stage 9: Contracts
 
 **Lane:** A. **Depends on:** nothing. **Blocks:** most later stages, so keep it small and merge it fast.
 
@@ -101,9 +101,9 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
    | `Lesson` | Add `source` (`dropdown` or `voice`), `transcript` (nullable) and `page` (int, nullable). |
    | `Check` | Replace `conceptId` with `questionIds` (1–2 ids; row *n* on the slate asks `questionIds[n-1]`, and the concept comes from the question). Add `kind` (`weekly` or `recheck`), `versionOrder` (a permutation of `A`, `B`, `C`) and `childIds` (null for the whole class, or the children in a re-check). |
    | `Answer` | Add `row` (1 or 2) and `cause` (the id of the matched wrong answer, nullable). Tap-marked answers (re-check, Grade 1 oral check) have `value: null` and a status of `right` or `wrong`. |
-   | `ProbeResult` (new) | `id`, `childId`, `conceptId` (the concept the child failed), `date`, `passedAtOnce`, `restartConceptId` (nullable), `form` (`concrete`, `pictorial` or `abstract`, nullable) |
-   | `ListeningResult` (new) | `childId`, `date`, `itemId`, `language`, `value` (nullable), `status` |
-   | `ParentMessage` (new) | `id`, `childId`, `kind` (`catch_up` or `activity`), `conceptId`, `file` (audio bucket path), `status` (`queued`, `sent` or `failed`; Telegram has no delivery or read receipts for bots), `telegramMessageId` (nullable), `sentAt` (nullable) |
+   | `ProbeResult` (new) | `id`, `classId`, `childId`, `conceptId` (the concept the child failed), `date`, `passedAtOnce`, `restartConceptId` (nullable), `form` (`concrete`, `pictorial` or `abstract`, nullable) |
+   | `ListeningResult` (new) | `classId`, `childId`, `date`, `itemId`, `language`, `value` (nullable), `status` |
+   | `ParentMessage` (new) | `id`, `classId`, `childId`, `kind` (`catch_up` or `activity`), `conceptId`, `file` (audio bucket path), `status` (`queued`, `sent` or `failed`; Telegram has no delivery or read receipts for bots), `telegramMessageId` (nullable), `sentAt` (nullable) |
 
 2. **Content schemas** in `packages/core/src/content.ts`. Existing content must still parse, so new fields stay optional until Stage 19 fills them, then become required in 19.
 
@@ -117,6 +117,19 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
    | `ListeningItem` (new) | `id`, `pictures` (4 entries, each `{ number, emoji, english }`), and a prompt for each language, `hindi: { text, answer }` and `bhili: { text, english, answer }`. The two prompts ask for different pictures, so a child can't copy from the first. |
 
    Export `kits` and `listeningItems` from `@triveni/content` (empty arrays until Stage 19).
+
+   **As built:**
+   - New records carry `classId` (like `Attendance`), so the API can list them by class.
+   - The new `Child` and `Lesson` fields have defaults (`null`, or `source: "dropdown"`), so the old shapes still parse.
+   - Content uses defaults where an empty value is natural (`pages`, `probe`, `use: "weekly"`, empty `wrongAnswers`) and makes `nameHi` and `catchUp` optional. Stage 19 tightens these.
+   - Shared enums `Version` and `Status`, and `ProbeForm`, are exported from core.
+   - Routes for the new records:
+     - `POST`/`GET /classes/:id/probes`
+     - `/classes/:id/listening` (bulk)
+     - `/classes/:id/parent-messages`
+     - `GET /classes/:id/checks`
+   - Shared route helpers are in `apps/api/src/http.ts`.
+   - The `Draft` type for Stage 14 is in `db.ts`.
 
 3. **Migration** `supabase/migrations/<timestamp>_full_build.sql`:
    - Add the new columns for `children`, `lessons`, `checks` and `answers`. On `checks`, drop `concept_id`. On `answers`, the primary key becomes `(check_id, child_id, row, version)`.
@@ -135,10 +148,10 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
    - Add a POST (upsert) and a GET for each new record.
 
 **Verify:**
-- [ ] `pnpm supabase db push` applies cleanly to the full-build project, and both buckets exist.
-- [ ] `app.test.ts` round-trips every entity, the new ones included, then deletes the test class.
-- [ ] Existing content still parses, and the existing screens still work with one row.
-- [ ] `pnpm typecheck` and `pnpm test` pass.
+- [x] `pnpm supabase db push` applies cleanly to the full-build project, and both buckets exist.
+- [x] `app.test.ts` round-trips every entity, the new ones included, then deletes the test class.
+- [x] Existing content still parses, and the existing screens still work with one row.
+- [x] `pnpm typecheck` and `pnpm test` pass.
 
 ---
 
