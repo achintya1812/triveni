@@ -2,15 +2,20 @@ import Anthropic from "@anthropic-ai/sdk";
 
 let client: Anthropic | undefined;
 
-const INSTRUCTIONS = `You reword a morning brief for a Grade 1-3 teacher in a Hindi-medium government school in India. Many of the children speak Bhili at home.
-Rewrite it in plain, warm English that she can read in under a minute on her phone.
+const languages = {
+  en: "plain, warm English",
+  hi: "plain, warm Hindi, in Devanagari, the way a teacher talks (keep children's names as they are written)",
+};
+
+const instructions = (language: keyof typeof languages) => `You reword a morning brief for a Grade 1-3 teacher in a Hindi-medium government school in India. Many of the children speak Bhili at home.
+Rewrite it in ${languages[language]} that she can read in under a minute on her phone.
 Keep every child in the same group, and keep each group's action. Do not add children, groups, advice or numbers that are not in the brief.
-Refer to children by name or as "they", never as he or she: the brief does not say a child's gender.
+Refer to children by name or as "they", never as he or she: the brief does not say a child's gender. In Hindi, use the respectful plural for a child (वे, आए हैं), never a gendered singular.
 Write plain text: no markdown, no headings, and no list markers other than "-".`;
 
 // Rewords the template brief from @triveni/core. The phone keeps showing the template if this fails.
 // Created on first use, so tests that never call it run without ANTHROPIC_API_KEY.
-export async function rewordBrief(brief: string) {
+export async function rewordBrief(brief: string, language: keyof typeof languages) {
   client ??= new Anthropic({ timeout: 20_000, maxRetries: 1 });
   const response = await client.beta.messages.create({
     model: "claude-opus-5-5",
@@ -19,7 +24,7 @@ export async function rewordBrief(brief: string) {
     // On a safety decline, the API retries on Anthropic's recommended fallback model.
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",
-    system: INSTRUCTIONS,
+    system: instructions(language),
     messages: [{ role: "user", content: brief }],
   });
   if (response.stop_reason !== "end_turn") throw new Error(`Claude stopped with ${response.stop_reason}`);

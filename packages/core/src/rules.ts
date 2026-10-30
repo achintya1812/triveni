@@ -116,13 +116,27 @@ export function placeChild(
   attendance: AttendanceLog[],
   checkDate: string,
 ): Placement {
-  const taught = wasTaught(answers.childId, question.conceptId, lessons, attendance);
-  const absentToday = attendance.some((r) => r.date === checkDate && r.childId === answers.childId && !r.present);
+  const marks = {
+    a: markAnswer(answers.a, question, "A").status,
+    b: markAnswer(answers.b, question, "B").status,
+    c: answers.homeLanguage === "hindi" ? null : markAnswer(answers.c, question, "C").status,
+  };
+  return placeMarks(answers.childId, question.conceptId, marks, lessons, attendance, checkDate);
+}
+
+// The same, from marks already made: stored answers, or a re-check the teacher marked by tap.
+export function placeMarks(
+  childId: string,
+  conceptId: string,
+  marks: { a: Mark; b: Mark; c: Mark | null },
+  lessons: LessonLog[],
+  attendance: AttendanceLog[],
+  checkDate: string,
+): Placement {
+  const taught = wasTaught(childId, conceptId, lessons, attendance);
+  const absentToday = attendance.some((r) => r.date === checkDate && r.childId === childId && !r.present);
   if (absentToday) return taught ? "not_checked" : "never_taught";
-  const a = markAnswer(answers.a, question, "A").status;
-  const b = markAnswer(answers.b, question, "B").status;
-  const c = answers.homeLanguage === "hindi" ? null : markAnswer(answers.c, question, "C").status;
-  const group = patternGroup(a, b, c);
+  const group = patternGroup(marks.a, marks.b, marks.c);
   if (group !== "concept_gap") return group;
   return taught ? "taught_not_learned" : "never_taught";
 }
