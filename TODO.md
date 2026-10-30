@@ -1,6 +1,6 @@
 # Triveni: remaining work
 
-Stages 0–6 are done. This file is for whoever picks up a stage next, working with a Claude Code instance. Each stage below lists what to build, the files it touches, and how to check it is done.
+Stages 0–7 are done. This file is for whoever picks up a stage next, working with a Claude Code instance. Each stage below lists what to build, the files it touches, and how to check it is done.
 
 ## Workflow
 
@@ -204,7 +204,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ---
 
-## [ ] Stage 7: Slate photo reading
+## [x] Stage 7: Slate photo reading
 
 **Depends on:** Stage 5. This stage can run in parallel with Stage 6.
 
@@ -221,8 +221,8 @@ SUPABASE_SERVICE_ROLE_KEY=...
 - **Accuracy script:** `apps/api/scripts/slate-accuracy.ts` reads a folder of photos plus a CSV of the true answers, and prints the accuracy.
 
 **Verify:**
-- [ ] Sample photos (make your own: numbers written in boxes) fill the grid, and the flags appear.
-- [ ] The accuracy script runs on a sample folder.
+- [x] Sample photos (make your own: numbers written in boxes) fill the grid, and the flags appear.
+- [x] The accuracy script runs on a sample folder.
 
 ---
 
