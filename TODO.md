@@ -22,7 +22,7 @@ Each lane owns one set of folders, so parallel PRs rarely touch the same files.
 **Cut line.** If you're behind at midday on Day 2, drop from the top of this list down:
 1. Stage 17, offline and outbox.
 2. The simulation report in 12. Keep the seed.
-3. Stage 22, WhatsApp. Keep a "Share voice note" button that uses the Web Share API.
+3. Stage 22, Telegram. Keep a "Share voice note" button that uses the Web Share API.
 4. Stage 21, voice notes. Keep the concept dropdown.
 5. The listening check in 16. The language profile then comes from checks and the teacher's note alone.
 
@@ -97,13 +97,13 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
    | Schema | Change |
    | --- | --- |
-   | `Child` | Add `parentPhone` (string of digits with the country code, nullable), `parentOptInAt` (ISO datetime, nullable) and `hindiUnderstanding` (`well`, `some` or `none`, nullable: the teacher's own view, which seeds the language profile). |
+   | `Child` | Add `parentChatId` (the parent's Telegram chat id as a string, nullable), `parentOptInAt` (ISO datetime, nullable) and `hindiUnderstanding` (`well`, `some` or `none`, nullable: the teacher's own view, which seeds the language profile). |
    | `Lesson` | Add `source` (`dropdown` or `voice`), `transcript` (nullable) and `page` (int, nullable). |
    | `Check` | Replace `conceptId` with `questionIds` (1–2 ids; row *n* on the slate asks `questionIds[n-1]`, and the concept comes from the question). Add `kind` (`weekly` or `recheck`), `versionOrder` (a permutation of `A`, `B`, `C`) and `childIds` (null for the whole class, or the children in a re-check). |
    | `Answer` | Add `row` (1 or 2) and `cause` (the id of the matched wrong answer, nullable). Tap-marked answers (re-check, Grade 1 oral check) have `value: null` and a status of `right` or `wrong`. |
    | `ProbeResult` (new) | `id`, `childId`, `conceptId` (the concept the child failed), `date`, `passedAtOnce`, `restartConceptId` (nullable), `form` (`concrete`, `pictorial` or `abstract`, nullable) |
    | `ListeningResult` (new) | `childId`, `date`, `itemId`, `language`, `value` (nullable), `status` |
-   | `ParentMessage` (new) | `id`, `childId`, `kind` (`catch_up` or `activity`), `conceptId`, `file` (audio bucket path), `status` (`queued`, `awaiting_reply`, `sent`, `delivered`, `read` or `failed`), `waMessageId` (nullable), `sentAt` (nullable) |
+   | `ParentMessage` (new) | `id`, `childId`, `kind` (`catch_up` or `activity`), `conceptId`, `file` (audio bucket path), `status` (`queued`, `sent` or `failed`; Telegram has no delivery or read receipts for bots), `telegramMessageId` (nullable), `sentAt` (nullable) |
 
 2. **Content schemas** in `packages/core/src/content.ts`. Existing content must still parse, so new fields stay optional until Stage 19 fills them, then become required in 19.
 
@@ -537,58 +537,64 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 22: WhatsApp parent notes
+## [ ] Stage 22: Telegram parent notes
 
 **Lane:** C. **Depends on:** 9, 18, 19 (and 21 for transcribing Hindi replies).
 
-**Goal:** parents get home-language voice notes on WhatsApp (catch-up lessons and home activities), and their replies come back.
+**Goal:** parents get home-language voice notes on Telegram (catch-up lessons and home activities), and their replies come back.
+
+**Why Telegram:**
+- **WhatsApp was ruled out.** A new Meta business account was locked (error 131031), and Twilio trial accounts can only send Twilio's own templates.
+- **Telegram's Bot API is easy:** it's free, set up in minutes, and needs no business verification, 24-hour window or message templates.
+- **Known limit, to say in the demo:** fewer rural parents use Telegram than WhatsApp.
 
 **You need:**
-- **A Meta developer app** with WhatsApp added, and its test number.
-- **In `apps/api/.env`:**
-  - `WA_PHONE_NUMBER_ID`
-  - `WA_TOKEN` (a System User permanent token: the temporary one expires in 24 hours)
-  - `WA_APP_SECRET`
-  - `WA_VERIFY_TOKEN`
-  - `WA_TEMPLATE_NAME`
-- **In the web app:** `VITE_WA_NUMBER`.
-- **Recipients:** the demo phones, added as verified recipients.
-- **Template:** one approved utility template, submitted on Day 1 because approval can take hours. Its text: "A new home activity for {{1}} is ready. Reply OK to hear it."
-- If Meta blocks us, switch to the Twilio WhatsApp sandbox. Don't build an adapter layer up front.
+- **A bot made with @BotFather**, and in `apps/api/.env`:
+  - `TELEGRAM_BOT_TOKEN`
+  - `TELEGRAM_WEBHOOK_SECRET` (any random string, for example from `openssl rand -hex 16`)
+  - `PUBLIC_API_URL` (the address Telegram calls: a tunnel while developing, the Render URL once deployed)
+- **In `apps/web/.env`:** `VITE_TELEGRAM_BOT` (the bot's username, without the @).
+- **Demo phones** with Telegram installed and signed in.
 
-**Build** in `apps/api/src/routes/whatsapp.ts`, using `fetch` against the Graph API (no SDK):
+**Build** in `apps/api/src/routes/telegram.ts`, using `fetch` against `https://api.telegram.org/bot<token>/<method>` (no SDK):
 - **Opt-in:**
-  - In the app, each child has a QR code for `wa.me/<VITE_WA_NUMBER>?text=JOIN <code>`, where the code is the first 8 characters of the child's id.
-  - When the parent sends that message, the webhook sets `children.parent_phone` and `parent_opt_in_at` and replies with a welcome.
-- **The 24-hour window:**
-  - Add a migration with `children.parent_last_message_at`, updated on every message from the parent.
-  - Inside 24 hours, send a voice note straight away.
-  - Outside it, send the template, mark the message `awaiting_reply`, and send it when the parent replies.
+  - In the app, each child has a QR code for `https://t.me/<VITE_TELEGRAM_BOT>?start=<code>`, where the code is the first 8 characters of the child's id.
+  - The parent scans it and taps **Start**, and the bot receives `/start <code>`.
+  - The webhook then sets `children.parent_chat_id` and `parent_opt_in_at`, and replies with a welcome in Hindi.
+  - One parent can scan the codes of several children (siblings). They share one chat id.
 - **Voice notes:**
   - Make the audio with `/speak`'s cache, in the child's home language.
-  - Convert it once to `.ogg` Opus with `ffmpeg-static` and cache it next to the original.
-  - Upload it to `/<phone-number-id>/media` and send it as an audio message. If the current Graph API version supports it, set the flag that marks it as a voice note, so it plays like one.
-  - Then send a short text with the activity steps.
+  - Telegram shows audio as a voice message only if it's OGG/Opus, MP3 or M4A, and bhili-tts makes WAV. So convert each clip once to `.ogg` Opus with `ffmpeg-static`, and store it in the public `audio` bucket (`tg/<hash>.ogg`).
+  - Send it with `sendVoice`:
+    - `voice`: the public URL
+    - `caption`: the activity steps, at most 1024 characters
+    - one inline button, "हो गया 👍" (`callback_data`: `done:<parent message id>`)
 - **Sending:** `POST /parents/send` with `{ kind, conceptId, childIds }`, called from:
   - "Send catch-up to N parents" (never-taught children)
   - "Send activity to parents" (the kit)
 
-  Each send is a `parent_messages` row. Children without an opt-in are listed, not sent.
+  Each send is a `parent_messages` row (`sent`, with Telegram's `message_id`, or `failed`). Children without an opt-in are listed in the app, not sent.
 - **Webhook:**
-  - `GET /whatsapp/webhook` answers Meta's verify challenge.
-  - `POST /whatsapp/webhook` checks `X-Hub-Signature-256` (HMAC-SHA256 of the raw body with `WA_APP_SECRET`) before parsing, answers 200 at once, then handles the message:
-    - a `JOIN` code
-    - a text, reaction or button reply
-    - a voice reply, which is downloaded to the private `wa-media` bucket and transcribed with Saaras if the child is Hindi-home (stored as is for Bhili)
-    - a delivery or read status, which updates `parent_messages.status`
-  - Replies go in a new `parent_replies` table (`id`, `child_id`, `received_at`, `type`, `text`, `file`, `transcript`).
-- **Optional:** the teacher's own number can receive the morning brief the same way.
+  - `POST /telegram/webhook` first checks that the `X-Telegram-Bot-Api-Secret-Token` header equals `TELEGRAM_WEBHOOK_SECRET`, and rejects anything else. It answers 200 at once, then handles:
+    - `/start <code>`
+    - a button tap (`callback_query`): store it and call `answerCallbackQuery`
+    - a text reply
+    - a voice reply: fetch it with `getFile` and download it from `https://api.telegram.org/file/bot<token>/<file_path>`. Store it in a private `parent-media` bucket, transcribed with Saaras if the child is Hindi-home (stored as is for Bhili).
+  - Replies go in a new `parent_replies` table (`id`, `child_id`, `received_at`, `type`, `text`, `file`, `transcript`), added with the bucket in this stage's migration.
+- **Registering the webhook:** a script, `pnpm --filter @triveni/api telegram:webhook`, calls `setWebhook` with:
+  - `url`: `<PUBLIC_API_URL>/telegram/webhook`
+  - `secret_token`
+  - `allowed_updates`: `["message", "callback_query"]`
+
+  Run it again whenever `PUBLIC_API_URL` changes. While developing, use a tunnel (`cloudflared tunnel --url http://localhost:8787`).
+- **Optional:** the teacher can start the bot too, and receive the morning brief the same way.
 
 **Verify:**
-- [ ] A demo phone scans a child's QR code and is opted in.
-- [ ] It receives a Bhili catch-up voice note that plays as a voice note, followed by the activity text.
-- [ ] A 👍 reply and a Hindi voice reply (with its transcript) are stored.
-- [ ] More than 24 hours after the parent's last message, the template goes out first, and the voice note follows the reply.
+- [ ] A demo phone scans a child's QR code and taps Start, and the parent is opted in.
+- [ ] It receives a Bhili catch-up that plays as a voice message, with the activity as its caption.
+- [ ] Tapping "हो गया 👍" is stored, and so is a Hindi voice reply, with its transcript.
+- [ ] A webhook call without the right secret header is rejected.
+- [ ] A child whose parent hasn't opted in is listed, not sent.
 
 ---
 
@@ -600,9 +606,9 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 **Build:**
 - **Hosting** (the MVP's Render service and Vercel project stay on `mvp`, untouched):
-  - **API:** a second Render service from `main`, on the Starter plan (it doesn't sleep, so webhooks always land). Set the full-build Supabase keys, `ANTHROPIC_API_KEY`, `SARVAM_API_KEY`, `TTS_URL`, `TTS_TOKEN`, the `WA_*` variables and `WEB_ORIGIN`.
-  - **Web app:** a second Vercel project from `main`, with `VITE_API_URL`, `VITE_AUDIO_BASE_URL` and `VITE_WA_NUMBER`.
-  - **Webhook:** register `https://<api>/whatsapp/webhook` in the Meta app, and subscribe to messages.
+  - **API:** a second Render service from `main`, on the Starter plan (it doesn't sleep, so webhooks always land). Set the full-build Supabase keys, `ANTHROPIC_API_KEY`, `SARVAM_API_KEY`, `TTS_URL`, `TTS_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `PUBLIC_API_URL` (the Render URL) and `WEB_ORIGIN`.
+  - **Web app:** a second Vercel project from `main`, with `VITE_API_URL`, `VITE_AUDIO_BASE_URL` and `VITE_TELEGRAM_BOT`.
+  - **Webhook:** run `telegram:webhook` with `PUBLIC_API_URL` set to the Render URL.
   - **Bhili speech:** set Modal's `min_containers=1` an hour before the demo, and run `warm:speech` against the deployed API.
   - **README:** add a "Deploy (full build)" section.
 - **Designs:** two static mock screens or slides for what IDEA.md says is shown only as designs:
@@ -616,7 +622,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   5. Show the Hindi morning brief, and read it aloud.
   6. Run a quick re-check that confirms Sita.
   7. Run the probe for Arjun, then open the reteaching kit in Bhili.
-  8. Send the catch-up to Meena's parent: the demo phone receives the Bhili voice note live.
+  8. Send the catch-up to Meena's parent: the demo phone receives the Bhili voice note on Telegram, live.
   9. Close with the design slides and the simulation table.
 
 **Verify:**
@@ -629,10 +635,10 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - [ ] A new Supabase project for the full build (URL and service-role key, shared privately).
 - [ ] A Modal account and token (Stage 18).
 - [ ] A Sarvam key with Saaras speech-to-text (Stages 21, 22). Confirm the Bulbul version.
-- [ ] Meta WhatsApp: app, test number, permanent token, app secret, verified demo phones, and the utility template submitted on Day 1 (Stage 22).
+- [ ] A Telegram bot made with @BotFather: its token and username (Stage 22).
 - [ ] The textbook and page numbers for the 4 concepts (Stages 19, 21).
 - [ ] The notebook slate test set with `answers.csv` (Stage 20).
 - [ ] About 10 recorded voice-note test files (Stage 21).
 - [ ] A Hindi speaker reviews the new questions, wrong-answer lists, kit and interface text on Day 2.
 - [ ] A Bhili speaker from the target area reviews every `bhili` field and how bhili-tts says it, especially numbers and single words.
-- [ ] Demo phones: an Android phone for the teacher, and a WhatsApp phone for the parent.
+- [ ] Demo phones: an Android phone for the teacher, and a phone with Telegram for the parent.

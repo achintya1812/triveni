@@ -18,9 +18,9 @@ Teacher's phone (offline web app)          Server                              O
 │ IndexedDB (Dexie): records  │ ◀───────  │  · slate reading         │       │   slates, briefs, content│
 │ Rules engine (shared code)  │           │  · brief wording         │ ────▶ │ Sarvam Saaras v4         │
 │ Cached audio clips          │           │  · voice note → text     │       │   speech to text         │
-└─────────────────────────────┘           │  · WhatsApp webhook      │ ────▶ │ Sarvam Bulbul            │
+└─────────────────────────────┘           │  · Telegram webhook      │ ────▶ │ Sarvam Bulbul            │
                                           └──────────┬───────────────┘       │   Hindi text to speech   │
-                                                     │                ◀────▶ │ WhatsApp Cloud API       │
+                                                     │                ◀────▶ │ Telegram Bot API         │
                                           Supabase: Postgres + Storage       └──────────────────────────┘
 ```
 
@@ -55,7 +55,7 @@ A pnpm workspace with four packages:
 | --- | --- | --- |
 | API | Hono on Node + TypeScript | Holds every external API key |
 | Database and files | Supabase (Postgres, Storage, Auth), free tier | Photos, audio clips, records |
-| Hosting | API on Render, web app on Vercel. The MVP deploys from `mvp` (Render free plan); the full build has its own Render service (Starter, $7/month) and Vercel project from `main`, on its own Supabase project. Railway was the first choice, but its sign-ups were paused. | The free plan sleeps after 15 minutes idle; Starter doesn't, so WhatsApp webhooks always land |
+| Hosting | API on Render, web app on Vercel. The MVP deploys from `mvp` (Render free plan); the full build has its own Render service (Starter, $7/month) and Vercel project from `main`, on its own Supabase project. Railway was the first choice, but its sign-ups were paused. | The free plan sleeps after 15 minutes idle; Starter doesn't, so Telegram webhooks always land |
 
 ## AI services
 
@@ -79,7 +79,7 @@ Requests use the server-side fallback option (`fallbacks: "default"`), so a decl
 | --- | --- |
 | The teacher's daily voice note ("borrowing in subtraction, page 34") | The voice note is uploaded and sent to the Saaras REST API with keyterms (concept names, "page"). A page number in the text is matched to a concept in code; if there is none, Claude maps the text. |
 | Probe results logged by voice | Same flow; Claude turns the transcript into results for each child |
-| Parents' WhatsApp replies | Hindi only. Replies in Bhili are stored, not transcribed. |
+| Parents' Telegram voice replies | Hindi only. Replies in Bhili are stored, not transcribed. |
 
 ### Sarvam Bulbul (text to speech, Hindi only)
 
@@ -103,21 +103,21 @@ The app asks for each Bhili clip (C questions, key words, reteaching scripts) as
 
 Known limits: B (Bulbul) and C (bhili-tts) are different voices, so a difference in answers could partly come from the voice. The translations and the dialect have not yet been reviewed by a Bhili speaker from the target area.
 
-## WhatsApp
+## Telegram
 
-- **Meta WhatsApp Cloud API**, called with `fetch` from `apps/api/src/routes/whatsapp.ts`. The free test number can message up to five verified numbers, which is enough for the demo. Incoming messages and delivery statuses arrive at the Hono server as webhooks, checked with `X-Hub-Signature-256`.
-- **Opt-in:** the app shows a QR code per child (`wa.me/<number>?text=JOIN <code>`). The parent's JOIN message records their number and consent, and opens WhatsApp's 24-hour window.
-- **24-hour window:** inside it we send voice notes freely; outside it we first send one approved utility template ("Reply OK to hear it"), and the reply reopens the window.
-- Voice notes are `.ogg` (Opus), converted once with `ffmpeg-static` from the cached Bulbul or bhili-tts audio. This is WhatsApp's native voice-note format.
-- Parents' voice replies are stored in the private `wa-media` bucket; Hindi ones are transcribed with Saaras.
-- If Meta's setup holds us up, use the **Twilio WhatsApp sandbox** instead. It is quicker to set up but charges a little per message.
+- **A Telegram bot**, called with `fetch` against the Bot API from `apps/api/src/routes/telegram.ts`. It's free, set up in minutes with @BotFather, and needs no business verification, 24-hour window or message templates.
+- **Why not WhatsApp:** a new Meta business account was locked (error 131031), and Twilio trial accounts can only send Twilio's own templates. Fewer rural parents use Telegram than WhatsApp, which is a known limit.
+- **Opt-in:** the app shows a QR code per child (`t.me/<bot>?start=<code>`). When the parent taps Start, the bot receives the code and records their chat id and consent. A bot can only message people who have started it.
+- **Voice notes:** sent with `sendVoice` as `.ogg` (Opus), converted once with `ffmpeg-static` from the cached Bulbul or bhili-tts audio, from a public URL in the `audio` bucket. The activity steps go in the caption, with a "हो गया 👍" button for the reply.
+- **Webhook:** incoming messages and button taps arrive at the Hono server, checked with the `X-Telegram-Bot-Api-Secret-Token` header. Voice replies are stored in the private `parent-media` bucket; Hindi ones are transcribed with Saaras.
+- **No receipts:** the Bot API has no delivery or read receipts, so a message is just sent or failed.
 
 ## Data model
 
 | Table | Key fields |
 | --- | --- |
 | `classes` | id, school, grade, textbook |
-| `children` | id, class_id, roll_no, name, home_language, hindi_understanding (the teacher's view), parent_phone, parent_opt_in_at (WhatsApp requires an opt-in before we message a parent), parent_last_message_at (the 24-hour window) |
+| `children` | id, class_id, roll_no, name, home_language, hindi_understanding (the teacher's view), parent_chat_id (Telegram), parent_opt_in_at (the parent started the bot from the child's QR code) |
 | `attendance` | class_id, date, child_id, present. Stored by date, so absences are recorded even on days with no logged concept. |
 | `lessons` | id, class_id, date, concept_id, source (`dropdown`, `voice`), transcript, page |
 | `checks` | id, class_id, date, kind (`weekly`, `recheck`), question_ids (row order), version_order, child_ids (re-checks only) |
@@ -125,7 +125,7 @@ Known limits: B (Bulbul) and C (bhili-tts) are different voices, so a difference
 | `listening_results` | child_id, date, item_id, language, value, status |
 | `probe_results` | id, child_id, concept_id, date, passed_at_once, restart_concept_id, form (`concrete`, `pictorial`, `abstract`) |
 | `audio_clips` | id, kind, language, source (`human`, `bulbul`), url, approved |
-| `parent_messages`, `parent_replies` | WhatsApp messages sent to and received from parents, with delivery status |
+| `parent_messages`, `parent_replies` | Telegram messages sent to and received from parents |
 
 Each child's running record (language profile, word evidence, concept status) is derived on the phone by the rules engine, not stored.
 
@@ -171,7 +171,7 @@ Voice notes are about ten seconds each, and Bulbul clips are generated once, so 
 
 ### Hosting
 
-About $5 for the API host. Supabase, Vercel or Cloudflare Pages, and the WhatsApp test number are free.
+About $5 for the API host. Supabase, Vercel or Cloudflare Pages, and the Telegram Bot API are free.
 
 ## MVP versus full build
 
@@ -182,7 +182,7 @@ About $5 for the API host. Supabase, Vercel or Cloudflare Pages, and the WhatsAp
 | Saaras v4 | Not used (concept dropdown) | Voice notes and spoken probe logs |
 | Bulbul | B questions | Plus Hindi key-word audio, reteaching audio, brief read aloud, Hindi parent notes |
 | bhili-tts | C questions, spoken live | All Bhili audio |
-| WhatsApp | Optional: one parent voice note | Parents, catch-up lessons, recorder bot |
+| Parent messaging | Optional: one parent voice note | Telegram bot: parents and catch-up lessons (the recorder bot is a design only) |
 | Data | Supabase + Dexie | Same |
 
 ## Open checks before building
@@ -190,5 +190,5 @@ About $5 for the API host. Supabase, Vercel or Cloudflare Pages, and the WhatsAp
 1. Slate-reading accuracy on real children's handwriting (the slate-reading test above).
 2. Whether `bulbul:v4` is on Sarvam's text-to-speech API, or only `bulbul:v3`.
 3. Sarvam's current speech-to-text and text-to-speech prices.
-4. Meta WhatsApp Cloud API setup time; fall back to Twilio if needed.
+4. Parent messaging: WhatsApp was blocked (a Meta account lock; Twilio trials are template-only), so we use a Telegram bot.
 5. A Bhili speaker from the target area to review the machine-translated Bhili text and how bhili-tts says it.
