@@ -265,7 +265,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 12: Demo seed v2 + simulation
+## [x] Stage 12: Demo seed v2 + simulation
 
 **Lane:** A. **Depends on:** 11 (and uses 19's content when it lands).
 
@@ -289,9 +289,24 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - It runs their answers through the rules over 4 weekly checks, with re-checks and probes.
   - It prints a table: for each planted cause, how often the true cause was found, and after how many checks.
 
+**As built:**
+- **Seed** (`apps/web/src/seed.ts`):
+  - **Dates:** weeks of 12, 19 and 26 October 2026. Last week's check is on 23 October: subtraction within 20 (row 1) and borrowing (row 2), in that week's rotated order.
+  - **Planted children:** Ravi, Meena, Arjun and Sita as listed above. Symbol gap, Bhili clip not followed, language and symbol gap, inconsistent, unclear and absent on check day are spread across the class. Kavita, Mahesh and Ramesh are bilingual buddies.
+  - **Answers:** they're marked with the real questions, so Stage 19's wrong-answer lists add causes automatically.
+  - **Two-digit lessons:** they appear once Stage 19 adds that concept.
+  - **Listening results:** they use item ids `l-1` to `l-4`, which Stage 19's listening items must match.
+  - **Exports:** `demoData()` gives the demo as `ClassData`.
+  - **New in `db.ts`:** `saveListening`.
+- **Simulation:**
+  - **Logic** is in `packages/core/src/simulate.ts` (`simulate`, `formatResults`). The runner is `packages/core/scripts/simulate.ts`, with `--classes`, `--children`, `--careless` and `--seed`.
+  - **Model:** six planted causes (none, language, word-problem, symbol, concept gap rooted in borrowing, absent for borrowing), four weeks, and Saturday re-checks and probes driven by the rules.
+  - **Default run:** 100 classes of 30, 8% slips, in about 1 s. It finds 80–97% of planted causes; 2–7% of children get a wrong label.
+  - **`simulate.test.ts`** guards those numbers, and checks that with no slips everything is found on its first check.
+
 **Verify:**
-- [ ] The seed loads, and Ravi, Meena, Arjun and Sita are placed as planted.
-- [ ] The simulation prints the table and runs in under 10 seconds, with no API calls.
+- [x] The seed loads, and Ravi, Meena, Arjun and Sita are placed as planted.
+- [x] The simulation prints the table and runs in under 10 seconds, with no API calls.
 
 ---
 
@@ -496,7 +511,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - Add a B clip for each new question with `make:standins`.
 - **Key words:** at least 8–10 for borrowing, the concept the kit covers.
 - **Kit** (`kits.json`): one kit, for Taught but not learned on borrowing. It has paired steps like IDEA.md's stones example, its key words, and a parent activity.
-- **Listening items** (`listening.json`): 4 items, each with 4 emoji pictures and two prompts asking for different pictures.
+- **Listening items** (`listening.json`): 4 items with ids `l-1` to `l-4` (the demo seed's listening results use them), each with 4 emoji pictures and two prompts asking for different pictures.
 - **How to write it:**
   - Claude drafts the wrong-answer lists, probe steps, catch-up scripts and kit with the Message Batches API. Add `apps/api/scripts/draft-content.ts`, which writes a review file.
   - A person reviews the draft before it's committed.

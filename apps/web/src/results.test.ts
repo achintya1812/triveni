@@ -7,7 +7,7 @@ import { demoChildren, demoDays } from "./seed";
 
 // The Stage 6 check: a borrowing check on the demo class (A 9, B 8, C 6).
 const question = questions.find((q) => q.conceptId === "borrowing")!;
-const lessons = demoDays.map((d) => d.lesson);
+const lessons = demoDays.flatMap((d) => (d.lesson ? [d.lesson] : []));
 const attendance: Attendance[] = demoDays.flatMap((d) =>
   demoChildren.map((c) => ({ classId: c.classId, date: d.date, childId: c.id, present: !d.absentChildIds.includes(c.id) })),
 );
