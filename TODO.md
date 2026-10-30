@@ -229,9 +229,9 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ## [ ] Stage 8: Deploy + demo
 
 **Build:**
-- **Hosting:** the API on Railway or Fly.io (a host that doesn't sleep), and the web app on Vercel or Cloudflare Pages.
-- **Settings:** set `VITE_API_URL`, and set the CORS origin to the deployed web URL.
-- **Bhili speech:** run `services/bhili/tts_server.py` on a GPU host (Modal or a Hugging Face endpoint) and set `TTS_URL` on the API, or open every concept before the demo so its C clip is cached.
+- **Hosting:** the API on Railway and the web app on Vercel, both deployed from the `mvp` branch. The MVP is the backup demo; the full product continues on `main`. Steps are in README → Deploy.
+- **Settings:** set `VITE_API_URL`, and `WEB_ORIGIN` (the CORS origin) to the deployed web URL.
+- **Bhili speech:** no speech service is deployed. Every Bhili clip is cached in advance with `warm:speech`. A GPU host for `services/bhili` waits for the full build.
 - **Rehearsal:** practise the 3-minute demo in IDEA.md (Bare minimum MVP → Demo).
 
 **Verify:**

@@ -37,7 +37,8 @@ async function run(query: PromiseLike<{ data: unknown; error: PostgrestError | n
 const statusForCode: Record<string, 400 | 409> = { "22P02": 400, "23503": 400, "23505": 409 };
 
 export const app = new Hono()
-  .use(cors({ origin: "http://localhost:5173" }))
+  // WEB_ORIGIN is the deployed web app's address, for example https://triveni.vercel.app.
+  .use(cors({ origin: process.env.WEB_ORIGIN ?? "http://localhost:5173" }))
   .get("/health", (c) => c.json({ ok: true }))
 
   .post("/classes", json(ClassRecord), async (c) => {
