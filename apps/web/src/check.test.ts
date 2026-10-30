@@ -2,7 +2,7 @@ import { questions } from "@triveni/content";
 import type { AudioClip, Child } from "@triveni/core";
 import { describe, expect, it } from "vitest";
 import { clipProblem } from "./audio";
-import { markGrid } from "./check";
+import { applySlates, isFlagged, markGrid, rollFlags } from "./check";
 
 const question = questions.find((q) => q.id === "q-borrowing")!; // A 9, B 8, C 6
 const child = (id: string, homeLanguage: Child["homeLanguage"]): Child => ({
@@ -31,6 +31,60 @@ describe("markGrid", () => {
   it("stores a child with no entries as all no_data", () => {
     const answers = markGrid("check", question, [child("meena", "bhili")], {});
     expect(answers.every((a) => a.value === null && a.status === "no_data")).toBe(true);
+  });
+
+  it("keeps the confidence of boxes read from photos; typed boxes count as reviewed", () => {
+    const reads = { ravi: { A: { confidence: 0.5, reviewed: false } } };
+    const answers = markGrid("check", question, [child("ravi", "bhili")], { ravi: { A: "9", B: "8" } }, reads);
+    expect(answers.map((a) => [a.version, a.confidence, a.reviewed])).toEqual([
+      ["A", 0.5, false],
+      ["B", null, true],
+      ["C", null, true],
+    ]);
+  });
+});
+
+describe("reading slate photos", () => {
+  const roster = [
+    { ...child("ravi", "bhili"), rollNo: 1 },
+    { ...child("meena", "bhili"), rollNo: 2 },
+    { ...child("pooja", "hindi"), rollNo: 3 },
+  ];
+  const box = (version: "A" | "B" | "C", value: number | null, confidence = 0.95, row = 1) => ({
+    row,
+    version,
+    value,
+    confidence,
+  });
+
+  it("fills each child's boxes by roll number, keeping only the top row", () => {
+    const reading = {
+      slates: [
+        { roll: 1, answers: [box("A", 9), box("B", 21, 0.6), box("C", null), box("A", 5, 0.95, 2)] },
+        { roll: 3, answers: [box("A", 9), box("B", 8), box("C", 6)] },
+      ],
+    };
+    const { values, reads } = applySlates(roster, {}, {}, reading);
+    expect(values).toEqual({ ravi: { A: "9", B: "21", C: "" }, pooja: { A: "9", B: "8" } });
+    expect(isFlagged(reads.ravi.B)).toBe(true);
+    expect(isFlagged(reads.ravi.A)).toBe(false);
+  });
+
+  it("flags rolls that are missing, on two slates, not in the class, or unreadable", () => {
+    expect(rollFlags(roster, [1, 1, 7, null])).toEqual({
+      unreadable: 1,
+      unknown: [7],
+      duplicate: [roster[0]],
+      missing: [roster[1], roster[2]],
+    });
+  });
+
+  it("flags no missing rolls before any photo is read", () => {
+    expect(rollFlags(roster, []).missing).toEqual([]);
+  });
+
+  it("stops flagging a box once the teacher has reviewed it", () => {
+    expect(isFlagged({ confidence: 0.5, reviewed: true })).toBe(false);
   });
 });
 

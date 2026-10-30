@@ -16,6 +16,8 @@ The Bhili speech service needs [uv](https://docs.astral.sh/uv/). The first run i
 
 `uv run services/bhili/translate.py` fills in any missing Bhili text in `packages/content/data` (C questions, key words, reteaching scripts). It never overwrites existing Bhili, so to redo one, delete its `bhili` value first. Run it with the speech service stopped, since it needs about 10 GB of free RAM. Then `pnpm --filter @triveni/api warm:speech` (with the API and speech service running) makes and caches every Bhili clip.
 
+`pnpm --filter @triveni/api slate:accuracy <folder>` measures how well Claude reads slate photos. The folder holds the photos and an `answers.csv` with the true answers (`photo,roll,A,B,C`, one row per slate). `apps/api/scripts/slate-samples` has three synthetic photos of the demo class made with a handwriting font; real slate photos give the number that counts. Each photo is one paid Claude call.
+
 ## Environment variables
 
 Both `.env` files are gitignored. Get the keys from a teammate privately and never commit them.

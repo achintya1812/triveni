@@ -8,6 +8,7 @@ import { validator } from "hono/validator";
 import { z } from "zod";
 import { rewordBrief } from "./brief";
 import { db } from "./db";
+import { readSlates } from "./slates";
 
 // No auth in the MVP: one teacher and one demo class.
 // Writes are upserts, so the phone can safely send the same record again.
@@ -128,7 +129,17 @@ export const app = new Hono()
 
   .post("/brief/reword", json(z.object({ brief: z.string().trim().min(1).max(4000) })), async (c) => {
     return c.json({ brief: await rewordBrief(c.req.valid("json").brief) });
-  });
+  })
+
+  // One photo of several slates, base64, already resized on the phone.
+  .post(
+    "/slates/read",
+    json(z.object({ image: z.base64().min(1).max(8_000_000), mediaType: z.enum(["image/jpeg", "image/png"]) })),
+    async (c) => {
+      const { image, mediaType } = c.req.valid("json");
+      return c.json(await readSlates(image, mediaType));
+    },
+  );
 
 // Speech takes up to a minute on CPU, so a second request for the same text waits for the first.
 const speaking = new Map<string, Promise<void>>();

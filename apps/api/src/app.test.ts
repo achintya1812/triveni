@@ -25,6 +25,10 @@ describe("bad input", () => {
   it("rejects an empty brief", async () => {
     expect((await send("POST", "/brief/reword", { brief: "" })).status).toBe(400);
   });
+
+  it("rejects a slate photo that isn't base64", async () => {
+    expect((await send("POST", "/slates/read", { image: "not base64!", mediaType: "image/jpeg" })).status).toBe(400);
+  });
 });
 
 // Needs apps/api/.env with Supabase keys; skipped without them (as in CI).
@@ -38,9 +42,9 @@ describe.skipIf(!process.env.SUPABASE_URL)("round trip through Supabase", () => 
   const lesson = { id: crypto.randomUUID(), classId, date, conceptId: "borrowing" };
   const check = { id: checkId, classId, date: "2026-10-23", conceptId: "borrowing" };
   const answers = [
-    { checkId, childId: ravi.id, questionId: "q-borrowing", version: "A", value: 9, status: "right" },
-    { checkId, childId: ravi.id, questionId: "q-borrowing", version: "B", value: 21, status: "wrong" },
-    { checkId, childId: ravi.id, questionId: "q-borrowing", version: "C", value: null, status: "no_data" },
+    { checkId, childId: ravi.id, questionId: "q-borrowing", version: "A", value: 9, status: "right", confidence: null, reviewed: true },
+    { checkId, childId: ravi.id, questionId: "q-borrowing", version: "B", value: 21, status: "wrong", confidence: 0.5, reviewed: false },
+    { checkId, childId: ravi.id, questionId: "q-borrowing", version: "C", value: null, status: "no_data", confidence: 0.75, reviewed: true },
   ];
   const byChild = (a: { childId: string }, b: { childId: string }) => a.childId.localeCompare(b.childId);
 
