@@ -38,8 +38,7 @@ export function markGrid(
         row: 1, // Until Stage 14, a check has one concept, so one row.
         version,
         value,
-        status: markAnswer(value, question[version].answer),
-        cause: null,
+        ...markAnswer(value, question, version),
         confidence: read?.confidence ?? null,
         reviewed: read?.reviewed ?? true,
       };

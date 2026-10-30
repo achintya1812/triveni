@@ -35,7 +35,7 @@ MVP (done, on `mvp`):
 
 Full build (on `main`; lane in brackets):
 9. [done] Contracts [A]: full-build record and content schemas, migration, Dexie `triveni-full`, API routes split into `routes/`. Verify: migrations apply to the full-build project; every entity round-trips.
-10. Rules: marking and 8 patterns [A]: wrong-answer causes, copied numbers as no data, all 8 patterns, absent on check day, "same pattern twice", version rotation, concept picking. Verify: Vitest covers each.
+10. [done] Rules: marking and 8 patterns [A]: wrong-answer causes, copied numbers as no data, all 8 patterns, absent on check day, "same pattern twice", version rotation, concept picking. Verify: Vitest covers each.
 11. Running record + daily brief [A]: concept status, root of a concept gap, word evidence, language profile, buddies, daily brief (en/hi). Verify: Meena and Arjun → root borrowing; Ravi confirmed across two weeks; brief has all sections.
 12. Demo seed v2 + simulation [A]: 20 children, 3 weeks, last week's check, planted causes; `simulate` script. Verify: planted children land correctly; the simulation prints an accuracy table.
 13. Hindi interface [B]: i18next, a namespace per screen, Hindi default with an English toggle. Verify: every screen fully in both languages.

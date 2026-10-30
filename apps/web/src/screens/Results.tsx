@@ -16,6 +16,11 @@ const groupLabels: Record<Placement, string> = {
   word_problem_gap: "Word-problem gap",
   never_taught: "Never taught (absent)",
   taught_not_learned: "Taught but not learned",
+  symbol_gap: "Symbol gap",
+  language_symbol_gap: "Language and symbol gap",
+  clip_failed: "Bhili clip not followed",
+  inconsistent: "Inconsistent",
+  not_checked: "Not checked yet (absent today)",
   unclear: "Unclear",
   ready: "Ready",
 };
@@ -47,7 +52,14 @@ export function Results({ klass }: { klass: ClassRecord }) {
   // Until Stage 14, a check has one concept, so one question.
   const question = questions.find((q) => q.id === check.questionIds[0])!;
   const concept = concepts.find((c) => c.id === question.conceptId)!;
-  const placed = placeChildren(question, records.children, records.answers, records.lessons, records.attendance);
+  const placed = placeChildren(
+    question,
+    records.children,
+    records.answers,
+    records.lessons,
+    records.attendance,
+    check.date,
+  );
 
   return (
     <div className="space-y-6">
@@ -170,8 +182,19 @@ function WhatToDo({ placement, concept, question }: { placement: Placement; conc
           <SpeakButton text={concept.reteach.bhili} label="Play reteaching (Bhili)" />
         </div>
       );
+    // Stage 15 fills in the full actions for these.
+    case "symbol_gap":
+      return <p>They follow the story but not the sum. Solve a story, then write the sum that matches it.</p>;
+    case "language_symbol_gap":
+      return <p>Teach the Hindi key words first, then practise turning stories into sums.</p>;
+    case "clip_failed":
+      return <p>Hindi worked but the Bhili clip didn't. If many children are here, the clip may be unclear.</p>;
+    case "inconsistent":
+      return <p>The pattern looks like a guess or a copied answer. The next check decides.</p>;
+    case "not_checked":
+      return <p>Absent today. Include them in the next check.</p>;
     case "unclear":
-      return <p>Some boxes were blank or the pattern is mixed. Check again next time.</p>;
+      return <p>Some boxes were blank or copied from the question. Check again next time.</p>;
     case "ready":
       return <p>Move on.</p>;
   }
