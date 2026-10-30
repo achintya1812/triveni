@@ -55,7 +55,7 @@ A pnpm workspace with four packages:
 | --- | --- | --- |
 | API | Hono on Node + TypeScript | Holds every external API key |
 | Database and files | Supabase (Postgres, Storage, Auth), free tier | Photos, audio clips, records |
-| Hosting | API on Railway or Fly.io (about $5, paid separately); web app on Vercel or Cloudflare Pages (free) | Avoid hosts that put free apps to sleep, because the first request after waking is slow during a live demo |
+| Hosting | API on Render (free, or $7/month Starter); web app on Vercel (free). Railway was the first choice, but its sign-ups were paused. | Render's free plan sleeps after 15 minutes idle and takes up to a minute to wake: open the API's `/health` before a live demo, or use Starter, which doesn't sleep |
 
 ## AI services
 
