@@ -10,15 +10,17 @@ import type {
   ProbeResult,
 } from "@triveni/core";
 import { Dexie, type EntityTable, type Table } from "dexie";
-import type { GridReads, GridValues } from "./check";
+import type { Grid } from "./check";
 
-// The check in progress, so it survives switching screens (Stage 14 shapes it).
+// The check in progress, kept so it survives switching screens and reloading.
+// `grids` has one grid per row (question); `rolls` is every roll number read from photos so far.
 export type Draft = {
   classId: string;
   checkId: string;
+  date: string;
   questionIds: string[];
-  values: GridValues;
-  reads: GridReads;
+  grids: Grid[];
+  rolls: (number | null)[];
 };
 
 // Mirrors the API's tables. Every write goes here first, then to the API.
@@ -100,4 +102,12 @@ export async function saveCheck(check: Check, answers: Answer[]) {
 export async function saveListening(classId: string, results: ListeningResult[]) {
   await db.listeningResults.bulkPut(results);
   await api("POST", `/classes/${classId}/listening`, results);
+}
+
+// Marks one child absent or present on a day, keeping the rest of the day's attendance and its lesson.
+export async function setAbsent(classId: string, date: string, childId: string, absent: boolean) {
+  const rows = await db.attendance.where({ date }).and((r) => r.classId === classId).toArray();
+  const others = rows.filter((r) => !r.present && r.childId !== childId).map((r) => r.childId);
+  const lesson = await db.lessons.where({ date }).and((l) => l.classId === classId).first();
+  await saveDay(classId, date, absent ? [...others, childId] : others, lesson);
 }

@@ -329,7 +329,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 14: Check runner v2
+## [x] Stage 14: Check runner v2
 
 **Lane:** B. **Depends on:** 9; uses 10's `versionOrder` and `pickConcepts` once they land (until then, use fixed `ABC` and a manual pick).
 
@@ -358,11 +358,22 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - Every photo is resized to 1500 px on the long side, and uploads run in parallel, 3 at a time, each showing its own progress and retry.
 - **`applySlates`** fills each row from its question. Stage 20 changes how rolls are matched; keep that code in `check.ts`.
 
+**As built:**
+- **The draft** (`db.ts`) is `{ classId, checkId, date, questionIds, grids, rolls }`, with one `Grid` (`{ values, reads }`) per row.
+  - The screen keeps its own copy for smooth typing, and applies every change to both copies. A photo that finishes reading after the teacher leaves the screen still lands in the stored draft.
+- **Grids** (`check.ts`): `applySlates(roster, grids, reading)` fills row *n* into `grids[n - 1]`, and `markGrid(..., row)` stores the row.
+- **Absent today:** chips on the check screen call `setAbsent` (`db.ts`), which keeps the day's lesson.
+- **Photos:**
+  - `components/Camera.tsx` is the in-app camera.
+  - `SlatePhotos` reads 3 photos at a time, showing each one's state, with **Retry**.
+- **Results:** `placeChildren` takes a row. Stage 15 shows every row.
+- **How it was checked:** headless Firefox at phone size (390 × 844), with a fake camera and a canned slate reading. On a real Android phone, the gallery and the camera still need a try.
+
 **Verify:**
-- [ ] A 2-concept check runs end to end on a phone, in this week's rotated order.
-- [ ] Switching to Daily log and back, or reloading, keeps the draft.
-- [ ] Choosing 5 photos from the gallery on Android reads all 5, in parallel.
-- [ ] Taking 3 photos with the in-app camera reads all 3.
+- [x] A 2-concept check runs end to end on a phone, in this week's rotated order.
+- [x] Switching to Daily log and back, or reloading, keeps the draft.
+- [x] Choosing 5 photos from the gallery on Android reads all 5, in parallel.
+- [x] Taking 3 photos with the in-app camera reads all 3.
 
 ---
 

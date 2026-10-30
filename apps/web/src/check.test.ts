@@ -36,6 +36,11 @@ describe("markGrid", () => {
     expect(answers.every((a) => a.value === null && a.status === "no_data")).toBe(true);
   });
 
+  it("stores the row it is given", () => {
+    const answers = markGrid("check", question, [child("ravi", "bhili")], { ravi: { A: "9" } }, {}, 2);
+    expect(answers.every((a) => a.row === 2)).toBe(true);
+  });
+
   it("keeps the confidence of boxes read from photos; typed boxes count as reviewed", () => {
     const reads = { ravi: { A: { confidence: 0.5, reviewed: false } } };
     const answers = markGrid("check", question, [child("ravi", "bhili")], { ravi: { A: "9", B: "8" } }, reads);
@@ -53,6 +58,7 @@ describe("reading slate photos", () => {
     { ...child("meena", "bhili"), rollNo: 2 },
     { ...child("pooja", "hindi"), rollNo: 3 },
   ];
+  const empty = () => ({ values: {}, reads: {} });
   const box = (version: "A" | "B" | "C", value: number | null, confidence = 0.95, row = 1) => ({
     row,
     version,
@@ -60,17 +66,25 @@ describe("reading slate photos", () => {
     confidence,
   });
 
-  it("fills each child's boxes by roll number, keeping only the top row", () => {
+  it("fills each child's boxes by roll number, one grid per row", () => {
     const reading = {
       slates: [
         { roll: 1, answers: [box("A", 9), box("B", 21, 0.6), box("C", null), box("A", 5, 0.95, 2)] },
         { roll: 3, answers: [box("A", 9), box("B", 8), box("C", 6)] },
       ],
     };
-    const { values, reads } = applySlates(roster, {}, {}, reading);
-    expect(values).toEqual({ ravi: { A: "9", B: "21", C: "" }, pooja: { A: "9", B: "8" } });
-    expect(isFlagged(reads.ravi.B)).toBe(true);
-    expect(isFlagged(reads.ravi.A)).toBe(false);
+    const [row1, row2] = applySlates(roster, [empty(), empty()], reading);
+    expect(row1.values).toEqual({ ravi: { A: "9", B: "21", C: "" }, pooja: { A: "9", B: "8" } });
+    expect(row2.values).toEqual({ ravi: { A: "5" } });
+    expect(isFlagged(row1.reads.ravi.B)).toBe(true);
+    expect(isFlagged(row1.reads.ravi.A)).toBe(false);
+  });
+
+  it("ignores rows beyond the check's, and keeps earlier reads of other children", () => {
+    const first = applySlates(roster, [empty()], { slates: [{ roll: 1, answers: [box("A", 9)] }] });
+    const second = applySlates(roster, first, { slates: [{ roll: 2, answers: [box("A", 8), box("A", 4, 0.9, 2)] }] });
+    expect(second).toHaveLength(1);
+    expect(second[0].values).toEqual({ ravi: { A: "9" }, meena: { A: "8" } });
   });
 
   it("flags rolls that are missing, on two slates, not in the class, or unreadable", () => {
