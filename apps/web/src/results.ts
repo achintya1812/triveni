@@ -34,9 +34,10 @@ export function placeChildren(
   lessons: LessonLog[],
   attendance: AttendanceLog[],
   checkDate: string,
+  row = 1,
 ): Placed[] {
   return children.flatMap((child) => {
-    const mine = answers.filter((a) => a.childId === child.id);
+    const mine = answers.filter((a) => a.childId === child.id && a.row === row);
     if (mine.length === 0) return [];
     const value = (version: Version) => mine.find((a) => a.version === version)?.value ?? null;
     const childAnswers = {

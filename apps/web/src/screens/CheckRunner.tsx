@@ -1,147 +1,290 @@
 import { concepts, questions } from "@triveni/content";
-import type { Check, Child, ClassRecord, SlateReading } from "@triveni/core";
+import { type Check, type Child, type ClassRecord, pickConcepts, type SlateReading, versionOrder } from "@triveni/core";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnswerGrid, symbols } from "@/components/AnswerGrid";
 import { ClipButton, SpeakButton } from "@/components/ClipButton";
 import { SlatePhotos } from "@/components/SlatePhotos";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { applySlates, type GridReads, type GridValues, isFlagged, markGrid, rollFlags } from "@/check";
-import { db, saveCheck } from "@/db";
+import { applySlates, type GridReads, isFlagged, markGrid, rollFlags } from "@/check";
+import { type Draft, db, saveCheck, setAbsent } from "@/db";
+import { cn } from "@/lib/utils";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
+const conceptName = (id: string) => concepts.find((c) => c.id === id)?.name ?? id;
+const weeklyQuestion = (conceptId: string) => questions.find((q) => q.conceptId === conceptId && q.use === "weekly");
+const questionFor = (id: string) => questions.find((q) => q.id === id)!;
 
-// The MVP check: one concept, fixed order A, B, C. Rotating the order is out of scope.
+// The weekly check: one or two concepts (a row on the slate each), asked in this week's order.
+// The check in progress is a draft in Dexie, so it survives switching screens and reloading.
 export function CheckRunner({ klass, onError }: { klass: ClassRecord; onError: (message: string) => void }) {
-  const [conceptId, setConceptId] = useState("");
-  const [checkId, setCheckId] = useState(() => crypto.randomUUID());
-  const [grid, setGrid] = useState<{ values: GridValues; reads: GridReads }>({ values: {}, reads: {} });
-  const [rolls, setRolls] = useState<(number | null)[]>([]); // every roll number read from a photo
-  const [saved, setSaved] = useState(false);
-
+  const stored = useLiveQuery(async () => (await db.drafts.get(klass.id)) ?? null, [klass.id]);
   const children = useLiveQuery(() => db.children.where({ classId: klass.id }).sortBy("rollNo"), [klass.id]);
-  const question = questions.find((q) => q.conceptId === conceptId);
+  const [savedOn, setSavedOn] = useState<string>();
 
-  // A different concept is a different check.
-  function pickConcept(id: string) {
-    setConceptId(id);
-    setCheckId(crypto.randomUUID());
-    setGrid({ values: {}, reads: {} });
-    setRolls([]);
-    setSaved(false);
-  }
+  if (stored === undefined || !children) return null;
+  if (stored === null) return <StartCheck klass={klass} savedOn={savedOn} />;
+  return (
+    <RunCheck
+      key={stored.checkId}
+      klass={klass}
+      stored={stored}
+      roster={children}
+      onSaved={setSavedOn}
+      onError={onError}
+    />
+  );
+}
 
-  function readPhoto(reading: SlateReading) {
-    if (!children) return;
-    setSaved(false);
-    setGrid((g) => applySlates(children, g.values, g.reads, reading));
-    setRolls((r) => [...r, ...reading.slates.map((s) => s.roll)]);
-  }
+// Picks the concepts, suggested from what was taught since the last weekly check.
+function StartCheck({ klass, savedOn }: { klass: ClassRecord; savedOn?: string }) {
+  const suggestion = useLiveQuery(async () => {
+    const lessons = await db.lessons.where({ classId: klass.id }).toArray();
+    const checks = await db.checks.where({ classId: klass.id }).toArray();
+    const lastWeekly = checks.filter((c) => c.kind === "weekly").map((c) => c.date).sort().at(-1) ?? null;
+    return pickConcepts(lessons, concepts, lastWeekly).filter((id) => weeklyQuestion(id));
+  }, [klass.id]);
+  const [rows, setRows] = useState<[string, string]>(["", ""]);
+  useEffect(() => {
+    if (suggestion) setRows([suggestion[0] ?? "", suggestion[1] ?? ""]);
+  }, [suggestion]);
 
-  async function save() {
-    if (!question || !children) return;
-    const check: Check = {
-      id: checkId,
+  const checkable = concepts.filter((c) => weeklyQuestion(c.id));
+  async function start() {
+    const questionIds = [...new Set(rows.filter(Boolean))].map((id) => weeklyQuestion(id)!.id);
+    const draft: Draft = {
       classId: klass.id,
+      checkId: crypto.randomUUID(),
       date: today(),
-      questionIds: [question.id],
-      kind: "weekly",
-      versionOrder: ["A", "B", "C"],
-      childIds: null,
+      questionIds,
+      grids: questionIds.map(() => ({ values: {}, reads: {} })),
+      rolls: [],
     };
+    await db.drafts.put(draft);
+  }
+
+  return (
+    <div className="space-y-4">
+      {savedOn && <p className="rounded-lg bg-muted p-3 text-sm">Saved the check for {savedOn}. See it in Results.</p>}
+      <p className="text-sm text-muted-foreground">
+        {suggestion?.length
+          ? "Suggested from what was taught since the last check. A check covers at most two concepts."
+          : "Nothing new has been taught since the last check. Pick what to check."}
+      </p>
+      {([0, 1] as const).map((i) => (
+        <div key={i} className="space-y-2">
+          <Label htmlFor={`check-row-${i}`}>{i === 0 ? "Row 1 on the slate" : "Row 2 (optional)"}</Label>
+          <NativeSelect
+            id={`check-row-${i}`}
+            className="w-full [&_select]:h-11"
+            value={rows[i]}
+            onChange={(e) => setRows(i === 0 ? [e.target.value, rows[1]] : [rows[0], e.target.value])}
+          >
+            <NativeSelectOption value="">{i === 0 ? "Pick a concept" : "None"}</NativeSelectOption>
+            {checkable.map((c) => (
+              <NativeSelectOption key={c.id} value={c.id}>
+                {c.name}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+        </div>
+      ))}
+      <Button className="h-12 w-full" disabled={!rows[0]} onClick={start}>
+        Start the check
+      </Button>
+    </div>
+  );
+}
+
+function RunCheck({
+  klass,
+  stored,
+  roster,
+  onSaved,
+  onError,
+}: {
+  klass: ClassRecord;
+  stored: Draft;
+  roster: Child[];
+  onSaved: (date: string) => void;
+  onError: (message: string) => void;
+}) {
+  // The screen's copy of the draft, so typing stays smooth. Every change goes to both copies, so a photo
+  // read that finishes after the teacher has switched screens still lands in the stored draft.
+  const [draft, setDraft] = useState(stored);
+  const change = useCallback(
+    (fn: (d: Draft) => Draft) => {
+      setDraft(fn);
+      return db.transaction("rw", db.drafts, async () => {
+        const latest = await db.drafts.get(klass.id);
+        if (latest?.checkId === stored.checkId) await db.drafts.put(fn(latest));
+      });
+    },
+    [klass.id, stored.checkId],
+  );
+
+  const absentToday = useLiveQuery(
+    async () =>
+      new Set(
+        (await db.attendance.where({ date: draft.date }).toArray())
+          .filter((r) => r.classId === klass.id && !r.present)
+          .map((r) => r.childId),
+      ),
+    [klass.id, draft.date],
+  );
+  const absent = absentToday ?? new Set<string>();
+  const present = roster.filter((c) => !absent.has(c.id));
+  const rows = draft.questionIds.map(questionFor);
+  const order = versionOrder(draft.date);
+
+  const readPhoto = useCallback(
+    (reading: SlateReading) =>
+      change((d) => ({ ...d, grids: applySlates(roster, d.grids, reading), rolls: [...d.rolls, ...reading.slates.map((s) => s.roll)] })),
+    [change, roster],
+  );
+
+  async function toggleAbsent(childId: string) {
     try {
-      await saveCheck(check, markGrid(check.id, question, children, grid.values, grid.reads));
-      setSaved(true);
+      await setAbsent(klass.id, draft.date, childId, !absent.has(childId));
     } catch (e) {
       onError((e as Error).message);
     }
   }
 
+  async function save() {
+    const check: Check = {
+      id: draft.checkId,
+      classId: klass.id,
+      date: draft.date,
+      questionIds: draft.questionIds,
+      kind: "weekly",
+      versionOrder: order,
+      childIds: null,
+    };
+    const answers = rows.flatMap((q, i) => markGrid(check.id, q, present, draft.grids[i].values, draft.grids[i].reads, i + 1));
+    try {
+      await saveCheck(check, answers);
+      await db.drafts.delete(klass.id);
+      onSaved(draft.date);
+    } catch (e) {
+      // Saved on this phone; the draft stays, so the teacher can save again to send it.
+      onError((e as Error).message);
+    }
+  }
+
+  async function discard() {
+    if (window.confirm("Discard this check and everything entered in it?")) await db.drafts.delete(klass.id);
+  }
+
+  const rowLabel = (i: number) => (rows.length > 1 ? `Row ${i + 1}: ` : "");
+  const { missing, duplicate } = rollFlags(present, draft.rolls);
+  const flagged = new Set([...missing, ...duplicate].map((c) => c.id));
+
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="check-concept">Concept to check</Label>
-        <NativeSelect
-          id="check-concept"
-          className="w-full [&_select]:h-11"
-          value={conceptId}
-          onChange={(e) => pickConcept(e.target.value)}
-        >
-          <NativeSelectOption value="">Pick a concept</NativeSelectOption>
-          {concepts.map((c) => (
-            <NativeSelectOption key={c.id} value={c.id}>
-              {c.name}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-semibold">Check on {draft.date}</h2>
+          <p className="text-sm text-muted-foreground">{rows.map((q, i) => `${rowLabel(i)}${conceptName(q.conceptId)}`).join(" · ")}</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={discard}>
+          Discard
+        </Button>
       </div>
 
-      {question && (
-        <>
-          <section className="space-y-2">
-            <h2 className="font-semibold">1. Write this on the board ({symbols.A} box)</h2>
-            <p className="rounded-lg border p-6 text-center text-5xl font-semibold">{question.A.prompt}</p>
-          </section>
+      <section className="space-y-2">
+        <h2 className="font-semibold">Who is absent today?</h2>
+        <p className="text-sm text-muted-foreground">Tap to mark. Absent children get no boxes and are never marked wrong.</p>
+        <div className="flex flex-wrap gap-2">
+          {roster.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => toggleAbsent(c.id)}
+              className={cn(
+                "rounded-full border px-3 py-2 text-sm",
+                absent.has(c.id) ? "border-destructive bg-destructive/10 text-destructive" : "text-muted-foreground",
+              )}
+            >
+              {c.rollNo} {c.name}
+            </button>
+          ))}
+        </div>
+      </section>
 
-          <section className="space-y-2">
-            <h2 className="font-semibold">2. Play the Hindi question ({symbols.B} box)</h2>
-            <ClipButton clipId={question.B.audio} label="Play B (Hindi)" />
-            <p className="text-sm text-muted-foreground">{question.B.english}</p>
-          </section>
+      {order.map((version, step) => (
+        <section key={version} className="space-y-3">
+          <h2 className="font-semibold">
+            {step + 1}. Now fill the {symbols[version]} box
+          </h2>
+          {rows.map((q, i) => (
+            <div key={q.id} className="space-y-1">
+              {version === "A" && (
+                <>
+                  <p className="text-sm text-muted-foreground">{rowLabel(i)}write this on the board</p>
+                  <p className="rounded-lg border p-5 text-center text-4xl font-semibold">{q.A.prompt}</p>
+                </>
+              )}
+              {version === "B" && (
+                <>
+                  <ClipButton clipId={q.B.audio} label={`Play ${rowLabel(i).toLowerCase()}in Hindi`} />
+                  <p className="text-sm text-muted-foreground">{q.B.english}</p>
+                </>
+              )}
+              {version === "C" && (
+                <>
+                  <SpeakButton text={q.C.bhili} label={`Play ${rowLabel(i).toLowerCase()}in Bhili`} />
+                  <p className="text-sm text-muted-foreground">{q.C.english}</p>
+                </>
+              )}
+            </div>
+          ))}
+          {version === "C" && <p className="text-sm text-muted-foreground">Children who speak Hindi at home skip this box.</p>}
+        </section>
+      ))}
 
-          <section className="space-y-2">
-            <h2 className="font-semibold">3. Play the Bhili question ({symbols.C} box)</h2>
-            <SpeakButton text={question.C.bhili} label="Play C (Bhili)" />
-            <p className="text-sm text-muted-foreground">
-              {question.C.english} Children who speak Hindi at home skip this box.
-            </p>
-          </section>
-
-          <section className="space-y-2">
-            <h2 className="font-semibold">4. Enter the answers from the slates</h2>
-            <p className="text-sm text-muted-foreground">
-              Photograph five to eight slates at a time, or type the answers. Leave a box empty if the child left it
-              blank.
-            </p>
-            <SlatePhotos onRead={readPhoto} />
-            {children && <PhotoFlags roster={children} reads={grid.reads} rolls={rolls} />}
-            {children && (
-              <AnswerGrid
-                roster={children}
-                values={grid.values}
-                reads={grid.reads}
-                flaggedRows={flaggedRows(children, rolls)}
-                onChange={(values, reads) => {
-                  setSaved(false);
-                  setGrid({ values, reads });
-                }}
-              />
+      <section className="space-y-3">
+        <h2 className="font-semibold">{order.length + 1}. Enter the answers from the slates</h2>
+        <p className="text-sm text-muted-foreground">
+          Photograph five to eight slates at a time, or type the answers. Leave a box empty if the child left it blank.
+        </p>
+        <SlatePhotos onRead={readPhoto} />
+        <PhotoFlags roster={present} reads={draft.grids.map((g) => g.reads)} rolls={draft.rolls} />
+        {rows.map((q, i) => (
+          <div key={q.id} className="space-y-2">
+            {rows.length > 1 && (
+              <h3 className="font-medium">
+                {rowLabel(i)}
+                {conceptName(q.conceptId)}
+              </h3>
             )}
-          </section>
+            <AnswerGrid
+              roster={roster}
+              values={draft.grids[i].values}
+              reads={draft.grids[i].reads}
+              flaggedRows={flagged}
+              absent={absent}
+              onChange={(values, reads) => change((d) => ({ ...d, grids: d.grids.map((g, j) => (j === i ? { values, reads } : g)) }))}
+            />
+          </div>
+        ))}
+      </section>
 
-          <Button className="h-12 w-full" onClick={save}>
-            {saved ? "Saved" : "Save answers"}
-          </Button>
-        </>
-      )}
+      <Button className="h-12 w-full" onClick={save}>
+        Save answers
+      </Button>
     </div>
   );
 }
 
-const flaggedRows = (roster: Child[], rolls: (number | null)[]) => {
-  const { missing, duplicate } = rollFlags(roster, rolls);
-  return new Set([...missing, ...duplicate].map((c) => c.id));
-};
-
 const rollList = (children: Child[]) => children.map((c) => `${c.rollNo} ${c.name}`).join(", ");
 
 // What the teacher needs to check after reading photos.
-function PhotoFlags({ roster, reads, rolls }: { roster: Child[]; reads: GridReads; rolls: (number | null)[] }) {
+function PhotoFlags({ roster, reads, rolls }: { roster: Child[]; reads: GridReads[]; rolls: (number | null)[] }) {
   if (rolls.length === 0) return null;
   const { unreadable, unknown, duplicate, missing } = rollFlags(roster, rolls);
-  const boxes = Object.values(reads).flatMap((r) => Object.values(r)).filter(isFlagged).length;
+  const boxes = reads.flatMap((g) => Object.values(g).flatMap((r) => Object.values(r))).filter(isFlagged).length;
   const notes = [
     boxes > 0 && `${boxes} highlighted ${boxes === 1 ? "box needs" : "boxes need"} checking. Tap each one, and fix it if it's wrong.`,
     missing.length > 0 && `No slate found for roll ${rollList(missing)}. Photograph them again, or type their answers.`,

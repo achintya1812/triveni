@@ -10,17 +10,20 @@ const columns = "grid grid-cols-[2rem_1fr_3.5rem_3.5rem_3.5rem] items-center gap
 
 // One row per child, in roll order. Boxes read from slate photos with low confidence are flagged,
 // and so are the names in `flaggedRows` (rolls missing from the photos or on two slates).
+// Children absent today have no boxes.
 export function AnswerGrid({
   roster,
   values,
   reads,
   flaggedRows,
+  absent,
   onChange,
 }: {
   roster: Child[];
   values: GridValues;
   reads: GridReads;
   flaggedRows: Set<string>;
+  absent: Set<string>;
   onChange: (values: GridValues, reads: GridReads) => void;
 }) {
   // Tapping or editing a box read from a photo counts as the teacher checking it.
@@ -46,6 +49,14 @@ export function AnswerGrid({
         ))}
       </div>
       {roster.map((child) => {
+        if (absent.has(child.id)) {
+          return (
+            <div key={child.id} className={cn(columns, "text-muted-foreground")}>
+              <span className="text-lg">{child.rollNo}</span>
+              <span className="col-span-4 truncate">{child.name}: absent today</span>
+            </div>
+          );
+        }
         const versions = versionsFor(child);
         return (
           <div key={child.id} className={columns}>
