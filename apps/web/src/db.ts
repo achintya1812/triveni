@@ -95,3 +95,9 @@ export async function saveCheck(check: Check, answers: Answer[]) {
   await api("POST", `/classes/${check.classId}/checks`, check);
   await api("POST", `/checks/${check.id}/answers`, answers);
 }
+
+// The listening check's results, saved once for the class.
+export async function saveListening(classId: string, results: ListeningResult[]) {
+  await db.listeningResults.bulkPut(results);
+  await api("POST", `/classes/${classId}/listening`, results);
+}
