@@ -14,7 +14,7 @@ Full-build decisions:
   - Bhili from bhili-tts on Modal, through `/speak`.
   - No human-only rule.
 - Interface in Hindi by default, with an English toggle (i18next).
-- Parents are reached through the Meta WhatsApp Cloud API, with the Twilio sandbox as the fallback.
+- Parents are reached through the Meta WhatsApp Cloud API, on an app owned by a teammate's established Facebook account. If Meta stays blocked, the fallback is a Telegram bot (see Stage 22). Twilio was ruled out because trial accounts can't send our own messages.
 - Feature work never goes to `mvp`. Fixes are cherry-picked there only when I ask.
 
 ## Build Stages

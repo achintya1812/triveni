@@ -554,7 +554,15 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - **In the web app:** `VITE_WA_NUMBER`.
 - **Recipients:** the demo phones, added as verified recipients.
 - **Template:** one approved utility template, submitted on Day 1 because approval can take hours. Its text: "A new home activity for {{1}} is ready. Reply OK to hear it."
-- If Meta blocks us, switch to the Twilio WhatsApp sandbox. Don't build an adapter layer up front.
+- **Who sets up the Meta app:** a teammate with an established Facebook account, because a brand-new account's business portfolio was locked (error 131031). They create their own business portfolio and app, complete any verification prompts, fill in the business info (the website can be the deployed web app), and add the others as app admins under **App roles**.
+- **Twilio is ruled out:** trial accounts can only send Twilio's ready-made templates (`21654 ContentSid Required`), not our own text or voice notes.
+- **Fallback, if Meta stays blocked: a Telegram bot.** Build only one of the two, not an adapter layer. With Telegram:
+  - Create the bot with @BotFather. It's instant and free, and needs `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET` and, in the web app, `VITE_TELEGRAM_BOT`.
+  - **Opt-in:** each child's QR code opens `t.me/<bot>?start=<code>`; the webhook gets `/start <code>`, stores the chat id and sets the opt-in.
+  - **Sending:** `sendVoice` takes the same `.ogg` Opus file as a voice note, followed by `sendMessage` with the steps. There's no 24-hour window and no template.
+  - **Webhook:** register it with `setWebhook` and a `secret_token`, and check the `X-Telegram-Bot-Api-Secret-Token` header.
+  - **Replies:** a voice reply is fetched with `getFile`.
+  - **Known limit to say in the demo:** fewer rural parents use Telegram than WhatsApp.
 
 **Build** in `apps/api/src/routes/whatsapp.ts`, using `fetch` against the Graph API (no SDK):
 - **Opt-in:**

@@ -110,7 +110,9 @@ Known limits: B (Bulbul) and C (bhili-tts) are different voices, so a difference
 - **24-hour window:** inside it we send voice notes freely; outside it we first send one approved utility template ("Reply OK to hear it"), and the reply reopens the window.
 - Voice notes are `.ogg` (Opus), converted once with `ffmpeg-static` from the cached Bulbul or bhili-tts audio. This is WhatsApp's native voice-note format.
 - Parents' voice replies are stored in the private `wa-media` bucket; Hindi ones are transcribed with Saaras.
-- If Meta's setup holds us up, use the **Twilio WhatsApp sandbox** instead. It is quicker to set up but charges a little per message.
+- **Who owns the app:** the Meta app belongs to a teammate's established Facebook account. A brand-new account's business portfolio was locked (error 131031).
+- **Twilio was ruled out:** trial accounts can only send Twilio's ready-made templates.
+- **Fallback, if Meta stays blocked:** a **Telegram bot** (Bot API: a `t.me/<bot>?start=<code>` opt-in, `sendVoice` with the same `.ogg` Opus file, and a webhook with a secret token). It's free and instant to set up, but fewer rural parents use Telegram.
 
 ## Data model
 
@@ -190,5 +192,5 @@ About $5 for the API host. Supabase, Vercel or Cloudflare Pages, and the WhatsAp
 1. Slate-reading accuracy on real children's handwriting (the slate-reading test above).
 2. Whether `bulbul:v4` is on Sarvam's text-to-speech API, or only `bulbul:v3`.
 3. Sarvam's current speech-to-text and text-to-speech prices.
-4. Meta WhatsApp Cloud API setup time; fall back to Twilio if needed.
+4. Meta WhatsApp Cloud API: set up on a teammate's established Facebook account. If it stays blocked, fall back to a Telegram bot.
 5. A Bhili speaker from the target area to review the machine-translated Bhili text and how bhili-tts says it.
