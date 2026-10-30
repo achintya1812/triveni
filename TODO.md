@@ -377,7 +377,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 15: Results, brief and quick re-check
+## [x] Stage 15: Results, brief and quick re-check
 
 **Lane:** B. **Depends on:** 10, 11.
 
@@ -413,10 +413,25 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - The same tap grid can run a whole-class oral check for early Grade 1.
 - **Stretch:** list wrong answers that have no cause, and add a `POST /answers/explain` route in `routes/checks.ts` where Claude suggests a likely cause, shown as a suggestion only.
 
+**As built:**
+- **Brief tab:** the brief is now the first tab (`screens/Brief.tsx`), with an English/हिंदी switch until Stage 13 adds the app-wide one.
+  - **Rewording** waits 1.5 s for the records to settle. Otherwise loading the demo asked Claude 18 times.
+  - **Read aloud** moved to Stage 18, which brings Hindi speech.
+- **Quick re-checks:** listed under the brief, by concept.
+  - **Saving:** only children the teacher tapped are saved, so an untapped child keeps their label.
+  - **Questions:** with no `use: "recheck"` question yet, a re-check uses the weekly question and says so.
+  - **Oral check:** the whole-class Grade 1 oral check isn't wired to the tap grid yet.
+- **Results** (`results.ts`): `placedOnRow(data, check, row)` gives each child's placement, what's pending (a re-check or the probe), and notes on their wrong answers.
+  - **Opening check:** on the same day, the weekly check opens before its re-checks.
+- **Shared loading:** `classData.ts` (`useClassData`, `content`) loads the class for the rules engine.
+- **Removed:** `buildBrief` (the MVP's per-check template).
+- **Not done (stretch):** unknown wrong answers with Claude's suggested cause.
+- **How it was checked:** headless Firefox at phone size against the real API, Supabase and Claude. Rewording runs once per change, in English and in Hindi.
+
 **Verify:**
-- [ ] On the demo seed, after this week's live check, Ravi is in a confirmed language gap and Meena is in Never taught.
-- [ ] A re-check that repeats Sita's pattern confirms her; one that doesn't clears her.
-- [ ] With the API stopped, the template brief still shows.
+- [x] On the demo seed, after this week's live check, Ravi is in a confirmed language gap and Meena is in Never taught.
+- [x] A re-check that repeats Sita's pattern confirms her; one that doesn't clears her.
+- [x] With the API stopped, the template brief still shows.
 
 ---
 
@@ -493,6 +508,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - The cache key hashes the language and the text together.
 - **A clip that isn't cached:** when a Bhili text isn't cached and the speech service can't be reached, `/speak` answers 503 straight away with "this Bhili clip hasn't been made yet", and `SpeakButton` shows that message instead of hanging.
 - Update `SpeakButton` and `warm:speech` to pass the language.
+- **Read aloud** on the brief screen (moved here from Stage 15): it plays the Hindi brief through `/speak` with `language: "hindi"`.
 - **`warm:speech --check`:** it asks the API (`API_URL`, so it also works against the deployed one) for each text without making anything, and lists every one that isn't cached. Stages 19 and 23 use it.
 - **Faster warming (optional, free):** run `tts_server.py` in a Google Colab or Kaggle notebook on its free GPU, expose it with `cloudflared tunnel --url http://localhost:8790`, and set `TTS_URL` to the tunnel's address while warming. Add a short how-to in `services/bhili/README.md`. Use it only for warming, never as part of the demo.
 

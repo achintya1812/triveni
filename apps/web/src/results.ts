@@ -1,15 +1,5 @@
-import {
-  type Answer,
-  type AttendanceLog,
-  type Child,
-  type LessonLog,
-  type Placement,
-  placeChild,
-  type Question,
-} from "@triveni/core";
-import type { Version } from "./check";
-
-export type Placed = { child: Child; placement: Placement };
+import { type Check, type Child, type ClassData, childRecord, needsRecheck, type Placement, type RowResult, results, type Version } from "@triveni/core";
+import { content } from "./classData";
 
 // The order groups are shown in, matching the brief: the children who need help first.
 export const groupOrder: Placement[] = [
@@ -26,27 +16,38 @@ export const groupOrder: Placement[] = [
   "ready",
 ];
 
-// Places each child who has answers in the check. The grid stores every box, blanks included.
-export function placeChildren(
-  question: Question,
-  children: Child[],
-  answers: Answer[],
-  lessons: LessonLog[],
-  attendance: AttendanceLog[],
-  checkDate: string,
-  row = 1,
-): Placed[] {
-  return children.flatMap((child) => {
-    const mine = answers.filter((a) => a.childId === child.id && a.row === row);
-    if (mine.length === 0) return [];
-    const value = (version: Version) => mine.find((a) => a.version === version)?.value ?? null;
-    const childAnswers = {
-      childId: child.id,
-      homeLanguage: child.homeLanguage,
-      a: value("A"),
-      b: value("B"),
-      c: value("C"),
-    };
-    return [{ child, placement: placeChild(childAnswers, question, lessons, attendance, checkDate) }];
+export type Placed = {
+  child: Child;
+  placement: Placement;
+  // What still has to happen before the child joins a group: a quick re-check, or the probe.
+  pending: "recheck" | "probe" | null;
+  // What the child's wrong answers show, such as "B: wrote 22, added instead of subtracted".
+  notes: string[];
+};
+
+const versions: Version[] = ["A", "B", "C"];
+
+function notes(r: RowResult): string[] {
+  return versions.flatMap((v) => {
+    const a = r.answers[v];
+    if (!a?.cause) return [];
+    if (a.cause === "copied") return [`${v}: wrote ${a.value}, a number copied from the question`];
+    const listed = r.question.wrongAnswers[v].find((w) => w.cause === a.cause);
+    return listed ? [`${v}: wrote ${a.value}, ${listed.meaning.charAt(0).toLowerCase()}${listed.meaning.slice(1)}`] : [];
   });
+}
+
+// Each child's placement on one row of a check, with what is still pending for their label.
+export function placedOnRow(data: ClassData, check: Check, row: number): Placed[] {
+  const all = results(data, content);
+  const questionId = check.questionIds[row - 1];
+  return all
+    .filter((r) => r.checkId === check.id && r.question.id === questionId)
+    .map((r) => {
+      const child = data.children.find((c) => c.id === r.childId)!;
+      const label = childRecord(child, data, content, all).concepts[r.conceptId]?.label ?? null;
+      const current = label?.placement === r.placement;
+      const pending = current && needsRecheck(label) ? "recheck" : current && label?.placement === "taught_not_learned" && !label.confirmed ? "probe" : null;
+      return { child, placement: r.placement, pending, notes: notes(r) };
+    });
 }
