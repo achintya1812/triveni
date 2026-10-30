@@ -11,6 +11,9 @@ const child = (id: string, homeLanguage: Child["homeLanguage"]): Child => ({
   rollNo: 1,
   name: id,
   homeLanguage,
+  parentChatId: null,
+  parentOptInAt: null,
+  hindiUnderstanding: null,
 });
 
 describe("markGrid", () => {

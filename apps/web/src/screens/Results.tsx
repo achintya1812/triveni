@@ -1,5 +1,5 @@
 import { concepts, keywords, questions, stories } from "@triveni/content";
-import { buildBrief, type ClassRecord, type Concept, type Placement, type Question } from "@triveni/core";
+import { buildBrief, type Check, type ClassRecord, type Concept, type Placement, type Question } from "@triveni/core";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
 import { SpeakButton } from "@/components/ClipButton";
@@ -20,6 +20,11 @@ const groupLabels: Record<Placement, string> = {
   ready: "Ready",
 };
 
+const checkName = (check: Check) =>
+  check.questionIds
+    .map((id) => concepts.find((c) => c.id === questions.find((q) => q.id === id)?.conceptId)?.name)
+    .join(", ");
+
 // The groups for one saved check, what to do for each, and the morning brief.
 export function Results({ klass }: { klass: ClassRecord }) {
   const checks = useLiveQuery(() => db.checks.where({ classId: klass.id }).sortBy("date"), [klass.id]);
@@ -39,8 +44,9 @@ export function Results({ klass }: { klass: ClassRecord }) {
   if (checks?.length === 0) return <p className="text-muted-foreground">No checks saved yet. Run one in the Check tab.</p>;
   if (!check || !records) return null;
 
-  const concept = concepts.find((c) => c.id === check.conceptId)!;
-  const question = questions.find((q) => q.conceptId === check.conceptId)!;
+  // Until Stage 14, a check has one concept, so one question.
+  const question = questions.find((q) => q.id === check.questionIds[0])!;
+  const concept = concepts.find((c) => c.id === question.conceptId)!;
   const placed = placeChildren(question, records.children, records.answers, records.lessons, records.attendance);
 
   return (
@@ -55,7 +61,7 @@ export function Results({ klass }: { klass: ClassRecord }) {
         >
           {checks!.map((c) => (
             <NativeSelectOption key={c.id} value={c.id}>
-              {formatDate(c.date)}: {concepts.find((k) => k.id === c.conceptId)?.name}
+              {formatDate(c.date)}: {checkName(c)}
             </NativeSelectOption>
           ))}
         </NativeSelect>

@@ -1,5 +1,5 @@
 import { concepts, questions } from "@triveni/content";
-import type { Child, ClassRecord, SlateReading } from "@triveni/core";
+import type { Check, Child, ClassRecord, SlateReading } from "@triveni/core";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { AnswerGrid, symbols } from "@/components/AnswerGrid";
@@ -42,7 +42,15 @@ export function CheckRunner({ klass, onError }: { klass: ClassRecord; onError: (
 
   async function save() {
     if (!question || !children) return;
-    const check = { id: checkId, classId: klass.id, date: today(), conceptId };
+    const check: Check = {
+      id: checkId,
+      classId: klass.id,
+      date: today(),
+      questionIds: [question.id],
+      kind: "weekly",
+      versionOrder: ["A", "B", "C"],
+      childIds: null,
+    };
     try {
       await saveCheck(check, markGrid(check.id, question, children, grid.values, grid.reads));
       setSaved(true);

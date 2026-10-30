@@ -40,6 +40,9 @@ export const demoChildren: Child[] = names.map(([name, homeLanguage], i) => ({
   rollNo: i + 1,
   name,
   homeLanguage,
+  parentChatId: null,
+  parentOptInAt: null,
+  hindiUnderstanding: null,
 }));
 
 const days: [date: string, conceptId: string, absent: string[]][] = [
@@ -59,7 +62,7 @@ export const demoDays: { date: string; absentChildIds: string[]; lesson: Lesson 
   ([date, conceptId, absent], i) => ({
     date,
     absentChildIds: absent.map((name) => demoChildren.find((c) => c.name === name)!.id),
-    lesson: { id: demoId(101 + i), classId: demoClass.id, date, conceptId },
+    lesson: { id: demoId(101 + i), classId: demoClass.id, date, conceptId, source: "dropdown", transcript: null, page: null },
   }),
 );
 

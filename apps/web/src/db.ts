@@ -1,15 +1,41 @@
-import type { Answer, Attendance, Check, Child, ClassRecord, Lesson } from "@triveni/core";
+import type {
+  Answer,
+  Attendance,
+  Check,
+  Child,
+  ClassRecord,
+  Lesson,
+  ListeningResult,
+  ParentMessage,
+  ProbeResult,
+} from "@triveni/core";
 import { Dexie, type EntityTable, type Table } from "dexie";
+import type { GridReads, GridValues } from "./check";
 
-// Mirrors the Stage 3 tables. Every write goes here first, then to the API.
-// There is no outbox: if the API call fails, the caller shows an error.
-export const db = new Dexie("triveni") as Dexie & {
+// The check in progress, so it survives switching screens (Stage 14 shapes it).
+export type Draft = {
+  classId: string;
+  checkId: string;
+  questionIds: string[];
+  values: GridValues;
+  reads: GridReads;
+};
+
+// Mirrors the API's tables. Every write goes here first, then to the API.
+// There is no outbox yet (Stage 17): if the API call fails, the caller shows an error.
+// A new database name, because Dexie can't change a table's primary key (answers gained `row`),
+// and the full build has no MVP data to keep.
+export const db = new Dexie("triveni-full") as Dexie & {
   classes: EntityTable<ClassRecord, "id">;
   children: EntityTable<Child, "id">;
   attendance: Table<Attendance, [string, string]>;
   lessons: EntityTable<Lesson, "id">;
   checks: EntityTable<Check, "id">;
-  answers: Table<Answer, [string, string, string]>;
+  answers: Table<Answer, [string, string, number, string]>;
+  probeResults: EntityTable<ProbeResult, "id">;
+  listeningResults: Table<ListeningResult, [string, string, string]>;
+  parentMessages: EntityTable<ParentMessage, "id">;
+  drafts: EntityTable<Draft, "classId">;
 };
 
 db.version(1).stores({
@@ -18,7 +44,11 @@ db.version(1).stores({
   attendance: "[childId+date], classId, date",
   lessons: "id, classId, date",
   checks: "id, classId",
-  answers: "[checkId+childId+version], checkId",
+  answers: "[checkId+childId+row+version], checkId",
+  probeResults: "id, classId, childId",
+  listeningResults: "[childId+itemId+language], classId",
+  parentMessages: "id, classId, childId",
+  drafts: "classId",
 });
 
 export async function api(method: string, path: string, body?: unknown) {

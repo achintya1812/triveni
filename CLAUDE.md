@@ -34,7 +34,7 @@ MVP (done, on `mvp`):
 8. [done] Deploy + demo: Render (API) + Vercel (web) from the `mvp` branch, every Bhili clip cached beforehand. Verify: 3-minute demo runs on a phone.
 
 Full build (on `main`; lane in brackets):
-9. Contracts [A]: full-build record and content schemas, migration, Dexie `triveni-full`, API routes split into `routes/`. Verify: migrations apply to the full-build project; every entity round-trips.
+9. [done] Contracts [A]: full-build record and content schemas, migration, Dexie `triveni-full`, API routes split into `routes/`. Verify: migrations apply to the full-build project; every entity round-trips.
 10. Rules: marking and 8 patterns [A]: wrong-answer causes, copied numbers as no data, all 8 patterns, absent on check day, "same pattern twice", version rotation, concept picking. Verify: Vitest covers each.
 11. Running record + daily brief [A]: concept status, root of a concept gap, word evidence, language profile, buddies, daily brief (en/hi). Verify: Meena and Arjun → root borrowing; Ravi confirmed across two weeks; brief has all sections.
 12. Demo seed v2 + simulation [A]: 20 children, 3 weeks, last week's check, planted causes; `simulate` script. Verify: planted children land correctly; the simulation prints an accuracy table.

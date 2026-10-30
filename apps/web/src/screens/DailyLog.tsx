@@ -42,7 +42,17 @@ export function DailyLog({ klass, onError }: { klass: ClassRecord; onError: (mes
 
   async function save() {
     const lesson = conceptId
-      ? { id: logged?.lesson?.id ?? crypto.randomUUID(), classId: klass.id, date, conceptId }
+      ? // Keeps a voice note's transcript and page when the teacher only changes the absences.
+        {
+          source: "dropdown" as const,
+          transcript: null,
+          page: null,
+          ...logged?.lesson,
+          id: logged?.lesson?.id ?? crypto.randomUUID(),
+          classId: klass.id,
+          date,
+          conceptId,
+        }
       : undefined;
     try {
       await saveDay(klass.id, date, absent, lesson);

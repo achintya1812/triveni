@@ -10,6 +10,8 @@ const question: Question = {
   A: { prompt: "14 − 5 = ?", answer: 9 },
   B: { hindi: "…", english: "…", answer: 8, audio: "check-b-borrowing" },
   C: { scriptHi: "…", bhili: "…", english: "…", answer: 6 },
+  use: "weekly",
+  wrongAnswers: { A: [], B: [], C: [] },
 };
 
 const lessons: LessonLog[] = [
