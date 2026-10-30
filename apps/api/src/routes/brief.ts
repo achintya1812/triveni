@@ -5,8 +5,9 @@ import { json } from "../http";
 
 export const brief = new Hono().post(
   "/brief/reword",
-  json(z.object({ brief: z.string().trim().min(1).max(4000) })),
+  json(z.object({ brief: z.string().trim().min(1).max(4000), language: z.enum(["en", "hi"]).default("en") })),
   async (c) => {
-    return c.json({ brief: await rewordBrief(c.req.valid("json").brief) });
+    const { brief, language } = c.req.valid("json");
+    return c.json({ brief: await rewordBrief(brief, language) });
   },
 );

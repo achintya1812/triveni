@@ -26,6 +26,10 @@ describe("bad input", () => {
     expect((await send("POST", "/brief/reword", { brief: "" })).status).toBe(400);
   });
 
+  it("rejects a brief language other than English or Hindi", async () => {
+    expect((await send("POST", "/brief/reword", { brief: "Hello", language: "fr" })).status).toBe(400);
+  });
+
   it("rejects a slate photo that isn't base64", async () => {
     expect((await send("POST", "/slates/read", { image: "not base64!", mediaType: "image/jpeg" })).status).toBe(400);
   });

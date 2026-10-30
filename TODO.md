@@ -211,7 +211,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 11: Running record + daily brief
+## [x] Stage 11: Running record + daily brief
 
 **Lane:** A. **Depends on:** 10.
 
@@ -242,12 +242,26 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   It takes an `en`/`hi` language and has a template in each. `POST /brief/reword` gains a `language` field, so Claude rewords it in plain Hindi.
 - **Defaults:** the thresholds above are defaults the team agreed to. Keep them as named constants in one place, so changing them is a single edit.
 
+**As built** (`packages/core/src/running.ts`, `brief.ts`):
+- **`results(data, content)`** gives every child's result on every row of every check. It places from the stored marks, so tap-marked re-checks count.
+- **`childRecord(child, data, content)`** returns `concepts` (status, label, causes), `words`, `language` (scores and `reteachIn`), `latest`, and `root(conceptId)`.
+  - **How status is read:** symbol gaps count as learned, because the child can do the idea in a story.
+  - **Retaught children:** a child marked never taught who was present for a later lesson counts as not checked yet.
+- **`buddies(records)`** picks the bilingual buddies.
+- **The defaults** are in the `thresholds` constant.
+- **`ClassData` and `Content`** are the inputs. Core can't import `@triveni/content`, so callers pass content in.
+- **`buildDailyBrief(today, data, content, "en" | "hi")`:**
+  - It lists each child once per group.
+  - Confirmed taught-but-not-learned children move from the probe group to a reteaching group, which starts from the probe's restart point.
+  - `buildBrief` (the per-check MVP template) stays until Stage 15 moves the results screen over.
+- **`placeMarks`** in `rules.ts` places a child from marks already made.
+
 **Verify:**
-- [ ] Meena (absent both borrowing days) fails two-digit subtraction → her root is borrowing.
-- [ ] Arjun's 11 → root borrowing, even though he was present.
-- [ ] Ravi's language gaps in two different weeks are confirmed without a re-check.
-- [ ] Word evidence over Ravi's checks ranks `de-diye` and `bache` at the top.
-- [ ] The daily brief for a fixture class has all five sections, in both languages.
+- [x] Meena (absent both borrowing days) fails two-digit subtraction → her root is borrowing.
+- [x] Arjun's 11 → root borrowing, even though he was present.
+- [x] Ravi's language gaps in two different weeks are confirmed without a re-check.
+- [x] Word evidence over Ravi's checks ranks `de-diye` and `bache` at the top.
+- [x] The daily brief for a fixture class has all five sections, in both languages.
 
 ---
 
