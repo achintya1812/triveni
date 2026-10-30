@@ -11,7 +11,7 @@ Full-build decisions:
 - Data: a separate full-build Supabase project, plus Dexie (database `triveni-full`). Writes go to Dexie, then the API; Stage 17 adds the outbox.
 - Audio is generated, not recorded:
   - Hindi from Sarvam Bulbul: the B files, and `/speak` with `language: "hindi"`.
-  - Bhili from bhili-tts on Modal, through `/speak`.
+  - Bhili from bhili-tts, through `/speak`. Every Bhili text is fixed content, cached in advance with `warm:speech` (as in the MVP), so no GPU host is deployed. One can be added later by setting `TTS_URL`.
   - No human-only rule.
 - Interface in Hindi by default, with an English toggle (i18next).
 - Parents are reached through a Telegram bot (Bot API). WhatsApp was dropped: a new Meta business account was locked, and Twilio trial accounts only send Twilio's templates.
@@ -43,12 +43,12 @@ Full build (on `main`; lane in brackets):
 15. Results, brief and quick re-check [B]: all groups with causes and actions, a daily brief screen with read-aloud, tap re-check. Verify: Ravi confirmed, Meena never taught; a re-check confirms Sita; the brief works with the API off.
 16. Group time [B]: probe runner, reteaching kit in the profile's language, listening check. Verify: Arjun's restart point; the kit's language follows the profile.
 17. Offline [B, first to cut]: PWA cache and Dexie outbox for writes, photos and voice notes. Verify: an airplane-mode check syncs on reconnect.
-18. Speech everywhere [C]: bhili-tts on Modal, `/speak` with `language` (Bulbul for Hindi). Verify: a new Bhili sentence comes back in under 10 s once Modal is warm; Hindi is cached.
+18. Speech everywhere [C]: `/speak` with `language` (Bulbul for Hindi, made on request), a clear 503 for uncached Bhili, `warm:speech --check`, an optional Colab/Kaggle warming how-to. Verify: Hindi is cached; uncached Bhili shows the message; the check lists exactly the uncached texts.
 19. Full content [C]: two-digit subtraction, pages, weekly and re-check questions, wrong-answer lists, probes, kit, listening items, catch-up scripts; translated and warmed. Verify: parses; numbers survive translation; reviewed by a person.
 20. Slate reading v2 [C]: roster in each request, Devanagari rules, roll confidence, name matching, unplaced slates, per-roll accuracy. Verify: roll accuracy beats `mvp-demo-v1`; no slate goes to the wrong child.
 21. Voice notes [C]: record, Saaras, page → concept, Claude fallback. Verify: page and no-page notes both map correctly.
 22. Telegram parent notes [C]: bot, QR deep-link opt-in, `.ogg` voice messages with the activity as caption, a webhook with a secret token for replies. Verify: a demo phone receives a Bhili catch-up voice message; replies are stored.
-23. Deploy + demo [all]: a second Render service and Vercel project from `main`, Modal kept warm, design slides, the 5-minute demo. Verify: the demo runs twice in a row on a phone.
+23. Deploy + demo [all]: a second Render service and Vercel project from `main`, every Bhili clip cached beforehand, design slides, the 5-minute demo. Verify: the demo runs twice in a row on a phone.
 
 Follow these rules when you are building: 
 

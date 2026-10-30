@@ -30,8 +30,7 @@ Both `.env` files are gitignored. Get the keys from a teammate privately and nev
 | `SUPABASE_SERVICE_ROLE_KEY` | Same. Server-side only: never put it in `apps/web`. |
 | `SARVAM_API_KEY` | `make:standins`; Hindi speech through `/speak` (Stage 18); Saaras voice notes and parent replies (Stages 21, 22) |
 | `ANTHROPIC_API_KEY` | Slate reading, rewording the brief, and the other Claude calls. Use the `triveni-app` workspace key. Without it the app shows the template brief. |
-| `TTS_URL` | Optional. The Bhili speech service: `http://localhost:8790` by default, or the Modal URL (Stage 18). |
-| `TTS_TOKEN` | The shared secret for the Modal speech service (Stage 18). |
+| `TTS_URL` | Optional. The Bhili speech service: `http://localhost:8790` by default, or a Colab/Kaggle tunnel for faster warming (Stage 18). Not set on Render. |
 | `TELEGRAM_BOT_TOKEN` | The parents' Telegram bot, from @BotFather (Stage 22) |
 | `TELEGRAM_WEBHOOK_SECRET` | Any random string. Telegram sends it with every webhook call, and the API checks it (Stage 22). |
 | `PUBLIC_API_URL` | The API's public address, which Telegram calls: a tunnel while developing, the Render URL once deployed (Stage 22) |

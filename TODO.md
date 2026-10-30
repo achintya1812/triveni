@@ -416,26 +416,30 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 **Lane:** C. **Depends on:** nothing. Start at once.
 
-**Goal:** fast Bhili speech from the cloud, and Hindi speech through the same route.
+**Goal:** Hindi speech through the same `/speak` route as Bhili, and a reliable way to make sure every Bhili clip is cached before anyone needs it.
 
-**You need:** a Modal account and token, and `SARVAM_API_KEY`.
+**How Bhili works (as in the MVP):**
+- Every Bhili sentence the app speaks is written in advance in `packages/content`, so nothing new in Bhili is made while the app runs.
+- `warm:speech` speaks every Bhili text once, using `tts_server.py` on a laptop CPU (about a minute per sentence), and caches it in the `audio` bucket.
+- The deployed API has no speech service and serves only cached clips.
+- **Later, optionally:** a cloud GPU host (Modal, a Hugging Face endpoint, RunPod) runs the same `tts_server.py`, and the API points `TTS_URL` at it, with no code changes. We skipped it because it needs a card.
+
+**You need:** `SARVAM_API_KEY`.
 
 **Build:**
-- **Bhili on Modal:**
-  - Add `services/bhili/modal_app.py`, which serves the same `POST /speak` as `tts_server.py`.
-  - It runs on an L4 GPU, with the model baked into the image or a volume, and scales to zero after 10 idle minutes.
-  - It's protected by a shared secret header (`TTS_TOKEN`).
-  - Add a documented `min_containers=1` switch for demo days.
-  - Set `TTS_URL` and `TTS_TOKEN` in the API.
 - **`POST /speak` takes `{ text, language }`:**
-  - `bhili` goes to the Bhili service, as now.
-  - `hindi` goes to Sarvam Bulbul (reuse the call in `make-standins.ts`, `bulbul:v3`).
+  - `bhili` goes to the Bhili service at `TTS_URL`, as now.
+  - `hindi` goes to Sarvam Bulbul (reuse the call in `make-standins.ts`, `bulbul:v3`). Hindi is made on request even when deployed (the brief read aloud is new text every day), then cached.
   - The cache key hashes the language and the text together.
+- **A clip that isn't cached:** when a Bhili text isn't cached and the speech service can't be reached, `/speak` answers 503 straight away with "this Bhili clip hasn't been made yet", and `SpeakButton` shows that message instead of hanging.
 - Update `SpeakButton` and `warm:speech` to pass the language.
+- **`warm:speech --check`:** it asks the API (`API_URL`, so it also works against the deployed one) for each text without making anything, and lists every one that isn't cached. Stages 19 and 23 use it.
+- **Faster warming (optional, free):** run `tts_server.py` in a Google Colab or Kaggle notebook on its free GPU, expose it with `cloudflared tunnel --url http://localhost:8790`, and set `TTS_URL` to the tunnel's address while warming. Add a short how-to in `services/bhili/README.md`. Use it only for warming, never as part of the demo.
 
 **Verify:**
-- [ ] From the deployed or local API, a Bhili sentence it hasn't spoken before comes back in under 10 seconds once Modal is warm.
 - [ ] Hindi text speaks through Bulbul, and a second request is served from the cache.
+- [ ] With the speech service stopped, an uncached Bhili text gets the 503 message in the app, and a cached one still plays.
+- [ ] `warm:speech --check` lists exactly the uncached texts.
 
 ---
 
@@ -465,13 +469,13 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - Keep the numbers in every `english` field matching the `hindi` and `bhili` text.
 - **Bhili:**
   - Extend `translate.py` to the new `bhili` fields (catch-up, kit, listening).
-  - Extend `warm:speech` to every Bhili and Hindi text, then run both.
+  - Extend `warm:speech` to every Bhili and Hindi text, then run both. Warming is a local API plus a local `tts_server.py`, pointed at the full-build Supabase project, so the shared bucket gets the clips. Colab or Kaggle make it faster (Stage 18).
 - Once everything is filled, make the new content fields required in `content.ts`.
 
 **Verify:**
 - [ ] All content parses with the fields required, and every audio ref resolves.
 - [ ] `translate.py` reports no changed numbers.
-- [ ] `warm:speech` finishes with every clip cached.
+- [ ] `warm:speech --check` lists no uncached texts.
 - [ ] A person has reviewed the Hindi, and the PR says who.
 
 ---
@@ -606,10 +610,10 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 **Build:**
 - **Hosting** (the MVP's Render service and Vercel project stay on `mvp`, untouched):
-  - **API:** a second Render service from `main`, on the Starter plan (it doesn't sleep, so webhooks always land). Set the full-build Supabase keys, `ANTHROPIC_API_KEY`, `SARVAM_API_KEY`, `TTS_URL`, `TTS_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `PUBLIC_API_URL` (the Render URL) and `WEB_ORIGIN`.
+  - **API:** a second Render service from `main`, on the Starter plan (it doesn't sleep, so webhooks always land). Set the full-build Supabase keys, `ANTHROPIC_API_KEY`, `SARVAM_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `PUBLIC_API_URL` (the Render URL) and `WEB_ORIGIN`.
   - **Web app:** a second Vercel project from `main`, with `VITE_API_URL`, `VITE_AUDIO_BASE_URL` and `VITE_TELEGRAM_BOT`.
   - **Webhook:** run `telegram:webhook` with `PUBLIC_API_URL` set to the Render URL.
-  - **Bhili speech:** set Modal's `min_containers=1` an hour before the demo, and run `warm:speech` against the deployed API.
+  - **Bhili speech:** no speech service is deployed, so leave `TTS_URL` unset on Render, as in the MVP. After the last content change, run `warm:speech` locally (Stage 19), then `API_URL=<render url> warm:speech --check` must list nothing.
   - **README:** add a "Deploy (full build)" section.
 - **Designs:** two static mock screens or slides for what IDEA.md says is shown only as designs:
   - the teacher's language learning (tomorrow's words, spaced review)
@@ -633,7 +637,6 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 ## Open items for people, not code
 
 - [ ] A new Supabase project for the full build (URL and service-role key, shared privately).
-- [ ] A Modal account and token (Stage 18).
 - [ ] A Sarvam key with Saaras speech-to-text (Stages 21, 22). Confirm the Bulbul version.
 - [ ] A Telegram bot made with @BotFather: its token and username (Stage 22).
 - [ ] The textbook and page numbers for the 4 concepts (Stages 19, 21).
