@@ -1,6 +1,6 @@
 # Triveni: remaining work
 
-Stages 0–7 are done. This file is for whoever picks up a stage next, working with a Claude Code instance. Each stage below lists what to build, the files it touches, and how to check it is done.
+Stages 0–8 are done. This file is for whoever picks up a stage next, working with a Claude Code instance. Each stage below lists what to build, the files it touches, and how to check it is done.
 
 ## Workflow
 
@@ -226,7 +226,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ---
 
-## [ ] Stage 8: Deploy + demo
+## [x] Stage 8: Deploy + demo
 
 **Build:**
 - **Hosting:** the API on Render and the web app on Vercel, both deployed from the `mvp` branch. The MVP is the backup demo; the full product continues on `main`. Steps are in README → Deploy.
@@ -235,7 +235,9 @@ SUPABASE_SERVICE_ROLE_KEY=...
 - **Rehearsal:** practise the 3-minute demo in IDEA.md (Bare minimum MVP → Demo).
 
 **Verify:**
-- [ ] The full demo runs on a phone against the deployed build.
+- [x] The full demo runs on a phone against the deployed build.
+
+**Deployed:** web https://triveni-blush.vercel.app, API https://triveni-api-shg8.onrender.com, both from `mvp`. The demoed version is tagged `mvp-demo-v1`.
 
 ---
 

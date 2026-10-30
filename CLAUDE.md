@@ -23,7 +23,7 @@ Detailed instructions for every remaining stage, plus repo conventions, are in T
 5. [done] Check runner + answer grid (web): show A, play B then C (C now spoken live in Bhili), tap grid, Hindi-home children skip C. Verify: full check in browser; saved answers marked right, blanks `no_data`.
 6. [done] Results + brief: five groups with what to do; template brief, reworded by Claude with template fallback. Verify: Ravi → Language gap, Meena → Never taught; works with API off.
 7. [done] Slate photo reading: camera, resize, Claude structured read into the grid, flag low-confidence/missing/duplicate rolls, accuracy script. Verify: sample photos fill the grid with flags.
-8. Deploy + demo: Render (API) + Vercel (web) from the `mvp` branch, every Bhili clip cached beforehand. Verify: 3-minute demo runs on a phone.
+8. [done] Deploy + demo: Render (API) + Vercel (web) from the `mvp` branch, every Bhili clip cached beforehand. Verify: 3-minute demo runs on a phone.
 
 Follow these rules when you are building: 
 
