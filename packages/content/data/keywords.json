@@ -4,5 +4,12 @@
   { "id": "ud-gayin", "hindi": "उड़ गईं", "roman": "ud gayin", "meaning": "flew away", "bhili": "उडी गेहलो." },
   { "id": "ab-kitni", "hindi": "अब कितनी", "roman": "ab kitni", "meaning": "how many now", "bhili": "आमी कोते हाय." },
   { "id": "de-diye", "hindi": "दे दिए", "roman": "de diye", "meaning": "gave away", "bhili": "देदलो" },
-  { "id": "bache", "hindi": "बचे", "roman": "bache", "meaning": "left over", "bhili": "बाकी रेहलो" }
+  { "id": "bache", "hindi": "बचे", "roman": "bache", "meaning": "left over", "bhili": "बाकी रेहलो" },
+  { "id": "kitne", "hindi": "कितने", "roman": "kitne", "meaning": "how many" },
+  { "id": "mein-se", "hindi": "में से", "roman": "mein se", "meaning": "out of" },
+  { "id": "ghatana", "hindi": "घटाना", "roman": "ghatana", "meaning": "to subtract" },
+  { "id": "shesh", "hindi": "शेष", "roman": "shesh", "meaning": "remaining" },
+  { "id": "dahai", "hindi": "दहाई", "roman": "dahai", "meaning": "a ten" },
+  { "id": "ikai", "hindi": "इकाई", "roman": "ikai", "meaning": "a one" },
+  { "id": "kholna", "hindi": "खोलना", "roman": "kholna", "meaning": "to open a bundle" }
 ]

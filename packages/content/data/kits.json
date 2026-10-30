@@ -1,1 +1,83 @@
-[]
+[
+  {
+    "id": "kit-borrowing",
+    "conceptId": "borrowing",
+    "steps": [
+      {
+        "teacherDoes": {
+          "english": "Give each child 13 sticks. Help them tie 10 sticks into a bundle and keep 3 loose.",
+          "hindi": "हर बच्चे को 13 तीलियाँ दीजिए। 10 तीलियों का गट्ठर बाँधने और 3 तीलियाँ अलग रखने में मदद कीजिए।"
+        },
+        "says": {
+          "english": "Let us count our sticks. 1 bundle of 10 and 3 loose sticks make 13.",
+          "hindi": "चलो अपनी तीलियाँ गिनें। 10 का 1 गट्ठर और 3 अलग तीलियाँ मिलकर 13 हुईं।"
+        }
+      },
+      {
+        "teacherDoes": {
+          "english": "Say that we must take away 7 sticks. Point to the 3 loose sticks.",
+          "hindi": "बताइए कि हमें 7 तीलियाँ हटानी हैं। 3 अलग तीलियों की ओर इशारा कीजिए।"
+        },
+        "says": {
+          "english": "We must take away 7 sticks. But we have only 3 loose sticks. What can we do?",
+          "hindi": "हमें 7 तीलियाँ हटानी हैं। पर अलग तीलियाँ सिर्फ़ 3 हैं। अब क्या करें?"
+        }
+      },
+      {
+        "teacherDoes": {
+          "english": "Untie the bundle together, so all the sticks are loose.",
+          "hindi": "साथ मिलकर गट्ठर खोलिए, ताकि सारी तीलियाँ अलग हो जाएँ।"
+        },
+        "says": {
+          "english": "Let us open the bundle. Now all 13 sticks are loose.",
+          "hindi": "चलो गट्ठर खोलें। अब सारी 13 तीलियाँ अलग हैं।"
+        }
+      },
+      {
+        "teacherDoes": {
+          "english": "Take away 7 sticks, one by one, counting aloud with the children.",
+          "hindi": "बच्चों के साथ ज़ोर से गिनते हुए एक-एक करके 7 तीलियाँ हटाइए।"
+        },
+        "says": {
+          "english": "Take away 7 sticks. Count with me: 1, 2, 3, 4, 5, 6, 7.",
+          "hindi": "7 तीलियाँ हटाओ। मेरे साथ गिनो: 1, 2, 3, 4, 5, 6, 7।"
+        }
+      },
+      {
+        "teacherDoes": {
+          "english": "Count the sticks that are left, together.",
+          "hindi": "जो तीलियाँ बचीं, उन्हें साथ मिलकर गिनिए।"
+        },
+        "says": {
+          "english": "How many sticks are left? Let us count together. 6 sticks are left.",
+          "hindi": "कितनी तीलियाँ बचीं? चलो साथ गिनें। 6 तीलियाँ बचीं।"
+        }
+      },
+      {
+        "teacherDoes": {
+          "english": "Write 13 − 7 = 6 on the board and point to each part.",
+          "hindi": "बोर्ड पर 13 − 7 = 6 लिखिए और हर हिस्से की ओर इशारा कीजिए।"
+        },
+        "says": {
+          "english": "13 take away 7 leaves 6. When the loose sticks are not enough, we open a ten.",
+          "hindi": "13 में से 7 घटाने पर 6 बचे। जब अलग तीलियाँ कम हों, तो हम एक दहाई खोलते हैं।"
+        }
+      }
+    ],
+    "keywordIds": [
+      "bache",
+      "de-diye",
+      "kitne",
+      "mein-se",
+      "ghatana",
+      "shesh",
+      "dahai",
+      "ikai",
+      "kholna"
+    ],
+    "parentActivity": {
+      "english": "Make a bundle of 10 sticks and keep 4 loose: that is 14. Ask your child to take away 6. They will need to open the bundle. Count what is left together.",
+      "hindi": "10 तीलियों का एक गट्ठर बनाइए और 4 तीलियाँ अलग रखिए: ये 14 हुईं। बच्चे से 6 हटाने को कहिए। उन्हें गट्ठर खोलना पड़ेगा। साथ मिलकर गिनिए कि कितनी बचीं।"
+    }
+  }
+]

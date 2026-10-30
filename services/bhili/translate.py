@@ -13,7 +13,8 @@
 # [tool.uv.sources]
 # torch = { index = "pytorch-cpu" }
 # ///
-"""Fills in the missing Bhili text in packages/content/data: C questions, key words and reteaching scripts.
+"""Fills in the missing Bhili text in packages/content/data: C questions, key words, reteaching scripts,
+parent catch-up lessons, the reteaching kit and the listening check's Bhili prompts.
 
 Uses AI4Bharat's Marathi -> Bhili (Dehvali) adapter on sarvamai/sarvam-translate, fed English text.
 There is no Hindi -> Bhili model, and pivoting through Marathi was unreliable (the base model often
@@ -72,14 +73,19 @@ def dump(value) -> str:
 def line(value) -> str:
     if isinstance(value, dict):
         return "{ " + ", ".join(f"{dump(k)}: {line(v)}" for k, v in value.items()) + " }"
+    if isinstance(value, list) and value and isinstance(value[0], dict):
+        return "[" + ", ".join(line(v) for v in value) + "]"
     return dump(value)
 
 
 # Translate everything first, so a failure leaves every file untouched.
 questions_path, keywords_path, concepts_path = (DATA / f for f in ("questions.json", "keywords.json", "concepts.json"))
+kits_path, listening_path = DATA / "kits.json", DATA / "listening.json"
 questions = questions_path.read_text()
 keywords = json.loads(keywords_path.read_text())
 concepts = json.loads(concepts_path.read_text())
+kits = json.loads(kits_path.read_text())
+listening = json.loads(listening_path.read_text())
 
 c_bhili = {q["C"]["scriptHi"]: to_bhili(q["C"]["english"]) for q in json.loads(questions) if "bhili" not in q["C"]}
 for keyword in keywords:
@@ -88,6 +94,18 @@ for keyword in keywords:
 for concept in concepts:
     if "bhili" not in concept["reteach"]:
         concept["reteach"]["bhili"] = to_bhili(concept["reteach"]["english"])
+    if "catchUp" in concept and "bhili" not in concept["catchUp"]:
+        concept["catchUp"]["bhili"] = to_bhili(concept["catchUp"]["english"])
+for kit in kits:
+    for step in kit["steps"]:
+        if "bhili" not in step["says"]:
+            step["says"]["bhili"] = to_bhili(step["says"]["english"])
+    if "bhili" not in kit["parentActivity"]:
+        kit["parentActivity"]["bhili"] = to_bhili(kit["parentActivity"]["english"])
+for item in listening:
+    if "text" not in item["bhili"]:
+        # The key order the schema reads best in: text first.
+        item["bhili"] = {"text": to_bhili(item["bhili"]["english"]), **item["bhili"]}
 
 # questions.json keeps its hand-made layout: put a "bhili" line after each "scriptHi" that lacks one.
 questions = re.sub(
@@ -98,3 +116,5 @@ questions = re.sub(
 questions_path.write_text(questions)
 for path, items in ((keywords_path, keywords), (concepts_path, concepts)):
     path.write_text("[\n" + ",\n".join(f"  {line(item)}" for item in items) + "\n]\n")
+for path, items in ((kits_path, kits), (listening_path, listening)):
+    path.write_text(json.dumps(items, ensure_ascii=False, indent=2) + "\n")

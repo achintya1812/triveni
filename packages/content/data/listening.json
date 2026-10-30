@@ -1,1 +1,134 @@
-[]
+[
+  {
+    "id": "l-1",
+    "pictures": [
+      {
+        "number": 1,
+        "emoji": "🐐",
+        "english": "goat"
+      },
+      {
+        "number": 2,
+        "emoji": "🐄",
+        "english": "cow"
+      },
+      {
+        "number": 3,
+        "emoji": "🐓",
+        "english": "hen"
+      },
+      {
+        "number": 4,
+        "emoji": "🐕",
+        "english": "dog"
+      }
+    ],
+    "hindi": {
+      "text": "बकरी किस नंबर पर है? वह नंबर लिखो।",
+      "answer": 1
+    },
+    "bhili": {
+      "english": "Which number is the cow? Write that number.",
+      "answer": 2
+    }
+  },
+  {
+    "id": "l-2",
+    "pictures": [
+      {
+        "number": 1,
+        "emoji": "🥭",
+        "english": "mango"
+      },
+      {
+        "number": 2,
+        "emoji": "🍌",
+        "english": "banana"
+      },
+      {
+        "number": 3,
+        "emoji": "🍎",
+        "english": "apple"
+      },
+      {
+        "number": 4,
+        "emoji": "🍅",
+        "english": "tomato"
+      }
+    ],
+    "hindi": {
+      "text": "केला किस नंबर पर है? वह नंबर लिखो।",
+      "answer": 2
+    },
+    "bhili": {
+      "english": "Which number is the tomato? Write that number.",
+      "answer": 4
+    }
+  },
+  {
+    "id": "l-3",
+    "pictures": [
+      {
+        "number": 1,
+        "emoji": "🌳",
+        "english": "tree"
+      },
+      {
+        "number": 2,
+        "emoji": "🏠",
+        "english": "house"
+      },
+      {
+        "number": 3,
+        "emoji": "🪣",
+        "english": "bucket"
+      },
+      {
+        "number": 4,
+        "emoji": "🌾",
+        "english": "crop"
+      }
+    ],
+    "hindi": {
+      "text": "बाल्टी किस नंबर पर है? वह नंबर लिखो।",
+      "answer": 3
+    },
+    "bhili": {
+      "english": "Which number is the tree? Write that number.",
+      "answer": 1
+    }
+  },
+  {
+    "id": "l-4",
+    "pictures": [
+      {
+        "number": 1,
+        "emoji": "🐟",
+        "english": "fish"
+      },
+      {
+        "number": 2,
+        "emoji": "🐦",
+        "english": "bird"
+      },
+      {
+        "number": 3,
+        "emoji": "🐍",
+        "english": "snake"
+      },
+      {
+        "number": 4,
+        "emoji": "🦋",
+        "english": "butterfly"
+      }
+    ],
+    "hindi": {
+      "text": "तितली किस नंबर पर है? वह नंबर लिखो।",
+      "answer": 4
+    },
+    "bhili": {
+      "english": "Which number is the fish? Write that number.",
+      "answer": 1
+    }
+  }
+]
