@@ -15,7 +15,7 @@ export function SendToParents({
   children,
   label,
 }: {
-  kind: ParentMessage["kind"];
+  kind: Exclude<ParentMessage["kind"], "reply">;
   conceptId: string;
   children: Child[];
   label: string;

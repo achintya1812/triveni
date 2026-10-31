@@ -10,7 +10,7 @@ const maxSeconds = 25;
 // webm/Opus where the browser records it (Chrome, Firefox, Android); Safari records mp4.
 const mimeType = () => ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((t) => MediaRecorder.isTypeSupported(t)) ?? "";
 
-const base64 = (blob: Blob) =>
+export const base64 = (blob: Blob) =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve((reader.result as string).split(",")[1]);

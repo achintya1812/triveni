@@ -1,5 +1,5 @@
 import { concepts, kits } from "@triveni/content";
-import { Child, type ParentMessage, type ParentReply } from "@triveni/core";
+import { Child, type ParentMessage, ParentReply } from "@triveni/core";
 import { Hono } from "hono";
 import { z } from "zod";
 import { db } from "../db";
@@ -10,6 +10,14 @@ import { publicUrl, telegram, telegramFile, voiceNote } from "../telegram";
 // Parents on Telegram: voice notes in the child's home language, and what parents send back.
 
 const Send = z.object({ kind: z.enum(["catch_up", "activity"]), conceptId: z.string(), childIds: z.array(z.uuid()).min(1) });
+
+// The teacher's reply: a text, or a voice note recorded in the app. Telegram plays only OGG/Opus, MP3 and M4A
+// as voice messages, and the API has no ffmpeg, so the app records one of these.
+const voiceTypes = { "audio/ogg": "ogg", "audio/mp4": "m4a" } as const;
+const Reply = z.union([
+  z.object({ childId: z.uuid(), text: z.string().trim().min(1).max(4000) }),
+  z.object({ childId: z.uuid(), audio: z.base64().min(1).max(5_000_000), mimeType: z.enum(["audio/ogg", "audio/mp4"]) }),
+]);
 
 export const parentsTelegram = new Hono()
   // Sends each opted-in parent a voice note in the child's home language, with the steps in Hindi as the
@@ -31,6 +39,7 @@ export const parentsTelegram = new Hono()
         kind,
         conceptId,
         file: "",
+        text: null,
         status: "failed",
         telegramMessageId: null,
         sentAt: null,
@@ -51,6 +60,75 @@ export const parentsTelegram = new Hono()
       messages.push(message);
     }
     return c.json({ messages, failed, notOptedIn: children.filter((x) => !x.parentChatId).map((x) => x.id) });
+  })
+
+  // Sends the teacher's reply to a child's parent, headed with the child's name for parents of siblings.
+  .post("/parents/reply", json(Reply), async (c) => {
+    const body = c.req.valid("json");
+    const [row] = await run(db().from("children").select().eq("id", body.childId));
+    if (!row) return c.json({ error: "Child not found" }, 404);
+    const child = Child.parse(camel(row));
+    if (!child.parentChatId) return c.json({ error: `${child.name}'s parent isn't on Telegram` }, 409);
+    const heading = `शिक्षक का संदेश (${child.name} के लिए)`;
+    const message: ParentMessage = {
+      id: crypto.randomUUID(),
+      classId: child.classId,
+      childId: child.id,
+      kind: "reply",
+      conceptId: null,
+      file: null,
+      text: "text" in body ? body.text : null,
+      status: "failed",
+      telegramMessageId: null,
+      sentAt: null,
+    };
+    let problem = "";
+    try {
+      let sent: { message_id: number };
+      if ("text" in body) {
+        sent = await telegram("sendMessage", { chat_id: child.parentChatId, text: `${heading}:\n${body.text}` });
+      } else {
+        const audio = Buffer.from(body.audio, "base64");
+        const name = `teacher-${message.id}.${voiceTypes[body.mimeType]}`;
+        message.file = `${child.id}/${name}`;
+        const { error } = await db().storage.from("parent-media").upload(message.file, audio, { contentType: body.mimeType });
+        if (error) throw new Error(error.message);
+        const form = new FormData();
+        form.set("chat_id", child.parentChatId);
+        form.set("caption", heading);
+        form.set("voice", new Blob([audio], { type: body.mimeType }), name);
+        sent = await telegram("sendVoice", form);
+      }
+      Object.assign(message, { status: "sent", telegramMessageId: sent.message_id, sentAt: new Date().toISOString() });
+    } catch (e) {
+      problem = (e as Error).message;
+    }
+    await run(db().from("parent_messages").insert(snake(message)));
+    return problem ? c.json({ error: problem }, 502) : c.json(message, 201);
+  })
+
+  // What the class's parents sent back, oldest first.
+  .get("/classes/:id/parent-replies", async (c) => {
+    const children = await run(db().from("children").select("id").eq("class_id", c.req.param("id")));
+    const rows = await run(
+      db()
+        .from("parent_replies")
+        .select()
+        .in(
+          "child_id",
+          children.map((x) => x.id as string),
+        )
+        .order("received_at"),
+    );
+    return c.json(ParentReply.array().parse(rows.map(camel)));
+  })
+
+  // A voice note in the private bucket (a parent's reply, or the teacher's), through a link that lasts an hour.
+  .get("/parent-media/:childId/:name", async (c) => {
+    const { childId, name } = c.req.param();
+    const { data, error } = await db().storage.from("parent-media").createSignedUrl(`${childId}/${name}`, 3600);
+    if (error) return c.json({ error: error.message }, 404);
+    return c.redirect(data.signedUrl);
   })
 
   // Telegram calls this with every update. Only Telegram knows the secret (set by telegram:webhook).

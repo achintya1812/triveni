@@ -11,13 +11,14 @@ function token() {
   return t;
 }
 
-// Calls a Bot API method, and throws Telegram's description when it fails.
-export async function telegram<T = unknown>(method: string, body: object): Promise<T> {
-  const res = await fetch(`https://api.telegram.org/bot${token()}/${method}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+// Calls a Bot API method, and throws Telegram's description when it fails. FormData uploads a file.
+export async function telegram<T = unknown>(method: string, body: object | FormData): Promise<T> {
+  const res = await fetch(
+    `https://api.telegram.org/bot${token()}/${method}`,
+    body instanceof FormData
+      ? { method: "POST", body }
+      : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
+  );
   const data = (await res.json()) as { ok: boolean; result: T; description?: string };
   if (!data.ok) throw new Error(`Telegram ${method}: ${data.description}`);
   return data.result;

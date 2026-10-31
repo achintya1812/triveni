@@ -7,6 +7,7 @@ import {
   type Lesson,
   type ListeningResult,
   type ParentMessage,
+  type ParentReply,
   type ProbeResult,
 } from "@triveni/core";
 import { Dexie, type EntityTable, type Table } from "dexie";
@@ -188,10 +189,24 @@ export type SendResult = {
   failed: { childId: string; error: string }[];
   notOptedIn: string[];
 };
-export async function sendToParents(kind: ParentMessage["kind"], conceptId: string, childIds: string[]) {
+export async function sendToParents(kind: Exclude<ParentMessage["kind"], "reply">, conceptId: string, childIds: string[]) {
   const result = (await (await api("POST", "/parents/send", { kind, conceptId, childIds })).json()) as SendResult;
   await db.parentMessages.bulkPut(result.messages);
   return result;
+}
+
+// The Telegram conversations with parents: what was sent, and what they sent back. Read from the API each time.
+export async function loadConversations(classId: string) {
+  const [messages, replies] = await Promise.all([
+    api("GET", `/classes/${classId}/parent-messages`).then((r) => r.json() as Promise<ParentMessage[]>),
+    api("GET", `/classes/${classId}/parent-replies`).then((r) => r.json() as Promise<ParentReply[]>),
+  ]);
+  return { messages, replies };
+}
+
+// The teacher's reply to a child's parent: a text, or a voice note recorded as OGG or M4A.
+export async function replyToParent(childId: string, reply: { text: string } | { audio: string; mimeType: string }) {
+  return (await (await api("POST", "/parents/reply", { childId, ...reply })).json()) as ParentMessage;
 }
 
 // Parents opt in on Telegram, which the server records, so the phone fetches the children again to see it.
