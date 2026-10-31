@@ -830,7 +830,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 **Build:**
 - **Hosting** (the MVP's Render service and Vercel project stay on `mvp`, untouched):
-  - **API:** a second Render service from `main`, on the Starter plan (it doesn't sleep, so webhooks always land). Set the full-build Supabase keys, `ANTHROPIC_API_KEY`, `SARVAM_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `PUBLIC_API_URL` (the Render URL) and `WEB_ORIGIN`.
+  - **API:** a second Render service from `main`, on the free plan, kept awake by a cron-job.org job that calls `/health` every 10 minutes (only this service: two awake all month would use more than the workspace's 750 free hours). Set the full-build Supabase keys, `ANTHROPIC_API_KEY`, `SARVAM_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `PUBLIC_API_URL` (the Render URL) and `WEB_ORIGIN`.
   - **Web app:** a second Vercel project from `main`, with `VITE_API_URL`, `VITE_AUDIO_BASE_URL` and `VITE_TELEGRAM_BOT`.
   - **Webhook:** run `telegram:webhook` with `PUBLIC_API_URL` set to the Render URL.
   - **Bhili speech:** no speech service is deployed, so leave `TTS_URL` unset on Render, as in the MVP. After the last content change, run `warm:speech` locally (Stage 19), then `API_URL=<render url> warm:speech --check` must list nothing.
@@ -850,7 +850,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   9. Close with the design slides and the simulation table.
 
 **As built (so far):**
-- **README:** "Deploy (full build)" (Render Starter, a new Vercel project, the webhook, the checks before a demo) and "Demo (full build)" (the 5-minute script, with the Hindi tab names).
+- **README:** "Deploy (full build)" (Render free plan with a cron-job.org pinger, a new Vercel project, the webhook, the checks before a demo) and "Demo (full build)" (the 5-minute script, with the Hindi tab names).
 - **`telegram:warm` [`--check`]:** makes every parent voice note (4 catch-up lessons and the kit's activity, in Bhili and Hindi) as OGG/Opus in the bucket. The deployed API then never needs `ffmpeg`, because the send route skips conversion when the file exists. All 10 are made.
 - **Designs:** static pages in `apps/web/public/designs/`, deployed with the app at `/designs/`.
   - `teacher-words.html`: tomorrow's words, spaced reviews, support that fades.
@@ -858,7 +858,8 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - `simulation.html`: the simulation table.
   - They use only Bhili already in the content; made-up counts are marked "illustrative".
 - **For people:**
-  - Create the Render service (Starter plan) and the Vercel project, and set their environment.
+  - Create the Render service (free plan) and the Vercel project, and set their environment.
+  - Create the cron-job.org job that calls the API's `/health` every 10 minutes. Done 2026-11-01.
   - Run `telegram:webhook` against the Render address, and `warm:speech --check` against it.
   - Prepare slate photos for the live check (the demo class, both rows), in Latin digits (0–9), each with a roll, a name in Hindi or English, or both. Devanagari digits read too unreliably for a live demo (Stage 20).
   - Run the demo twice.

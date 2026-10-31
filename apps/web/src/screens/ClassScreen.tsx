@@ -10,18 +10,20 @@ import { content, useClassData } from "@/classData";
 import { refreshChildren, saveChild, saveListening } from "@/db";
 import { useUiLanguage } from "@/i18n";
 import { cn } from "@/lib/utils";
+import { Setup } from "@/screens/Setup";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
 const percent = (score: number | null) => (score === null ? "–" : `${Math.round(score * 100)}%`);
 
-// The class: each child's language profile, the teacher's view of how well they follow Hindi, and the
-// one-time listening check.
+// The class: its details to edit, each child's language profile, the teacher's view of how well they follow
+// Hindi, and the one-time listening check.
 export function ClassScreen({ klass, onError }: { klass: ClassRecord; onError: (message: string) => void }) {
   const { t } = useTranslation("class");
   const { formatDate } = useUiLanguage();
   const data = useClassData(klass.id);
   const [listening, setListening] = useState(false);
   const [qrCodes, setQrCodes] = useState(false);
+  const [editing, setEditing] = useState(false);
   // Picks up parents who have opted in on Telegram since. Offline, the children stay as they were.
   useEffect(() => {
     refreshChildren(klass.id).catch(() => {});
@@ -29,6 +31,7 @@ export function ClassScreen({ klass, onError }: { klass: ClassRecord; onError: (
   if (!data) return null;
   if (listening) return <ListeningCheck klass={klass} children={data.children} onClose={() => setListening(false)} onError={onError} />;
   if (qrCodes) return <ParentQrCodes children={data.children} onClose={() => setQrCodes(false)} />;
+  if (editing) return <Setup klass={klass} children={data.children} onDone={() => setEditing(false)} onError={onError} />;
 
   const all = results(data, content);
   const lastListening = data.listening.map((l) => l.date).sort().at(-1);
@@ -37,6 +40,9 @@ export function ClassScreen({ klass, onError }: { klass: ClassRecord; onError: (
 
   return (
     <div className="space-y-6">
+      <Button className="h-11 w-full" variant="outline" onClick={() => setEditing(true)}>
+        {t("edit")}
+      </Button>
       <section className="space-y-2 rounded-lg bg-muted p-4">
         <h2 className="font-semibold">{t("listening.title")}</h2>
         <p className="text-sm">

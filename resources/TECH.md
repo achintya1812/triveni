@@ -55,7 +55,7 @@ A pnpm workspace with four packages:
 | --- | --- | --- |
 | API | Hono on Node + TypeScript | Holds every external API key |
 | Database and files | Supabase (Postgres, Storage, Auth), free tier | Photos, audio clips, records |
-| Hosting | API on Render, web app on Vercel. The MVP deploys from `mvp` (Render free plan); the full build has its own Render service (Starter, $7/month) and Vercel project from `main`, on its own Supabase project. Railway was the first choice, but its sign-ups were paused. | The free plan sleeps after 15 minutes idle; Starter doesn't, so Telegram webhooks always land |
+| Hosting | API on Render, web app on Vercel. The MVP deploys from `mvp` (Render free plan); the full build has its own Render service (also free, kept awake by a cron-job.org job calling `/health` every 10 minutes) and Vercel project from `main`, on its own Supabase project. Railway was the first choice, but its sign-ups were paused. | The free plan sleeps after 15 minutes idle; the pinger keeps the full build awake so Telegram webhooks land without a wait, and the 750 free hours a month cover one always-awake service. Starter ($7/month) is the fallback if the pinger proves unreliable |
 
 ## AI services
 

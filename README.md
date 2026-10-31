@@ -62,7 +62,7 @@ Run them again after any content change.
 
 **API on Render:** New → Web Service → this repo.
 - Branch `main`, root directory left empty, runtime Node. Build command `corepack enable && pnpm install --frozen-lockfile`; start command `pnpm start`.
-- Plan: **Starter**, which doesn't sleep. On the free plan the first Telegram update after 15 idle minutes waits up to a minute for the API to wake.
+- Plan: **Free**. It sleeps after 15 minutes with no requests and takes up to a minute to wake, so a cron-job.org job calls `https://<name>.onrender.com/health` every 10 minutes to keep it awake. Ping only this service: the free plan gives 750 hours a month per workspace, and one service awake all month uses about 744, so pinging the MVP's service as well would run out mid-month and suspend both. The Starter plan ($7/month) never sleeps and needs no pinger.
 - Environment: the full-build `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `SARVAM_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `PUBLIC_API_URL` (this service's `https://<name>.onrender.com`), and `WEB_ORIGIN` (the Vercel address, once it exists). Leave `TTS_URL` unset.
 - Check that `https://<name>.onrender.com/health` returns `{"ok":true}`.
 
