@@ -35,7 +35,12 @@ describe("bad input", () => {
   });
 
   it("rejects a slate photo that isn't base64", async () => {
-    expect((await send("POST", "/slates/read", { image: "not base64!", mediaType: "image/jpeg" })).status).toBe(400);
+    const roster = [{ roll: 1, name: "Ravi" }];
+    expect((await send("POST", "/slates/read", { image: "not base64!", mediaType: "image/jpeg", roster, rows: 1 })).status).toBe(400);
+  });
+
+  it("rejects a slate photo without the class list", async () => {
+    expect((await send("POST", "/slates/read", { image: "aGVsbG8=", mediaType: "image/jpeg", rows: 1 })).status).toBe(400);
   });
 
   it("rejects a version order that repeats a version", async () => {

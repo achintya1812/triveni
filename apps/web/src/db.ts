@@ -10,17 +10,19 @@ import type {
   ProbeResult,
 } from "@triveni/core";
 import { Dexie, type EntityTable, type Table } from "dexie";
-import type { Grid } from "./check";
+import type { Grid, UnplacedSlate } from "./check";
 
 // The check in progress, kept so it survives switching screens and reloading.
-// `grids` has one grid per row (question); `rolls` is every roll number read from photos so far.
+// `grids` has one grid per row (question); `rolls` is the roll of every slate placed from photos so far;
+// `unplaced` holds the slates the teacher still has to give to a child.
 export type Draft = {
   classId: string;
   checkId: string;
   date: string;
   questionIds: string[];
   grids: Grid[];
-  rolls: (number | null)[];
+  rolls: number[];
+  unplaced: UnplacedSlate[];
 };
 
 // Mirrors the API's tables. Every write goes here first, then to the API.
@@ -52,6 +54,16 @@ db.version(1).stores({
   parentMessages: "id, classId, childId",
   drafts: "classId",
 });
+// Drafts gained `unplaced`, and `rolls` holds only placed slates' rolls.
+db.version(2).upgrade((tx) =>
+  tx
+    .table("drafts")
+    .toCollection()
+    .modify((d) => {
+      d.unplaced ??= [];
+      d.rolls = d.rolls.filter((r: number | null) => r !== null);
+    }),
+);
 
 export async function api(method: string, path: string, body?: unknown) {
   const res = await fetch(`${import.meta.env.VITE_API_URL}${path}`, {

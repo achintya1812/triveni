@@ -1,4 +1,4 @@
-import { type Answer, type Child, markAnswer, type Question, type SlateReading } from "@triveni/core";
+import { type Answer, type Child, markAnswer, placeSlate, type Question, type Slate, type SlateReading } from "@triveni/core";
 
 export type Version = Answer["version"];
 
@@ -50,31 +50,50 @@ export function markGrid(
   );
 }
 
-// Puts the slates read from one photo into the grids, matching slates to children by roll number.
-// Row n on a slate goes into grids[n - 1]; rows beyond the check's are ignored.
-// A later photo overwrites a roll read earlier.
-export function applySlates(roster: Child[], grids: Grid[], reading: SlateReading): Grid[] {
+// A slate the app couldn't give to a child for sure, kept for the teacher to place.
+// `photo` and `slate` count from 1, in reading order.
+export type UnplacedSlate = {
+  photo: number;
+  slate: number;
+  rollAsWritten: string | null;
+  name: string | null;
+  answers: Slate["answers"];
+};
+
+// Puts one slate's answers into a child's boxes. Row n on the slate goes into grids[n - 1]; rows beyond
+// the check's are ignored. A later slate overwrites the child's earlier one.
+export function fillSlate(grids: Grid[], child: Child, answers: Slate["answers"]): Grid[] {
   const next = grids.map((g) => ({ values: { ...g.values }, reads: { ...g.reads } }));
-  for (const slate of reading.slates) {
-    const child = roster.find((c) => c.rollNo === slate.roll);
-    if (!child) continue;
-    for (const answer of slate.answers) {
-      const grid = next[answer.row - 1];
-      if (!grid || !versionsFor(child).includes(answer.version)) continue;
-      grid.values[child.id] = { ...grid.values[child.id], [answer.version]: answer.value === null ? "" : String(answer.value) };
-      grid.reads[child.id] = { ...grid.reads[child.id], [answer.version]: { confidence: answer.confidence, reviewed: false } };
-    }
+  for (const answer of answers) {
+    const grid = next[answer.row - 1];
+    if (!grid || !versionsFor(child).includes(answer.version)) continue;
+    grid.values[child.id] = { ...grid.values[child.id], [answer.version]: answer.value === null ? "" : String(answer.value) };
+    grid.reads[child.id] = { ...grid.reads[child.id], [answer.version]: { confidence: answer.confidence, reviewed: false } };
   }
   return next;
 }
 
-// Problems with the roll numbers across every photo read so far, for the teacher to sort out.
-export function rollFlags(roster: Child[], rolls: (number | null)[]) {
+// Puts the slates read from photo number `photo` into the grids, and returns the ones it couldn't place.
+export function applySlates(roster: Child[], grids: Grid[], reading: SlateReading, photo: number) {
+  let next = grids;
+  const placed: Child[] = [];
+  const unplaced: UnplacedSlate[] = [];
+  reading.slates.forEach((slate, i) => {
+    const child = placeSlate(roster, slate);
+    if (child) {
+      next = fillSlate(next, child, slate.answers);
+      placed.push(child);
+    } else {
+      unplaced.push({ photo, slate: i + 1, rollAsWritten: slate.rollAsWritten, name: slate.name, answers: slate.answers });
+    }
+  });
+  return { grids: next, placed, unplaced };
+}
+
+// Problems with the placed slates' rolls across every photo read so far, for the teacher to sort out.
+export function rollFlags(roster: Child[], rolls: number[]) {
   const count = (roll: number) => rolls.filter((r) => r === roll).length;
-  const known = new Set(roster.map((c) => c.rollNo));
   return {
-    unreadable: rolls.filter((r) => r === null).length,
-    unknown: [...new Set(rolls.filter((r): r is number => r !== null && !known.has(r)))],
     duplicate: roster.filter((c) => count(c.rollNo) > 1),
     missing: rolls.length === 0 ? [] : roster.filter((c) => count(c.rollNo) === 0),
   };

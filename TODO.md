@@ -632,7 +632,19 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - Take `--effort low|medium`.
   - Run both levels on the test set and keep the better one. Put the numbers in the PR.
 
-**Verify:**
+**As built:**
+- **Request:** `POST /slates/read` takes `roster` and `rows`. They go in the user message, so the cached instructions are the same for every class.
+- **Placement:** `placeSlate` is in core (`packages/core/src/slates.ts`), so `slate:accuracy` can count slates given to the wrong child. It's stricter than above: a roll at any confidence that points to a different child than the name leaves the slate unplaced.
+- **Draft:** it keeps `unplaced` slates, so they survive a screen switch (Dexie version 2 upgrades older drafts). `rolls` now holds only placed slates' rolls; unknown and unreadable rolls show as unplaced slates instead of notes.
+- **Check screen:** "Whose slate is this?" lists each unplaced slate with its answers, a picker of the present children who have no slate yet, and Ignore.
+- **`slate:accuracy`:**
+  - `answers.csv` gains two optional columns: `name` (the child's class-list name) and `wrote` (`roll`, `name` or `both`, for what's on the slate).
+  - The class list sent to Claude is every roll and name in the file.
+  - It pairs slates with the truth by reading order, so list them left to right, then top to bottom.
+  - "Rolls read right" counts like mvp-demo-v1's "Rolls found", for the baseline.
+- **MVP samples, low effort:** rolls 18/18; placed 17/18, 1 unplaced (a right roll read with low confidence), 0 to the wrong child; boxes 51/54, 0 wrong and unflagged.
+
+**Verify** (merged on 2026-10-31 without these, by choice; they run when the notebook photos are in):
 - [ ] On the notebook test set, roll accuracy beats `mvp-demo-v1` (run the old prompt for the baseline).
 - [ ] Every misread roll shows as unplaced; none is given to the wrong child.
 - [ ] A slate with only a name is placed by name.
