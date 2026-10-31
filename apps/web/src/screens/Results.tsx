@@ -3,7 +3,9 @@ import type { Check, Child, ClassRecord, Concept, Placement, Question } from "@t
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SpeakButton } from "@/components/ClipButton";
+import { InfoButton } from "@/components/InfoButton";
 import { SendToParents } from "@/components/SendToParents";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useClassData } from "@/classData";
@@ -13,12 +15,13 @@ import { groupOrder, type Note, type Placed, placedOnRow } from "@/results";
 const questionFor = (id: string) => questions.find((q) => q.id === id)!;
 const conceptFor = (q: Question) => concepts.find((c) => c.id === q.conceptId)!;
 
-// The groups for one saved check, row by row, with what to do for each.
+// The groups for one saved check, one concept (row) and one group at a time, with what to do for each.
 export function Results({ klass }: { klass: ClassRecord }) {
   const { t } = useTranslation("results");
   const { conceptName, formatDate } = useUiLanguage();
   const data = useClassData(klass.id);
   const [checkId, setCheckId] = useState("");
+  const [row, setRow] = useState(0);
   if (!data) return null;
   // Oldest first; on the same day a weekly check comes after its re-checks, so it opens by default.
   const checks = [...data.checks].sort((x, y) => x.date.localeCompare(y.date) || (x.kind === "weekly" ? 1 : 0) - (y.kind === "weekly" ? 1 : 0));
@@ -26,11 +29,15 @@ export function Results({ klass }: { klass: ClassRecord }) {
   const check = checks.find((c) => c.id === checkId) ?? checks.at(-1)!;
   const checkLabel = (c: Check) =>
     `${formatDate(c.date)}${c.kind === "recheck" ? t("recheckSuffix") : ""}: ${c.questionIds.map((id) => conceptName(questionFor(id).conceptId)).join(", ")}`;
+  const rowIndex = row < check.questionIds.length ? row : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="results-check">{t("check")}</Label>
+        <div className="flex items-center justify-between gap-2">
+          <Label htmlFor="results-check">{t("check")}</Label>
+          <InfoButton title={t("howTitle")} text={t("how")} />
+        </div>
         <NativeSelect id="results-check" className="w-full [&_select]:h-11" value={check.id} onChange={(e) => setCheckId(e.target.value)}>
           {checks.map((c) => (
             <NativeSelectOption key={c.id} value={c.id}>
@@ -39,19 +46,39 @@ export function Results({ klass }: { klass: ClassRecord }) {
           ))}
         </NativeSelect>
       </div>
-      {check.questionIds.map((id, i) => (
-        <Row key={id} question={questionFor(id)} placed={placedOnRow(data, check, i + 1)} heading={check.questionIds.length > 1} />
-      ))}
+      {/* One tab per concept (row) in the check. */}
+      {check.questionIds.length > 1 && (
+        <div className="grid auto-cols-fr grid-flow-col gap-1 rounded-lg bg-muted p-1">
+          {check.questionIds.map((id, i) => (
+            <Button
+              key={id}
+              variant={i === rowIndex ? "outline" : "ghost"}
+              className="h-auto min-h-11 whitespace-normal py-2"
+              aria-pressed={i === rowIndex}
+              onClick={() => setRow(i)}
+            >
+              {conceptName(questionFor(id).conceptId)}
+            </Button>
+          ))}
+        </div>
+      )}
+      <Row question={questionFor(check.questionIds[rowIndex])} placed={placedOnRow(data, check, rowIndex + 1)} />
     </div>
   );
 }
 
-function Row({ question, placed, heading }: { question: Question; placed: Placed[]; heading: boolean }) {
+// One row: a menu of the groups that have children, and the chosen group with what to do.
+function Row({ question, placed }: { question: Question; placed: Placed[] }) {
   const { t } = useTranslation("results");
-  const { conceptName } = useUiLanguage();
+  const [chosen, setChosen] = useState<Placement | null>(null);
   const concept = conceptFor(question);
   const bhiliHome = placed.filter((p) => p.child.homeLanguage === "bhili");
   const clipFailed = bhiliHome.filter((p) => p.placement === "clip_failed").length;
+  const groups = groupOrder.filter((g) => placed.some((p) => p.placement === g));
+  // The first group that needs help opens by default; a choice is kept when another row has the same group.
+  const placement = chosen && groups.includes(chosen) ? chosen : groups[0];
+  if (!placement) return null;
+  const group = placed.filter((p) => p.placement === placement);
   // "B: wrote 22, added instead of subtracted".
   const note = (n: Note) =>
     n.cause === "copied"
@@ -59,37 +86,47 @@ function Row({ question, placed, heading }: { question: Question; placed: Placed
       : t("notes.wrote", { version: n.version, value: n.value, meaning: t(`causes.${n.cause}`) });
   return (
     <div className="space-y-4">
-      {heading && <h2 className="text-lg font-semibold">{conceptName(concept.id)}</h2>}
       {bhiliHome.length > 0 && clipFailed / bhiliHome.length >= 0.3 && (
         <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{t("clipWarning", { failed: clipFailed, total: bhiliHome.length })}</p>
       )}
-      {groupOrder.map((placement) => {
-        const group = placed.filter((p) => p.placement === placement);
-        if (group.length === 0) return null;
-        return (
-          <section key={placement} className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">
-              {t(`groups.${placement}`)} ({group.length})
-            </h3>
-            <ul className="space-y-1">
-              {group.map((p) => (
-                <li key={p.child.id}>
-                  {p.child.name}
-                  {p.pending && (
-                    <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{t(`pending.${p.pending}`)}</span>
-                  )}
-                  {p.notes.map((n) => (
-                    <span key={n.version} className="block text-sm text-muted-foreground">
-                      {note(n)}
-                    </span>
-                  ))}
-                </li>
+      <nav className="grid grid-cols-2 gap-2" aria-label={t("groupsMenu")}>
+        {groups.map((g) => (
+          <Button
+            key={g}
+            variant={g === placement ? "default" : "outline"}
+            className="h-auto min-h-11 justify-between gap-2 whitespace-normal py-2 text-left"
+            aria-pressed={g === placement}
+            onClick={() => setChosen(g)}
+          >
+            <span>{t(`groups.${g}`)}</span>
+            <span className="tabular-nums">{placed.filter((p) => p.placement === g).length}</span>
+          </Button>
+        ))}
+      </nav>
+      <section className="space-y-3 rounded-lg border p-4">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-semibold">
+            {t(`groups.${placement}`)} ({group.length})
+          </h3>
+          <InfoButton title={t(`groups.${placement}`)} text={t(`about.${placement}`)} />
+        </div>
+        <ul className="space-y-1">
+          {group.map((p) => (
+            <li key={p.child.id}>
+              {p.child.name}
+              {p.pending && (
+                <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{t(`pending.${p.pending}`)}</span>
+              )}
+              {p.notes.map((n) => (
+                <span key={n.version} className="block text-sm text-muted-foreground">
+                  {note(n)}
+                </span>
               ))}
-            </ul>
-            <WhatToDo placement={placement} concept={concept} question={question} children={group.map((p) => p.child)} />
-          </section>
-        );
-      })}
+            </li>
+          ))}
+        </ul>
+        <WhatToDo placement={placement} concept={concept} question={question} children={group.map((p) => p.child)} />
+      </section>
     </div>
   );
 }

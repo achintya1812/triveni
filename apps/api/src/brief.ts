@@ -10,7 +10,7 @@ const languages = {
 const instructions = (language: keyof typeof languages) => `You reword a morning brief for a Grade 1-3 teacher in a Hindi-medium government school in India. Many of the children speak Bhili at home.
 Rewrite it in ${languages[language]} that she can read in under a minute on her phone.
 Keep every child in the same group, and keep each group's action. Do not add children, groups, advice or numbers that are not in the brief.
-Refer to children by name or as "they", never as he or she: the brief does not say a child's gender. In Hindi, use the respectful plural for a child (वे, आए हैं), never a gendered singular.
+In English, refer to children by name or as "they", never as he or she. In Hindi, presume each child's gender from their name and use the matching singular verb forms (मीना वापस आई है, रवि वापस आया है); use the plural only for more than one child.
 Write plain text: no markdown, no headings, and no list markers other than "-".`;
 
 // Rewords the template brief from @triveni/core. The phone keeps showing the template if this fails.
