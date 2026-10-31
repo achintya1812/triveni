@@ -11,5 +11,7 @@
   "saveClass": "Save class",
   "enterSchool": "Enter the school name.",
   "rollAndName": "Every child needs a roll number and a name.",
-  "sameRoll": "Two children have the same roll number."
+  "sameRoll": "Two children have the same roll number.",
+  "editTitle": "Edit class details",
+  "saveChanges": "Save changes"
 }

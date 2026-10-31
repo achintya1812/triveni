@@ -15,28 +15,42 @@ interface Row {
   homeLanguage: Language;
 }
 
-const newRow = (rollNo: number): Row => ({
+const newRow = (rows: Row[]): Row => ({
   id: crypto.randomUUID(),
-  rollNo: String(rollNo),
+  rollNo: String(Math.max(0, ...rows.map((r) => Number(r.rollNo) || 0)) + 1),
   name: "",
   homeLanguage: "bhili",
 });
 
-export function Setup({ onError }: { onError: (message: string) => void }) {
+// Sets up the class, or with `klass` and `children`, edits it: the same children keep their ids and records.
+export function Setup({
+  klass: current,
+  children: existing = [],
+  onDone,
+  onError,
+}: {
+  klass?: ClassRecord;
+  children?: Child[];
+  onDone?: () => void;
+  onError: (message: string) => void;
+}) {
   const { t } = useTranslation("setup");
-  const [school, setSchool] = useState("");
-  const [grade, setGrade] = useState("2");
-  const [rows, setRows] = useState<Row[]>([newRow(1)]);
+  const [school, setSchool] = useState(current?.school ?? "");
+  const [grade, setGrade] = useState(String(current?.grade ?? 2));
+  const [rows, setRows] = useState<Row[]>(() =>
+    existing.length > 0 ? existing.map((c) => ({ ...c, rollNo: String(c.rollNo) })) : [newRow([])],
+  );
   const [invalid, setInvalid] = useState("");
 
   const update = (i: number, change: Partial<Row>) =>
     setRows(rows.map((row, j) => (j === i ? { ...row, ...change } : row)));
 
   async function save() {
-    const classId = crypto.randomUUID();
+    const classId = current?.id ?? crypto.randomUUID();
     const klass = ClassRecord.safeParse({ id: classId, school: school.trim(), grade: Number(grade) });
+    // An edited child keeps what the form doesn't show, such as the parent's Telegram opt-in.
     const children = Child.array().safeParse(
-      rows.map((r) => ({ ...r, classId, rollNo: Number(r.rollNo), name: r.name.trim() })),
+      rows.map((r) => ({ ...existing.find((c) => c.id === r.id), ...r, classId, rollNo: Number(r.rollNo), name: r.name.trim() })),
     );
     if (!klass.success) return setInvalid(t("enterSchool"));
     if (!children.success) return setInvalid(t("rollAndName"));
@@ -45,13 +59,18 @@ export function Setup({ onError }: { onError: (message: string) => void }) {
     }
     setInvalid("");
     await saveClass(klass.data, children.data).catch((e: Error) => onError(e.message));
+    onDone?.();
   }
 
   return (
     <div className="space-y-6">
-      <Button size="lg" variant="outline" className="h-12 w-full" onClick={() => loadDemo().catch((e: Error) => onError(e.message))}>
-        {t("loadDemo")}
-      </Button>
+      {current ? (
+        <h2 className="font-semibold">{t("editTitle")}</h2>
+      ) : (
+        <Button size="lg" variant="outline" className="h-12 w-full" onClick={() => loadDemo().catch((e: Error) => onError(e.message))}>
+          {t("loadDemo")}
+        </Button>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="school">{t("school")}</Label>
@@ -75,7 +94,7 @@ export function Setup({ onError }: { onError: (message: string) => void }) {
             <Input
               aria-label={t("rollNumber")}
               inputMode="numeric"
-              className="h-11 w-16"
+              className="h-11 w-16 shrink-0"
               value={row.rollNo}
               onChange={(e) => update(i, { rollNo: e.target.value })}
             />
@@ -88,7 +107,7 @@ export function Setup({ onError }: { onError: (message: string) => void }) {
             />
             <NativeSelect
               aria-label={t("homeLanguage")}
-              className="[&_select]:h-11"
+              className="shrink-0 [&_select]:h-11"
               value={row.homeLanguage}
               onChange={(e) => update(i, { homeLanguage: e.target.value as Language })}
             >
@@ -97,15 +116,20 @@ export function Setup({ onError }: { onError: (message: string) => void }) {
             </NativeSelect>
           </div>
         ))}
-        <Button variant="outline" className="h-11 w-full" onClick={() => setRows([...rows, newRow(rows.length + 1)])}>
+        <Button variant="outline" className="h-11 w-full" onClick={() => setRows([...rows, newRow(rows)])}>
           {t("addChild")}
         </Button>
       </div>
 
       {invalid && <p className="text-sm text-destructive">{invalid}</p>}
       <Button className="h-12 w-full" onClick={save}>
-        {t("saveClass")}
+        {current ? t("saveChanges") : t("saveClass")}
       </Button>
+      {onDone && (
+        <Button variant="outline" className="h-12 w-full" onClick={onDone}>
+          {t("common:cancel")}
+        </Button>
+      )}
     </div>
   );
 }
