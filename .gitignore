@@ -4,3 +4,4 @@ dist
 .env.*
 *.local
 content-review.html
+resources/test-sets.md
