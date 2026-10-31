@@ -39,6 +39,11 @@ describe("bad input", () => {
     expect((await send("POST", "/slates/read", { image: "not base64!", mediaType: "image/jpeg", roster, rows: 1 })).status).toBe(400);
   });
 
+  it("rejects a voice note that isn't audio", async () => {
+    const note = { classId: crypto.randomUUID(), audio: "aGVsbG8=", mimeType: "image/jpeg" };
+    expect((await send("POST", "/voice-notes", note)).status).toBe(400);
+  });
+
   it("rejects a slate photo without the class list", async () => {
     expect((await send("POST", "/slates/read", { image: "aGVsbG8=", mediaType: "image/jpeg", rows: 1 })).status).toBe(400);
   });
