@@ -1,0 +1,28 @@
+{
+  "school": "{{school}}, Grade {{grade}}",
+  "date": "Date",
+  "tapAbsent": "Tap the children who are absent",
+  "concept": "Concept taught today",
+  "noLesson": "No maths lesson",
+  "saved": "Saved",
+  "save": "Save ({{count}} absent)",
+  "history": "History",
+  "noLessonDay": "No lesson",
+  "absentList": "Absent: {{names}}",
+  "everyonePresent": "Everyone present",
+  "voice": {
+    "hold": "Hold to say what you taught",
+    "starting": "Starting…",
+    "recording": "Recording… let go to send",
+    "sending": "Reading the note…",
+    "noMic": "The microphone isn't allowed. Allow it in the browser's settings, or pick the concept below.",
+    "holdDown": "Hold the button down while you speak.",
+    "couldNotRead": "Couldn't read the note: {{error}}. Pick the concept below.",
+    "heard": "Heard: “{{transcript}}”.",
+    "byPage": "Page {{page}} is {{concept}}.",
+    "matched": "Matched to {{concept}}.",
+    "unknown": "Couldn't tell which concept.",
+    "checkBelow": "Check the concept below, and change it if it's wrong.",
+    "nothingHeard": "Couldn't hear anything. Hold the phone closer and try again, or pick the concept below."
+  }
+}

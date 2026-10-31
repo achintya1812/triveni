@@ -1,0 +1,62 @@
+{
+  "listening": {
+    "title": "Listening check",
+    "about": "Once for the class: four sets of pictures, each with a Hindi and a Bhili question. It shows which language each child follows.",
+    "lastDone": "Last done on {{date}}.",
+    "notDone": "Not done yet.",
+    "runAgain": "Run it again",
+    "run": "Run the listening check"
+  },
+  "parents": {
+    "title": "Parents on Telegram",
+    "about": "{{count}} of {{total}} parents get voice notes. Print each child's QR code and send it home: the parent scans it and taps Start.",
+    "showQr": "Show parent QR codes"
+  },
+  "children": "Children",
+  "atHome": "({{language}} at home)",
+  "profile": "Follows Hindi {{hindi}}, Bhili {{bhili}}. Reteach in {{reteach}}.",
+  "reteach": {
+    "home": "Bhili first",
+    "mixed": "both languages",
+    "school": "Hindi"
+  },
+  "parentOn": "Parent on Telegram ✓",
+  "parentOff": "Parent not on Telegram yet",
+  "hindi": {
+    "label": "How well {{name}} follows Hindi",
+    "notSet": "Follows Hindi: not set",
+    "well": "Follows Hindi well",
+    "some": "Follows some Hindi",
+    "none": "Doesn't follow Hindi"
+  },
+  "check": {
+    "title": "Listening check: {{n}} of {{total}}",
+    "draw": "1. Draw these on the board, with their numbers",
+    "play": "2. Play the Hindi question, then the Bhili one",
+    "write": "Children write two numbers. Right answers: Hindi {{hindi}}, Bhili {{bhili}}.",
+    "tap": "3. Tap each number: right, then wrong"
+  },
+  "pictures": {
+    "apple": "apple",
+    "banana": "banana",
+    "bird": "bird",
+    "bucket": "bucket",
+    "butterfly": "butterfly",
+    "cow": "cow",
+    "crop": "crop",
+    "dog": "dog",
+    "fish": "fish",
+    "goat": "goat",
+    "hen": "hen",
+    "house": "house",
+    "mango": "mango",
+    "snake": "snake",
+    "tomato": "tomato",
+    "tree": "tree"
+  },
+  "qr": {
+    "title": "Parent QR codes",
+    "help": "Print this page, or show a code on this phone for a parent to scan.",
+    "alt": "QR code for {{name}}'s parent"
+  }
+}

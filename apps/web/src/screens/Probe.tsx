@@ -1,21 +1,14 @@
 import { concepts } from "@triveni/content";
-import type { ChildRecord, ClassRecord, ProbeForm, ProbeResult } from "@triveni/core";
+import type { ChildRecord, ClassRecord, ProbeResult } from "@triveni/core";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { saveProbes } from "@/db";
 import { type ProbeOutcome, probeState, probeSteps } from "@/group";
+import { useUiLanguage } from "@/i18n";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
 const conceptFor = (id: string) => concepts.find((c) => c.id === id)!;
-const formNames: Record<ProbeForm, string> = { abstract: "in numbers", pictorial: "with drawings", concrete: "with real objects" };
-const restartNames: Record<ProbeForm, string> = {
-  concrete: "using real objects, then move to drawings",
-  pictorial: "using drawings, then move to numbers",
-  abstract: "in numbers",
-};
-
-const restartText = (o: ProbeOutcome) =>
-  o.passedAtOnce ? "Passed at once: back with the class." : `Start with ${conceptFor(o.restartConceptId!).name.toLowerCase()} ${restartNames[o.form!]}.`;
 
 // The step-down probe for the children who failed a concept: one step at a time, marked ✓ or ✗ for each
 // child, until their first ✓ shows where to restart.
@@ -32,6 +25,8 @@ export function Probe({
   onClose: () => void;
   onError: (message: string) => void;
 }) {
+  const { t } = useTranslation("probe");
+  const { language, conceptName } = useUiLanguage();
   const [date] = useState(today);
   const [taps, setTaps] = useState<Record<string, boolean[]>>({});
   const children = records.map((record) => {
@@ -40,8 +35,14 @@ export function Probe({
   });
   const done = children.flatMap((c) => ("outcome" in c.state ? [{ child: c.child, outcome: c.state.outcome }] : []));
 
-  const tap = (childId: string, passed: boolean) => setTaps((t) => ({ ...t, [childId]: [...(t[childId] ?? []), passed] }));
-  const undo = (childId: string) => setTaps((t) => ({ ...t, [childId]: (t[childId] ?? []).slice(0, -1) }));
+  const tap = (childId: string, passed: boolean) => setTaps((all) => ({ ...all, [childId]: [...(all[childId] ?? []), passed] }));
+  const undo = (childId: string) => setTaps((all) => ({ ...all, [childId]: (all[childId] ?? []).slice(0, -1) }));
+  // "Start with borrowing using drawings, then move to numbers."
+  const restartText = (o: ProbeOutcome) => {
+    if (o.passedAtOnce) return t("passed");
+    const name = conceptName(o.restartConceptId!);
+    return t("restart", { concept: language === "en" ? name.toLowerCase() : name, how: t(`how.${o.form}`) });
+  };
 
   async function save() {
     const results: ProbeResult[] = done.map(({ child, outcome }) => ({
@@ -64,13 +65,11 @@ export function Probe({
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-semibold">Probe: {conceptFor(conceptId).name}</h2>
-          <p className="text-sm text-muted-foreground">
-            Ask each child their step, out loud. Tap ✓ if they get it right, ✗ if not. A child stops at their first ✓.
-          </p>
+          <h2 className="font-semibold">{t("title", { concept: conceptName(conceptId) })}</h2>
+          <p className="text-sm text-muted-foreground">{t("help")}</p>
         </div>
         <Button variant="outline" size="sm" onClick={onClose}>
-          Cancel
+          {t("common:cancel")}
         </Button>
       </div>
       {children.map(({ child, taps: mine, state }) => {
@@ -81,24 +80,22 @@ export function Probe({
               <p className="font-medium">{child.name}</p>
               {mine.length > 0 && (
                 <Button variant="ghost" size="sm" onClick={() => undo(child.id)}>
-                  Undo
+                  {t("common:undo")}
                 </Button>
               )}
             </div>
             {"next" in state && step && (
               <>
                 <p className="text-sm text-muted-foreground">
-                  Step {mine.length + 1}: {conceptFor(state.next.conceptId).name}, {formNames[state.next.form]}
+                  {t("step", { n: mine.length + 1, concept: conceptName(state.next.conceptId), form: t(`forms.${state.next.form}`) })}
                 </p>
-                <p>{step.hindi}</p>
-                <p className="text-sm text-muted-foreground">
-                  {step.english} Answer: {step.answer}
-                </p>
+                <p>{language === "hi" ? step.hindi : step.english}</p>
+                <p className="text-sm text-muted-foreground">{t("answer", { answer: step.answer })}</p>
                 <div className="grid grid-cols-2 gap-2">
-                  <Button className="h-12 text-lg" variant="outline" aria-label={`${child.name} right`} onClick={() => tap(child.id, true)}>
+                  <Button className="h-12 text-lg" variant="outline" aria-label={t("right", { name: child.name })} onClick={() => tap(child.id, true)}>
                     ✓
                   </Button>
-                  <Button className="h-12 text-lg" variant="outline" aria-label={`${child.name} wrong`} onClick={() => tap(child.id, false)}>
+                  <Button className="h-12 text-lg" variant="outline" aria-label={t("wrong", { name: child.name })} onClick={() => tap(child.id, false)}>
                     ✗
                   </Button>
                 </div>
@@ -109,7 +106,7 @@ export function Probe({
         );
       })}
       <Button className="h-12 w-full" disabled={done.length === 0} onClick={save}>
-        Save the probe{done.length > 0 && ` (${done.length} ${done.length === 1 ? "child" : "children"})`}
+        {done.length > 0 ? t("saveCount", { children: t("common:children", { count: done.length }) }) : t("save")}
       </Button>
     </div>
   );

@@ -2,6 +2,7 @@ import { questions } from "@triveni/content";
 import { type AudioClip, type Child, placeSlate, type Slate } from "@triveni/core";
 import { describe, expect, it } from "vitest";
 import { clipProblem } from "./audio";
+import i18n from "./i18n";
 import { applySlates, isFlagged, markGrid, rollFlags } from "./check";
 
 const question = questions.find((q) => q.id === "q-borrowing")!; // A 9, B 8, C 6
@@ -158,7 +159,10 @@ describe("clipProblem", () => {
     expect(clipProblem(clip("bulbul", "b.mp3"))).toBeUndefined();
   });
 
-  it("blocks clips with no file", () => {
+  it("blocks clips with no file, saying so in the interface language", async () => {
+    await i18n.changeLanguage("en");
     expect(clipProblem(clip("human"))).toMatch(/not been made/);
+    await i18n.changeLanguage("hi");
+    expect(clipProblem(clip("human"))).toMatch(/बनी नहीं/);
   });
 });

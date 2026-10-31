@@ -1,0 +1,63 @@
+{
+  "savedOn": "Saved the check for {{date}}. See it in Results.",
+  "suggested": "Suggested from what was taught since the last check. A check covers at most two concepts.",
+  "nothingNew": "Nothing new has been taught since the last check. Pick what to check.",
+  "row1": "Row 1 on the slate",
+  "row2": "Row 2 (optional)",
+  "pick": "Pick a concept",
+  "none": "None",
+  "start": "Start the check",
+  "title": "Check on {{date}}",
+  "discardConfirm": "Discard this check and everything entered in it?",
+  "whoAbsent": "Who is absent today?",
+  "absentHelp": "Tap to mark. Absent children get no boxes and are never marked wrong.",
+  "fillBox": "{{step}}. Now fill the {{symbol}} box",
+  "rowLabel": "Row {{row}}: ",
+  "writeOnBoard": "Write this on the board",
+  "hindiSkip": "Children who speak Hindi at home skip this box.",
+  "enterAnswers": "{{step}}. Enter the answers from the slates",
+  "enterHelp": "Photograph five to eight slates at a time, or type the answers. Leave a box empty if the child left it blank.",
+  "saveAnswers": "Save answers",
+  "flags": {
+    "boxes_one": "{{count}} highlighted box needs checking. Tap it, and fix it if it's wrong.",
+    "boxes_other": "{{count}} highlighted boxes need checking. Tap each one, and fix it if it's wrong.",
+    "missing": "No slate found for roll {{list}}. Photograph them again, or type their answers.",
+    "duplicate": "More than one slate says roll {{list}}. The last photo's answers are shown, so check whose slate is whose.",
+    "allClear": "Every slate was read clearly."
+  },
+  "unplaced": {
+    "title": "Whose slate is this?",
+    "help": "These slates couldn't be matched to a child for sure. Pick whose each one is.",
+    "where": "Photo {{photo}}, slate {{slate}}: {{written}}",
+    "rollWritten": "roll written '{{roll}}'",
+    "noRoll": "no roll",
+    "nameWritten": "name '{{name}}'",
+    "chooseChild": "Choose a child…",
+    "whose": "Whose is photo {{photo}}, slate {{slate}}"
+  },
+  "grid": {
+    "roll": "Roll",
+    "name": "Name",
+    "absentToday": "{{name}}: absent today",
+    "noC": "Hindi at home: no C"
+  },
+  "photos": {
+    "take": "Take photos",
+    "gallery": "Choose from gallery",
+    "read": "{{read}} of {{total}} photos read",
+    "states": {
+      "waiting": "Waiting",
+      "reading": "Reading…",
+      "read": "Read",
+      "failed": "Couldn't read"
+    },
+    "retry": "Retry"
+  },
+  "camera": {
+    "noCamera": "This browser can't open the camera here. Choose photos from the gallery instead.",
+    "failed": "Couldn't open the camera ({{error}}). Choose photos from the gallery instead.",
+    "take": "Take photo",
+    "done": "Done ({{count}})",
+    "file": "Photo {{n}}.jpg"
+  }
+}

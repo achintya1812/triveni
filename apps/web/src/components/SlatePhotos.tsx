@@ -1,5 +1,6 @@
 import { type Child, SlateReading } from "@triveni/core";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Camera } from "@/components/Camera";
 import { Button } from "@/components/ui/button";
 import { api } from "@/db";
@@ -32,6 +33,7 @@ export function SlatePhotos({
   rows: number;
   onRead: (reading: SlateReading, photo: number) => Promise<void>;
 }) {
+  const { t } = useTranslation("check");
   const gallery = useRef<HTMLInputElement>(null);
   const nextId = useRef(0);
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -60,16 +62,15 @@ export function SlatePhotos({
   }, [photos, onRead, roster, rows]);
 
   const read = photos.filter((p) => p.state === "read").length;
-  const label: Record<Photo["state"], string> = { waiting: "Waiting", reading: "Reading…", read: "Read", failed: "Couldn't read" };
 
   return (
     <div className="space-y-2">
       <div className="grid grid-cols-2 gap-2">
         <Button variant="outline" className="h-12" onClick={() => setCamera(true)}>
-          Take photos
+          {t("photos.take")}
         </Button>
         <Button variant="outline" className="h-12" onClick={() => gallery.current?.click()}>
-          Choose from gallery
+          {t("photos.gallery")}
         </Button>
       </div>
       {/* No `capture`: with it, Android opens the camera for one shot and ignores `multiple`. */}
@@ -97,18 +98,18 @@ export function SlatePhotos({
       {photos.length > 0 && (
         <div className="space-y-1 rounded-lg border p-3 text-sm">
           <p className="font-medium">
-            {read} of {photos.length} photos read
+            {t("photos.read", { read, total: photos.length })}
           </p>
           <ul className="space-y-1">
             {photos.map((p) => (
               <li key={p.id} className="flex items-center justify-between gap-2">
                 <span className="truncate">
-                  {p.file.name}: <span className={p.state === "failed" ? "text-destructive" : "text-muted-foreground"}>{label[p.state]}</span>
+                  {p.file.name}: <span className={p.state === "failed" ? "text-destructive" : "text-muted-foreground"}>{t(`photos.states.${p.state}`)}</span>
                   {p.error && <span className="block text-xs text-destructive">{p.error}</span>}
                 </span>
                 {p.state === "failed" && (
                   <Button size="sm" variant="outline" onClick={() => update(p.id, { state: "waiting" })}>
-                    Retry
+                    {t("photos.retry")}
                   </Button>
                 )}
               </li>

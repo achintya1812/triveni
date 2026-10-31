@@ -1,0 +1,15 @@
+{
+  "loadDemo": "Load demo class",
+  "school": "School",
+  "grade": "Grade",
+  "gradeOption": "Grade {{grade}}",
+  "children": "Children",
+  "rollNumber": "Roll number",
+  "name": "Name",
+  "homeLanguage": "Home language",
+  "addChild": "Add child",
+  "saveClass": "Save class",
+  "enterSchool": "Enter the school name.",
+  "rollAndName": "Every child needs a roll number and a name.",
+  "sameRoll": "Two children have the same roll number."
+}

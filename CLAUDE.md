@@ -38,7 +38,7 @@ Full build (on `main`; lane in brackets):
 10. [done] Rules: marking and 8 patterns [A]: wrong-answer causes, copied numbers as no data, all 8 patterns, absent on check day, "same pattern twice", version rotation, concept picking. Verify: Vitest covers each.
 11. [done] Running record + daily brief [A]: concept status, root of a concept gap, word evidence, language profile, buddies, daily brief (en/hi). Verify: Meena and Arjun → root borrowing; Ravi confirmed across two weeks; brief has all sections.
 12. [done] Demo seed v2 + simulation [A]: 20 children, 3 weeks, last week's check, planted causes; `simulate` script. Verify: planted children land correctly; the simulation prints an accuracy table.
-13. Hindi interface [B]: i18next, a namespace per screen, Hindi default with an English toggle. Verify: every screen fully in both languages.
+13. [done] Hindi interface [B]: i18next, a namespace per screen, Hindi default with an English toggle. Verify: every screen fully in both languages.
 14. [done] Check runner v2 [B]: draft kept in Dexie, 1–2 concepts, rotated order, gallery multi-pick, in-app multi-shot camera, parallel uploads. Verify: a 2-concept check on a phone; the draft survives a screen switch; 5 gallery photos all read.
 15. [done] Results, brief and quick re-check [B]: all groups with causes and actions, a daily brief screen with read-aloud, tap re-check. Verify: Ravi confirmed, Meena never taught; a re-check confirms Sita; the brief works with the API off.
 16. [done] Group time [B]: probe runner, reteaching kit in the profile's language, listening check. Verify: Arjun's restart point; the kit's language follows the profile.

@@ -310,7 +310,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 13: Hindi interface
+## [x] Stage 13: Hindi interface
 
 **Lane:** B. **Depends on:** nothing. Start at once.
 
@@ -323,9 +323,23 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - Add a हिंदी / English toggle in the header, remembered in `localStorage` (wrapped in try/catch). Hindi is the default.
 - Concept names use `nameHi` in Hindi, once Stage 9 has added it.
 
+**As built:**
+- **Setup:** `src/i18n.ts` loads every `locales/<language>/<namespace>.json` and provides `useUiLanguage()`, which gives the language, `conceptName` (`nameHi` in Hindi) and dates in the interface language.
+- **Namespaces:** `common`, `setup`, `brief`, `log` (daily log and voice notes), `check` (check runner, grid, photos, camera), `results`, `class`, `probe`, `kit` and `parents`. `i18n.test.ts` fails if Hindi and English differ in keys, or a Hindi string is empty.
+- **One language setting:** the brief follows the interface language, so its own English/हिंदी switch is gone.
+- **English-only content, in Hindi mode:**
+  - The 7 wrong-answer explanations are translated in `results.json` by cause. `placedOnRow` returns notes as `{ version, value, cause }`, and the screen words them.
+  - Key-word glosses, the English reteaching script and the English story text show only in English.
+  - Probe steps, kit steps, the home activity and B/C question text use their Hindi fields.
+  - Picture names in the listening check are translated.
+- **Results:** "Send catch-up to parents" for Never taught is now live (Stage 22's sender), no longer a disabled placeholder.
+- **The Hindi** was written by Claude in plain classroom Hindi, and still needs a reviewer. A few terms differ from Stage 11's Hindi brief, which a reviewer may want to align: the probe group is "प्रोब समूह" here and "जाँच समूह" there; the quick re-check is "छोटी दोबारा जाँच" here and "त्वरित दोबारा जाँच" there.
+
 **Verify:**
-- [ ] Every current screen renders fully in Hindi and fully in English, with no leftover English in Hindi mode.
-- [ ] The choice survives a reload.
+- [x] Every current screen renders fully in Hindi and fully in English, with no leftover English in Hindi mode.
+  - A headless walk covered setup, the Brief, probe, re-check, daily log, both check screens, results, Class, the listening check, QR codes and the kit.
+  - In Hindi, no Latin words except the children's and school's names, the "English" switch, QR, Telegram's "Start" and Claude. In both languages, no untranslated keys.
+- [x] The choice survives a reload.
 
 ---
 

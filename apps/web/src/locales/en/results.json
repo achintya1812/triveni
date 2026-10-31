@@ -1,0 +1,53 @@
+{
+  "groups": {
+    "language_gap": "Language gap",
+    "word_problem_gap": "Word-problem gap",
+    "symbol_gap": "Symbol gap",
+    "language_symbol_gap": "Language and symbol gap",
+    "never_taught": "Never taught (absent)",
+    "taught_not_learned": "Taught but not learned",
+    "clip_failed": "Bhili clip not followed",
+    "inconsistent": "Inconsistent",
+    "unclear": "Unclear",
+    "not_checked": "Not checked yet (absent today)",
+    "ready": "Ready"
+  },
+  "noChecks": "No checks saved yet. Run one in the Check tab.",
+  "check": "Check",
+  "recheckSuffix": " (re-check)",
+  "clipWarning": "{{failed}} of {{total}} Bhili-speaking children followed the Hindi question but not the Bhili one. The Bhili clip may be unclear: listen to it again, and ask a Bhili speaker to check it.",
+  "pending": {
+    "recheck": "seen once: re-check",
+    "probe": "to confirm with the probe"
+  },
+  "notes": {
+    "copied": "{{version}}: wrote {{value}}, a number copied from the question",
+    "wrote": "{{version}}: wrote {{value}}, {{meaning}}"
+  },
+  "causes": {
+    "added": "added instead of subtracted",
+    "before": "gave the number before, not after",
+    "borrowing": "took the smaller digit from the larger one",
+    "counting": "counted one too many or one too few",
+    "kept-the-ten": "opened a ten but didn't take it from the tens",
+    "reversed": "wrote the digits the wrong way round",
+    "skipped": "skipped a number when counting on"
+  },
+  "todo": {
+    "languageGap": "Teach these Hindi words first, with the Bhili audio:",
+    "wordProblem": "Practise these stories: turn each one into a sum.",
+    "symbol": "They follow the story but not the sum. Solve a story together, then write the sum that matches it.",
+    "languageSymbolWords": "First teach the Hindi words, with the Bhili audio:",
+    "languageSymbolStories": "Then solve these stories together and write the sum for each:",
+    "neverTaught": "They were absent when this was taught. Recap the lesson on {{concept}} with them in group time.",
+    "sendCatchUp": "Send catch-up to parents",
+    "taughtNotLearned": "Run the step-down probe in group time to find where to restart. Until then, use real objects:",
+    "playReteach": "Play reteaching (Bhili)",
+    "clipFailed": "They followed the Hindi but not the Bhili. Their language profile now leans to Hindi.",
+    "inconsistent": "The pattern looks like a guess or a copied answer. No label: the next check decides.",
+    "unclear": "Some boxes were blank or copied from the question. The next check decides.",
+    "notChecked": "Absent today, but present when this was taught. Include them in the next check.",
+    "ready": "Move on.",
+    "answer": "Answer: {{answer}}"
+  }
+}

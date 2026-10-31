@@ -1,7 +1,6 @@
-import { concepts, questions } from "@triveni/content";
+import { questions } from "@triveni/content";
 import {
   type Answer,
-  type BriefLanguage,
   buildDailyBrief,
   type Check,
   type Child,
@@ -14,6 +13,7 @@ import {
   versionOrder,
 } from "@triveni/core";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { symbols } from "@/components/AnswerGrid";
 import { ClipButton, ReadAloud, SpeakButton } from "@/components/ClipButton";
 import { SendToParents } from "@/components/SendToParents";
@@ -22,17 +22,18 @@ import { versionsFor } from "@/check";
 import { content, useClassData } from "@/classData";
 import { api, saveCheck } from "@/db";
 import { type Group, groupTime } from "@/group";
+import { useUiLanguage } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { Kit } from "./Kit";
 import { Probe } from "./Probe";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
-const conceptName = (id: string) => concepts.find((c) => c.id === id)?.name ?? id;
 
 // The morning brief, and the group time it asks for: quick re-checks, the probe and the reteaching kit.
 export function Brief({ klass, onError }: { klass: ClassRecord; onError: (message: string) => void }) {
+  const { t } = useTranslation("brief");
+  const { language } = useUiLanguage();
   const data = useClassData(klass.id);
-  const [language, setLanguage] = useState<BriefLanguage>("en");
   const [recheck, setRecheck] = useState<{ conceptId: string; children: Child[] }>();
   const [probe, setProbe] = useState<Group>();
   const [kit, setKit] = useState<Group & { buddy: Child | undefined }>();
@@ -46,27 +47,20 @@ export function Brief({ klass, onError }: { klass: ClassRecord; onError: (messag
   const group = groupTime(data);
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-2">
-        {(["en", "hi"] as const).map((l) => (
-          <Button key={l} variant={language === l ? "default" : "outline"} className="h-10" onClick={() => setLanguage(l)}>
-            {l === "en" ? "English" : "हिंदी"}
-          </Button>
-        ))}
-      </div>
       <Reworded template={buildDailyBrief(today(), data, content, language)} language={language} />
       <CatchUpList data={data} />
       <RecheckList data={data} onStart={(conceptId, children) => setRecheck({ conceptId, children })} />
       <GroupList
-        title="Probe group"
-        about="Taught but not learned, seen once. The step-down probe finds where each child can restart."
-        action="Start probe"
+        title={t("probeGroup.title")}
+        about={t("probeGroup.about")}
+        action={t("probeGroup.action")}
         groups={group.probe}
         onStart={setProbe}
       />
       <GroupList
-        title="Reteaching group"
-        about="Taught but not learned, confirmed. Reteach from the concept they restart at."
-        action="Open reteaching kit"
+        title={t("reteachGroup.title")}
+        about={t("reteachGroup.about")}
+        action={t("reteachGroup.action")}
         groups={group.reteach}
         onStart={(g) => setKit({ ...g, buddy: group.buddies.find((b) => !g.records.some((r) => r.child.id === b.id)) })}
       />
@@ -88,6 +82,7 @@ function GroupList({
   groups: Group[];
   onStart: (group: Group) => void;
 }) {
+  const { conceptName } = useUiLanguage();
   if (groups.length === 0) return null;
   return (
     <section className="space-y-3">
@@ -107,7 +102,8 @@ function GroupList({
 }
 
 // The template straight away, then Claude's rewording if it arrives. Without a signal, the template stays.
-function Reworded({ template, language }: { template: string; language: BriefLanguage }) {
+function Reworded({ template, language }: { template: string; language: "en" | "hi" }) {
+  const { t } = useTranslation("brief");
   const [reworded, setReworded] = useState<{ template: string; text: string }>();
   const [failed, setFailed] = useState(false);
 
@@ -134,7 +130,7 @@ function Reworded({ template, language }: { template: string; language: BriefLan
     <section className="space-y-2 rounded-lg bg-muted p-4">
       <p className="whitespace-pre-line">{text ?? template}</p>
       <p className="text-xs text-muted-foreground">
-        {text ? "Reworded by Claude." : failed ? "Couldn't reach Claude, so this is the template." : "Rewording…"}
+        {text ? t("reworded") : failed ? t("templateOnly") : t("rewording")}
       </p>
       {language === "hi" && <ReadAloud text={text ?? template} />}
     </section>
@@ -143,6 +139,8 @@ function Reworded({ template, language }: { template: string; language: BriefLan
 
 // Children who missed every lesson on a concept, by concept: their parents get the catch-up lesson on Telegram.
 function CatchUpList({ data }: { data: ClassData }) {
+  const { t } = useTranslation("brief");
+  const { conceptName } = useUiLanguage();
   const all = results(data, content);
   const byConcept = new Map<string, Child[]>();
   for (const child of data.children) {
@@ -154,11 +152,8 @@ function CatchUpList({ data }: { data: ClassData }) {
   if (byConcept.size === 0) return null;
   return (
     <section className="space-y-3">
-      <h2 className="font-semibold">Catch-up for parents</h2>
-      <p className="text-sm text-muted-foreground">
-        Missed every lesson on a concept. Their parents get a short voice note in the home language, with an activity to do
-        at home.
-      </p>
+      <h2 className="font-semibold">{t("catchUp.title")}</h2>
+      <p className="text-sm text-muted-foreground">{t("catchUp.about")}</p>
       {[...byConcept].map(([conceptId, children]) => (
         <div key={conceptId} className="space-y-2 rounded-lg border p-3">
           <p className="font-medium">{conceptName(conceptId)}</p>
@@ -167,7 +162,7 @@ function CatchUpList({ data }: { data: ClassData }) {
             kind="catch_up"
             conceptId={conceptId}
             children={children}
-            label={`Send catch-up to ${children.length} ${children.length === 1 ? "parent" : "parents"}`}
+            label={t("catchUp.send", { count: children.length })}
           />
         </div>
       ))}
@@ -177,6 +172,8 @@ function CatchUpList({ data }: { data: ClassData }) {
 
 // Children whose pattern was seen once, by concept: a quick re-check confirms or clears them.
 function RecheckList({ data, onStart }: { data: ClassData; onStart: (conceptId: string, children: Child[]) => void }) {
+  const { t } = useTranslation("brief");
+  const { conceptName } = useUiLanguage();
   const all = results(data, content);
   const byConcept = new Map<string, Child[]>();
   for (const child of data.children) {
@@ -188,16 +185,14 @@ function RecheckList({ data, onStart }: { data: ClassData; onStart: (conceptId: 
   if (byConcept.size === 0) return null;
   return (
     <section className="space-y-3">
-      <h2 className="font-semibold">Quick re-checks</h2>
-      <p className="text-sm text-muted-foreground">
-        Patterns seen once. A fresh A, B and C, marked by tap: two or three minutes in group time.
-      </p>
+      <h2 className="font-semibold">{t("rechecks.title")}</h2>
+      <p className="text-sm text-muted-foreground">{t("rechecks.about")}</p>
       {[...byConcept].map(([conceptId, children]) => (
         <div key={conceptId} className="space-y-2 rounded-lg border p-3">
           <p className="font-medium">{conceptName(conceptId)}</p>
           <p className="text-sm">{children.map((c) => c.name).join(", ")}</p>
           <Button className="h-11 w-full" onClick={() => onStart(conceptId, children)}>
-            Start re-check
+            {t("rechecks.start")}
           </Button>
         </div>
       ))}
@@ -223,6 +218,8 @@ function Recheck({
 }) {
   const recheckQuestion = questions.find((q) => q.conceptId === conceptId && q.use === "recheck");
   const question = recheckQuestion ?? questions.find((q) => q.conceptId === conceptId)!;
+  const { t } = useTranslation("brief");
+  const { conceptName } = useUiLanguage();
   const [date] = useState(today);
   const order = versionOrder(date);
   const [taps, setTaps] = useState<Record<string, Partial<Record<Version, Tap>>>>({});
@@ -230,7 +227,7 @@ function Recheck({
   // Each tap moves a box on: not marked, then right, then wrong, then not marked again.
   const tap = (childId: string, v: Version) => {
     const next: Record<string, Tap | undefined> = { undefined: "right", right: "wrong", wrong: undefined };
-    setTaps((t) => ({ ...t, [childId]: { ...t[childId], [v]: next[String(t[childId]?.[v])] } }));
+    setTaps((all) => ({ ...all, [childId]: { ...all[childId], [v]: next[String(all[childId]?.[v])] } }));
   };
 
   // Only children the teacher marked: a child not re-checked keeps the label they had.
@@ -273,30 +270,30 @@ function Recheck({
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-semibold">Quick re-check: {conceptName(conceptId)}</h2>
+          <h2 className="font-semibold">{t("recheck.title", { concept: conceptName(conceptId) })}</h2>
           <p className="text-sm text-muted-foreground">{children.map((c) => c.name).join(", ")}</p>
         </div>
         <Button variant="outline" size="sm" onClick={onClose}>
-          Cancel
+          {t("common:cancel")}
         </Button>
       </div>
       {!recheckQuestion && (
         <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-          There's no re-check question for this concept yet, so this uses the weekly question's numbers.
+          {t("recheck.noRecheckQuestion")}
         </p>
       )}
       {order.map((version, step) => (
         <section key={version} className="space-y-2">
           <h3 className="font-semibold">
-            {step + 1}. Now fill the {symbols[version]} box
+            {t("recheck.fillBox", { step: step + 1, symbol: symbols[version] })}
           </h3>
           {version === "A" && <p className="rounded-lg border p-5 text-center text-4xl font-semibold">{question.A.prompt}</p>}
-          {version === "B" && <ClipButton clipId={question.B.audio} label="Play in Hindi" />}
-          {version === "C" && <SpeakButton text={question.C.bhili} label="Play in Bhili" />}
+          {version === "B" && <ClipButton clipId={question.B.audio} label={t("common:playInHindi")} />}
+          {version === "C" && <SpeakButton text={question.C.bhili} label={t("common:playInBhili")} />}
         </section>
       ))}
       <section className="space-y-2">
-        <h3 className="font-semibold">{order.length + 1}. Tap each box: right, then wrong</h3>
+        <h3 className="font-semibold">{t("recheck.tapEach", { step: order.length + 1 })}</h3>
         {children.map((child) => (
           <div key={child.id} className="grid grid-cols-[1fr_3.5rem_3.5rem_3.5rem] items-center gap-2">
             <span className="truncate">{child.name}</span>
@@ -324,7 +321,7 @@ function Recheck({
         ))}
       </section>
       <Button className="h-12 w-full" disabled={marked.length === 0} onClick={save}>
-        Save the re-check{marked.length > 0 && ` (${marked.length} ${marked.length === 1 ? "child" : "children"})`}
+        {marked.length > 0 ? t("recheck.saveCount", { children: t("common:children", { count: marked.length }) }) : t("recheck.save")}
       </Button>
     </div>
   );

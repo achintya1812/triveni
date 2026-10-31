@@ -1,0 +1,40 @@
+{
+  "app": "Triveni",
+  "nav": {
+    "brief": "Brief",
+    "log": "Daily log",
+    "check": "Check",
+    "results": "Results",
+    "class": "Class"
+  },
+  "switchTo": "हिंदी",
+  "notSent": "Saved on this phone, but not sent to the server: {{error}}. Tap to dismiss.",
+  "cancel": "Cancel",
+  "close": "Close",
+  "discard": "Discard",
+  "undo": "Undo",
+  "next": "Next",
+  "previous": "Previous",
+  "save": "Save",
+  "ignore": "Ignore",
+  "languages": {
+    "hindi": "Hindi",
+    "bhili": "Bhili"
+  },
+  "playInHindi": "Play in Hindi",
+  "playInBhili": "Play in Bhili",
+  "children_one": "{{count}} child",
+  "children_other": "{{count}} children",
+  "audio": {
+    "clipNotMade": "This clip has not been made yet.",
+    "bhiliNotMade": "This Bhili clip hasn't been made yet. Ask whoever runs the app to make the Bhili audio.",
+    "speechFailed": "Could not make the {{language}} audio: {{error}}",
+    "preparing": "Preparing audio…",
+    "playing": "Playing…",
+    "readAloud": "Read aloud",
+    "reading": "Reading…",
+    "couldNotPlay": "Could not play the audio.",
+    "couldNotPlayClip": "Could not play the clip: {{error}}",
+    "fileNotLoaded": "the file could not be loaded"
+  }
+}

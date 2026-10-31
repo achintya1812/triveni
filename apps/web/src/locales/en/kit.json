@@ -1,0 +1,14 @@
+{
+  "title": "Reteaching kit: {{concept}}",
+  "none": "There's no reteaching kit for this concept yet.",
+  "audioIn": "Audio in {{language}}",
+  "suggested": "Most of this group is best retaught in {{language}}.",
+  "steps": "Steps",
+  "playStep": "Play step {{n}}",
+  "keywords": "Key words",
+  "buddy": "Buddy",
+  "buddyText": "{{name}} follows both languages. Sit them with the group to repeat each step in Bhili.",
+  "noBuddy": "No child follows both languages well enough to be a buddy yet.",
+  "parents": "For parents",
+  "send": "Send activity to parents"
+}

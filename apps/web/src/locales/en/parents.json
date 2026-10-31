@@ -1,0 +1,7 @@
+{
+  "sending": "Sending…",
+  "sent": "Sent on Telegram to the parents of {{names}}.",
+  "notOptedIn": "Not on Telegram yet: {{names}}. Give their parents the QR code from the Class tab.",
+  "failed": "Couldn't send to {{name}}'s parent: {{error}}",
+  "couldNotSend": "Couldn't send: {{error}}"
+}

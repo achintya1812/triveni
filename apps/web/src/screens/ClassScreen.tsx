@@ -1,21 +1,24 @@
 import { listeningItems } from "@triveni/content";
-import { type Child, type ClassRecord, childRecord, type LanguageProfile, type ListeningResult, results } from "@triveni/core";
+import { type Child, type ClassRecord, childRecord, type ListeningResult, results } from "@triveni/core";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { SpeakButton } from "@/components/ClipButton";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { content, useClassData } from "@/classData";
 import { refreshChildren, saveChild, saveListening } from "@/db";
+import { useUiLanguage } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
 const percent = (score: number | null) => (score === null ? "–" : `${Math.round(score * 100)}%`);
-const reteachNames: Record<LanguageProfile["reteachIn"], string> = { home: "Bhili first", mixed: "both languages", school: "Hindi" };
 
 // The class: each child's language profile, the teacher's view of how well they follow Hindi, and the
 // one-time listening check.
 export function ClassScreen({ klass, onError }: { klass: ClassRecord; onError: (message: string) => void }) {
+  const { t } = useTranslation("class");
+  const { formatDate } = useUiLanguage();
   const data = useClassData(klass.id);
   const [listening, setListening] = useState(false);
   const [qrCodes, setQrCodes] = useState(false);
@@ -35,27 +38,23 @@ export function ClassScreen({ klass, onError }: { klass: ClassRecord; onError: (
   return (
     <div className="space-y-6">
       <section className="space-y-2 rounded-lg bg-muted p-4">
-        <h2 className="font-semibold">Listening check</h2>
+        <h2 className="font-semibold">{t("listening.title")}</h2>
         <p className="text-sm">
-          Once for the class: four sets of pictures, each with a Hindi and a Bhili question. It shows which language each
-          child follows. {lastListening ? `Last done on ${lastListening}.` : "Not done yet."}
+          {t("listening.about")} {lastListening ? t("listening.lastDone", { date: formatDate(lastListening) }) : t("listening.notDone")}
         </p>
         <Button className="h-11 w-full" onClick={() => setListening(true)}>
-          {lastListening ? "Run it again" : "Run the listening check"}
+          {lastListening ? t("listening.runAgain") : t("listening.run")}
         </Button>
       </section>
       <section className="space-y-2 rounded-lg bg-muted p-4">
-        <h2 className="font-semibold">Parents on Telegram</h2>
-        <p className="text-sm">
-          {data.children.filter((c) => c.parentChatId).length} of {data.children.length} parents get voice notes. Print each
-          child's QR code and send it home: the parent scans it and taps Start.
-        </p>
+        <h2 className="font-semibold">{t("parents.title")}</h2>
+        <p className="text-sm">{t("parents.about", { count: data.children.filter((c) => c.parentChatId).length, total: data.children.length })}</p>
         <Button className="h-11 w-full" variant="outline" onClick={() => setQrCodes(true)}>
-          Show parent QR codes
+          {t("parents.showQr")}
         </Button>
       </section>
       <section className="space-y-3">
-        <h2 className="font-semibold">Children</h2>
+        <h2 className="font-semibold">{t("children")}</h2>
         {data.children.map((child) => {
           const { language } = childRecord(child, data, content, all);
           return (
@@ -64,24 +63,24 @@ export function ClassScreen({ klass, onError }: { klass: ClassRecord; onError: (
                 <span className="font-medium">
                   {child.rollNo}. {child.name}
                 </span>{" "}
-                <span className="text-sm text-muted-foreground">({child.homeLanguage === "bhili" ? "Bhili" : "Hindi"} at home)</span>
+                <span className="text-sm text-muted-foreground">{t("atHome", { language: t(`common:languages.${child.homeLanguage}`) })}</span>
               </p>
               <p className="text-sm">
-                Follows Hindi {percent(language.hindi)}, Bhili {percent(language.bhili)}. Reteach in {reteachNames[language.reteachIn]}.
+                {t("profile", { hindi: percent(language.hindi), bhili: percent(language.bhili), reteach: t(`reteach.${language.reteachIn}`) })}
               </p>
               <p className="text-sm text-muted-foreground">
-                {child.parentChatId ? "Parent on Telegram ✓" : "Parent not on Telegram yet"}
+                {child.parentChatId ? t("parentOn") : t("parentOff")}
               </p>
               <NativeSelect
-                aria-label={`How well ${child.name} follows Hindi`}
+                aria-label={t("hindi.label", { name: child.name })}
                 className="w-full [&_select]:h-11"
                 value={child.hindiUnderstanding ?? ""}
                 onChange={(e) => setHindi(child, e.target.value)}
               >
-                <NativeSelectOption value="">Follows Hindi: not set</NativeSelectOption>
-                <NativeSelectOption value="well">Follows Hindi well</NativeSelectOption>
-                <NativeSelectOption value="some">Follows some Hindi</NativeSelectOption>
-                <NativeSelectOption value="none">Doesn't follow Hindi</NativeSelectOption>
+                <NativeSelectOption value="">{t("hindi.notSet")}</NativeSelectOption>
+                <NativeSelectOption value="well">{t("hindi.well")}</NativeSelectOption>
+                <NativeSelectOption value="some">{t("hindi.some")}</NativeSelectOption>
+                <NativeSelectOption value="none">{t("hindi.none")}</NativeSelectOption>
               </NativeSelect>
             </div>
           );
@@ -107,6 +106,7 @@ function ListeningCheck({
   onClose: () => void;
   onError: (message: string) => void;
 }) {
+  const { t } = useTranslation("class");
   const [date] = useState(today);
   const [index, setIndex] = useState(0);
   const [taps, setTaps] = useState<Record<string, Tap | undefined>>({});
@@ -138,38 +138,38 @@ function ListeningCheck({
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <h2 className="font-semibold">
-          Listening check: {index + 1} of {listeningItems.length}
+          {t("check.title", { n: index + 1, total: listeningItems.length })}
         </h2>
         <Button variant="outline" size="sm" onClick={onClose}>
-          Cancel
+          {t("common:cancel")}
         </Button>
       </div>
       <section className="space-y-2">
-        <h3 className="font-semibold">1. Draw these on the board, with their numbers</h3>
+        <h3 className="font-semibold">{t("check.draw")}</h3>
         <div className="grid grid-cols-2 gap-2">
           {item.pictures.map((p) => (
             <div key={p.number} className="rounded-lg border p-3 text-center">
               <p className="text-6xl">{p.emoji}</p>
               <p className="text-lg font-semibold">{p.number}</p>
-              <p className="text-sm text-muted-foreground">{p.english}</p>
+              <p className="text-sm text-muted-foreground">{t(`pictures.${p.english}`)}</p>
             </div>
           ))}
         </div>
       </section>
       <section className="space-y-2">
-        <h3 className="font-semibold">2. Play the Hindi question, then the Bhili one</h3>
-        <SpeakButton text={item.hindi.text} language="hindi" label="Play in Hindi" />
-        <SpeakButton text={item.bhili.text} language="bhili" label="Play in Bhili" />
+        <h3 className="font-semibold">{t("check.play")}</h3>
+        <SpeakButton text={item.hindi.text} language="hindi" label={t("common:playInHindi")} />
+        <SpeakButton text={item.bhili.text} language="bhili" label={t("common:playInBhili")} />
         <p className="text-sm text-muted-foreground">
-          Children write two numbers. Right answers: Hindi {item.hindi.answer}, Bhili {item.bhili.answer}.
+          {t("check.write", { hindi: item.hindi.answer, bhili: item.bhili.answer })}
         </p>
       </section>
       <section className="space-y-2">
-        <h3 className="font-semibold">3. Tap each number: right, then wrong</h3>
+        <h3 className="font-semibold">{t("check.tap")}</h3>
         <div className="grid grid-cols-[1fr_4.5rem_4.5rem] gap-2 text-center text-sm text-muted-foreground">
           <span />
-          <span>Hindi</span>
-          <span>Bhili</span>
+          <span>{t("common:languages.hindi")}</span>
+          <span>{t("common:languages.bhili")}</span>
         </div>
         {children.map((child) => (
           <div key={child.id} className="grid grid-cols-[1fr_4.5rem_4.5rem] items-center gap-2">
@@ -196,15 +196,15 @@ function ListeningCheck({
       </section>
       <div className="grid grid-cols-2 gap-2">
         <Button variant="outline" className="h-12" disabled={index === 0} onClick={() => setIndex(index - 1)}>
-          Previous
+          {t("common:previous")}
         </Button>
         {last ? (
           <Button className="h-12" disabled={marked.length === 0} onClick={save}>
-            Save
+            {t("common:save")}
           </Button>
         ) : (
           <Button className="h-12" onClick={() => setIndex(index + 1)}>
-            Next
+            {t("common:next")}
           </Button>
         )}
       </div>
@@ -215,6 +215,7 @@ function ListeningCheck({
 // One QR code per child, to print and send home. Scanning it opens the bot with the child's id, so tapping
 // Start opts the parent in. A parent of siblings scans each child's code.
 function ParentQrCodes({ children, onClose }: { children: Child[]; onClose: () => void }) {
+  const { t } = useTranslation("class");
   const [codes, setCodes] = useState<Record<string, string>>({});
   useEffect(() => {
     Promise.all(
@@ -226,17 +227,17 @@ function ParentQrCodes({ children, onClose }: { children: Child[]; onClose: () =
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3 print:hidden">
         <div>
-          <h2 className="font-semibold">Parent QR codes</h2>
-          <p className="text-sm text-muted-foreground">Print this page, or show a code on this phone for a parent to scan.</p>
+          <h2 className="font-semibold">{t("qr.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("qr.help")}</p>
         </div>
         <Button variant="outline" size="sm" onClick={onClose}>
-          Close
+          {t("common:close")}
         </Button>
       </div>
       <div className="grid grid-cols-2 gap-3">
         {children.map((c) => (
           <div key={c.id} className="break-inside-avoid space-y-1 rounded-lg border p-3 text-center">
-            {codes[c.id] && <img src={codes[c.id]} alt={`QR code for ${c.name}'s parent`} className="mx-auto w-full max-w-40" />}
+            {codes[c.id] && <img src={codes[c.id]} alt={t("qr.alt", { name: c.name })} className="mx-auto w-full max-w-40" />}
             <p className="font-medium">
               {c.rollNo}. {c.name}
             </p>
