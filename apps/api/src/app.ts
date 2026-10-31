@@ -7,6 +7,7 @@ import { classes } from "./routes/classes";
 import { parents } from "./routes/parents";
 import { slates } from "./routes/slates";
 import { speak } from "./routes/speak";
+import { voice } from "./routes/voice";
 
 // No auth: one teacher and one demo class. Each area's routes live in src/routes.
 
@@ -22,7 +23,8 @@ export const app = new Hono()
   .route("/", parents)
   .route("/", speak)
   .route("/", brief)
-  .route("/", slates);
+  .route("/", slates)
+  .route("/", voice);
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) return err.getResponse();

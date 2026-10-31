@@ -10,6 +10,7 @@
     "warm:speech": "tsx scripts/warm-speech.ts",
     "review:content": "tsx scripts/review-content.ts",
     "slate:accuracy": "tsx --env-file=.env scripts/slate-accuracy.ts",
+    "voice:accuracy": "tsx --env-file=.env scripts/voice-accuracy.ts",
     "typecheck": "tsc",
     "test": "vitest run"
   },

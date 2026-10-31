@@ -672,9 +672,23 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - **Web:** the dropdown is prefilled with the concept. The teacher confirms or changes it. The lesson saves with `source: "voice"`, the transcript and the page.
 - **Accuracy script:** `apps/api/scripts/voice-accuracy.ts` runs the test notes and prints the matched concept against the true one.
 
+**As built:**
+- **Model:** `saaras:v4` in `codemix` mode with key terms (page words and every concept's English and Hindi name), not v3. Sarvam takes key terms only on v4, and v3 wrote "page 65" as "पेज पैंसठ"; v4 gave "आज borrowing पढ़ाया page 65". The browser's `audio/webm;codecs=opus` is sent as `audio/webm`, the only form Sarvam accepts.
+- **Page:** a page word (page, pg, पेज, पृष्ठ, पन्ना) followed by digits in either script.
+- **Claude** (`src/voice.ts`):
+  - It gets each concept with its numbers probe as an example ("52 − 27"), so it can tell two-digit subtraction from borrowing.
+  - It also returns a page said in words ("पृष्ठ बासठ"). A page that is in a concept then decides the concept, as with digits.
+- **Storage:** notes are kept in `voice-notes/<classId>/<uuid>.<format>`.
+- **Daily log** (`components/VoiceNote.tsx`):
+  - Hold to record, let go to send, at most 25 seconds. A tap shorter than 0.7 s is ignored, with a hint.
+  - The dropdown is prefilled with the match, and the transcript is shown. An empty transcript says to try again.
+- **`voice:accuracy`:** a folder of notes plus `truth.csv` (`file,conceptId`, where conceptId may be `none`).
+  - On 7 Bulbul-made notes, 6/7 were right: 3/3 by page and 3/4 by Claude.
+  - The miss was Saaras hearing "कंकड़ हटाकर" (removing pebbles) as "उधार लेकर" (borrowing).
+
 **Verify:**
-- [ ] "Borrowing, page 65" maps by page, and a note with no page maps through Claude, both to the right concept.
-- [ ] The voice-accuracy script runs on the test notes, and the PR gives the result.
+- [x] "Borrowing, page 65" maps by page, and a note with no page maps through Claude, both to the right concept.
+- [ ] The voice-accuracy script runs on the test notes, and the PR gives the result. (Merged on 2026-10-31 without this, by choice; it runs when the recorded notes are in.)
 
 ---
 
