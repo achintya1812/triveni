@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simulation results</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="slide wide">
+      <div>
+        <span class="tag">Built: <code>pnpm --filter @triveni/core simulate</code></span>
+        <h1>Does it find the right children?</h1>
+        <p class="lead">
+          100 simulated classes of 30 children, 4 weekly checks. Each child gets a planted cause, plus noise: careless
+          slips (8%), blank boxes (3%) and absences (5%). The app's own rules then label them.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Planted cause</th><th>Children</th><th>Found by the last check</th><th>Checks to find (median)</th><th>Given a wrong label</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>No gap</td><td class="num">1158</td><td class="num">96% left with no label</td><td>–</td><td class="num">4%</td></tr>
+            <tr><td>Language gap</td><td class="num">602</td><td class="num">97%</td><td class="num">2</td><td class="num">3%</td></tr>
+            <tr><td>Word-problem gap</td><td class="num">311</td><td class="num">91%</td><td class="num">1</td><td class="num">7%</td></tr>
+            <tr><td>Symbol gap</td><td class="num">302</td><td class="num">93%</td><td class="num">1</td><td class="num">2%</td></tr>
+            <tr><td>Concept gap</td><td class="num">320</td><td class="num">83%</td><td class="num">1</td><td class="num">2%</td></tr>
+            <tr><td>Absent when taught</td><td class="num">307</td><td class="num">80%</td><td class="num">1</td><td class="num">3%</td></tr>
+          </tbody>
+        </table>
+        <p class="note">
+          A language gap needs two checks by design: one wrong Hindi answer could be a bad day, so it's confirmed in a
+          second week before the child is grouped. Seed 1; the numbers change little between seeds. These are
+          simulated children, not field results.
+        </p>
+        <nav><a href="community-library.html">← Community audio library</a><a href="index.html">All designs</a></nav>
+      </div>
+    </main>
+  </body>
+</html>

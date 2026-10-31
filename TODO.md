@@ -831,6 +831,20 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   8. Send the catch-up to Meena's parent: the demo phone receives the Bhili voice note on Telegram, live.
   9. Close with the design slides and the simulation table.
 
+**As built (so far):**
+- **README:** "Deploy (full build)" (Render Starter, a new Vercel project, the webhook, the checks before a demo) and "Demo (full build)" (the 5-minute script, with the Hindi tab names).
+- **`telegram:warm` [`--check`]:** makes every parent voice note (4 catch-up lessons and the kit's activity, in Bhili and Hindi) as OGG/Opus in the bucket. The deployed API then never needs `ffmpeg`, because the send route skips conversion when the file exists. All 10 are made.
+- **Designs:** static pages in `apps/web/public/designs/`, deployed with the app at `/designs/`.
+  - `teacher-words.html`: tomorrow's words, spaced reviews, support that fades.
+  - `community-library.html`: the recorder bot, with a second speaker approving.
+  - `simulation.html`: the simulation table.
+  - They use only Bhili already in the content; made-up counts are marked "illustrative".
+- **For people:**
+  - Create the Render service (Starter plan) and the Vercel project, and set their environment.
+  - Run `telegram:webhook` against the Render address, and `warm:speech --check` against it.
+  - Prepare slate photos for the live check (the demo class, both rows).
+  - Run the demo twice.
+
 **Verify:**
 - [ ] The demo runs on a phone against the deployed full build, twice in a row, in under 6 minutes.
 
