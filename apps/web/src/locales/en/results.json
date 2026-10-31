@@ -49,5 +49,21 @@
     "notChecked": "Absent today, but present when this was taught. Include them in the next check.",
     "ready": "Move on.",
     "answer": "Answer: {{answer}}"
+  },
+  "howTitle": "How results work",
+  "how": "Each concept was asked three ways: A in numbers only, B as a Hindi story, C as a Bhili story (children who speak Hindi at home skip C). Which ones a child got right puts them in a group. Tap a group to see who is in it and what to do. \"Seen once\" means a quick re-check confirms the group.",
+  "groupsMenu": "Groups",
+  "about": {
+    "language_gap": "Right in numbers (A) and in the Bhili story (C), wrong in the Hindi story (B). They can do the maths; the Hindi words are what stop them.",
+    "word_problem_gap": "Right in numbers (A), wrong in the stories (B and C). They can do the sum, but can't yet turn a story into one.",
+    "symbol_gap": "Wrong in numbers (A), right in the stories (B and C). They can solve the story, but not yet read the written sum.",
+    "language_symbol_gap": "Wrong in numbers (A) and the Hindi story (B), right in the Bhili story (C). They follow the maths in Bhili, but not yet in Hindi words or written symbols.",
+    "never_taught": "Wrong in all three, and absent on every day this concept was taught. The lesson was missed, not failed.",
+    "taught_not_learned": "Wrong in all three, though present when it was taught. The step-down probe finds the earlier concept to restart from.",
+    "clip_failed": "Right in numbers (A) and the Hindi story (B), wrong in the Bhili story (C). Either they follow Hindi better than Bhili, or the Bhili clip is unclear.",
+    "inconsistent": "Right in the Hindi story (B) only. This fits no learning pattern, so it may be a guess or a copied answer.",
+    "unclear": "A box was blank, or held a number copied from the question. Not enough to tell.",
+    "not_checked": "Absent on the check day, but present when this was taught.",
+    "ready": "Right in all three. Ready for the next concept."
   }
 }

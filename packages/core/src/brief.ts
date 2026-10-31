@@ -37,8 +37,9 @@ const say = {
   hi: {
     title: (date: string) => `सुबह की जानकारी, ${date}`,
     list: (items: string[]) => (items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} और ${items.at(-1)}`),
-    back: (names: string) => `${names} वापस आए हैं।`,
-    missed: (name: string, concepts: string) => `${name} अनुपस्थित थे जब यह पढ़ाया गया: ${concepts}।`,
+    // No gender is stored, so the template avoids gendered verbs; Claude's rewording presumes them from names.
+    back: (names: string) => `फिर से कक्षा में: ${names}।`,
+    missed: (name: string, concepts: string) => `${name} की अनुपस्थिति में पढ़ाया गया: ${concepts}।`,
     missedConcept: (n: number, total: number, concept: string, names: string) =>
       `${total} में से ${n} बच्चे ${concept} के पाठ में अनुपस्थित थे (${names}), और आगे के पाठ इसी पर टिके हैं। समूह-समय में इनके साथ पाठ दोहराएँ, और इनके माता-पिता को कैच-अप वॉइस नोट भेजें।`,
     groups: {

@@ -37,5 +37,6 @@
     "couldNotPlayClip": "क्लिप नहीं चल सकी: {{error}}",
     "fileNotLoaded": "फ़ाइल नहीं खुल सकी"
   },
-  "pending": "{{count}} भेजना बाकी"
+  "pending": "{{count}} भेजना बाकी",
+  "about": "{{title}}: जानकारी"
 }
