@@ -127,3 +127,17 @@ export const ParentMessage = z.object({
   sentAt: timestamp.nullable(),
 });
 export type ParentMessage = z.infer<typeof ParentMessage>;
+
+// What a parent sends back: a tap on "हो गया 👍" under a voice note (`done`), a text, or a voice reply.
+// A voice reply is in the private `parent-media` bucket, with a transcript for Hindi-home children.
+export const ParentReply = z.object({
+  id: z.uuid(),
+  childId: z.uuid(),
+  messageId: z.uuid().nullable(),
+  receivedAt: timestamp,
+  type: z.enum(["done", "text", "voice"]),
+  text: z.string().nullable(),
+  file: z.string().nullable(),
+  transcript: z.string().nullable(),
+});
+export type ParentReply = z.infer<typeof ParentReply>;

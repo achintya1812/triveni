@@ -2,6 +2,7 @@ import { concepts, keywords, kits } from "@triveni/content";
 import type { Child, ChildRecord, Language } from "@triveni/core";
 import { useState } from "react";
 import { SpeakButton } from "@/components/ClipButton";
+import { SendToParents } from "@/components/SendToParents";
 import { Button } from "@/components/ui/button";
 import { kitLanguage } from "@/group";
 
@@ -91,9 +92,12 @@ export function Kit({
           <section className="space-y-2">
             <h3 className="font-semibold">For parents</h3>
             <p>{kit.parentActivity.english}</p>
-            <Button className="h-11 w-full" variant="outline" disabled>
-              Send activity to parents (coming soon)
-            </Button>
+            <SendToParents
+              kind="activity"
+              conceptId={conceptId}
+              children={records.map((r) => r.child)}
+              label="Send activity to parents"
+            />
           </section>
         </>
       )}
