@@ -36,5 +36,6 @@
     "couldNotPlay": "Could not play the audio.",
     "couldNotPlayClip": "Could not play the clip: {{error}}",
     "fileNotLoaded": "the file could not be loaded"
-  }
+  },
+  "pending": "{{count}} waiting to send"
 }

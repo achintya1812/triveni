@@ -1,9 +1,10 @@
 import { type Child, SlateReading } from "@triveni/core";
+import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Camera } from "@/components/Camera";
 import { Button } from "@/components/ui/button";
-import { api } from "@/db";
+import { api, db, isNetworkError } from "@/db";
 
 // Shrinks a photo so its long side is at most 1500 px, which saves tokens and data, as base64 JPEG.
 async function resize(file: File) {
@@ -19,47 +20,72 @@ async function resize(file: File) {
 // How many photos are read at the same time.
 const atOnce = 3;
 
-type Photo = { id: number; file: File; state: "waiting" | "reading" | "read" | "failed"; error?: string };
-
 // Picks photos from the gallery (several at once) or takes several in a row with the in-app camera,
 // five to eight slates per photo, and has Claude read them, a few at a time, with the class list.
-// `onRead` gets each photo's number, counting from 1 in the order they were added.
+// The photos wait in Dexie until they're read: with no signal they stay waiting, and are read when the
+// signal returns (while this screen is open). `onRead` gets each photo's number, counting from 1.
 export function SlatePhotos({
+  checkId,
   roster,
   rows,
   onRead,
 }: {
+  checkId: string;
   roster: Child[];
   rows: number;
   onRead: (reading: SlateReading, photo: number) => Promise<void>;
 }) {
   const { t } = useTranslation("check");
   const gallery = useRef<HTMLInputElement>(null);
-  const nextId = useRef(0);
-  const [photos, setPhotos] = useState<Photo[]>([]);
   const [camera, setCamera] = useState(false);
+  const [online, setOnline] = useState(navigator.onLine);
+  const photos = useLiveQuery(() => db.photos.where({ checkId }).sortBy("number"), [checkId]) ?? [];
+  // Photos being read by this screen, so a photo isn't sent twice while Dexie catches up.
+  const reading = useRef(new Set<number>());
 
-  const update = (id: number, change: Partial<Photo>) =>
-    setPhotos((ps) => ps.map((p) => (p.id === id ? { ...p, ...change } : p)));
-  const add = (files: File[]) =>
-    setPhotos((ps) => [...ps, ...files.map((file) => ({ id: nextId.current++, file, state: "waiting" as const }))]);
-
-  // Starts waiting photos while fewer than `atOnce` are being read.
   useEffect(() => {
-    const busy = photos.filter((p) => p.state === "reading").length;
-    for (const photo of photos.filter((p) => p.state === "waiting").slice(0, atOnce - busy)) {
-      update(photo.id, { state: "reading", error: undefined });
+    const on = () => setOnline(true);
+    const off = () => setOnline(false);
+    window.addEventListener("online", on);
+    window.addEventListener("offline", off);
+    return () => {
+      window.removeEventListener("online", on);
+      window.removeEventListener("offline", off);
+    };
+  }, []);
+
+  async function add(files: File[]) {
+    const count = await db.photos.where({ checkId }).count();
+    await db.photos.bulkAdd(files.map((file, i) => ({ checkId, number: count + i + 1, file, state: "waiting" as const })));
+  }
+
+  // Starts waiting photos while fewer than `atOnce` are being read. A photo left "reading" by a closed screen
+  // counts as waiting again.
+  useEffect(() => {
+    if (!online) return;
+    const waiting = photos.filter((p) => p.state !== "read" && p.state !== "failed" && !reading.current.has(p.id!));
+    for (const photo of waiting.slice(0, atOnce - reading.current.size)) {
+      const id = photo.id!;
+      reading.current.add(id);
+      db.photos.update(id, { state: "reading", error: undefined });
       resize(photo.file)
         .then((image) =>
           api("POST", "/slates/read", { image, mediaType: "image/jpeg", rows, roster: roster.map((c) => ({ roll: c.rollNo, name: c.name })) }),
         )
-        .then(async (res) => onRead(SlateReading.parse(await res.json()), photo.id + 1))
+        .then(async (res) => onRead(SlateReading.parse(await res.json()), photo.number))
         .then(
-          () => update(photo.id, { state: "read" }),
-          (e: Error) => update(photo.id, { state: "failed", error: e.message }),
-        );
+          () => db.photos.update(id, { state: "read" }),
+          (e: Error) => {
+            if (!isNetworkError(e)) return db.photos.update(id, { state: "failed", error: e.message });
+            // No signal (or no server): it waits, and is tried again when the signal returns, or in 15 seconds.
+            setOnline(false);
+            setTimeout(() => setOnline(navigator.onLine), 15_000);
+            return db.photos.update(id, { state: "waiting" });
+          },
+        )
+        .finally(() => reading.current.delete(id));
     }
-  }, [photos, onRead, roster, rows]);
+  }, [photos, online, onRead, roster, rows]);
 
   const read = photos.filter((p) => p.state === "read").length;
 
@@ -97,9 +123,8 @@ export function SlatePhotos({
       )}
       {photos.length > 0 && (
         <div className="space-y-1 rounded-lg border p-3 text-sm">
-          <p className="font-medium">
-            {t("photos.read", { read, total: photos.length })}
-          </p>
+          <p className="font-medium">{t("photos.read", { read, total: photos.length })}</p>
+          {!online && read < photos.length && <p className="text-amber-800">{t("photos.offline")}</p>}
           <ul className="space-y-1">
             {photos.map((p) => (
               <li key={p.id} className="flex items-center justify-between gap-2">
@@ -108,7 +133,7 @@ export function SlatePhotos({
                   {p.error && <span className="block text-xs text-destructive">{p.error}</span>}
                 </span>
                 {p.state === "failed" && (
-                  <Button size="sm" variant="outline" onClick={() => update(p.id, { state: "waiting" })}>
+                  <Button size="sm" variant="outline" onClick={() => db.photos.update(p.id!, { state: "waiting" })}>
                     {t("photos.retry")}
                   </Button>
                 )}

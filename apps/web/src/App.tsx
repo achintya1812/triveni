@@ -1,8 +1,8 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { db } from "./db";
+import { db, flush, onOutboxProblem, readWaitingNotes } from "./db";
 import { setLanguage } from "./i18n";
 import { Brief } from "./screens/Brief";
 import { CheckRunner } from "./screens/CheckRunner";
@@ -17,12 +17,33 @@ export default function App() {
   const { t, i18n } = useTranslation();
   const classes = useLiveQuery(() => db.classes.toArray());
   const [error, setError] = useState("");
+  // Writes and voice notes waiting for a signal.
+  const waiting = useLiveQuery(async () => (await db.outbox.count()) + (await db.notes.count())) ?? 0;
+
+  // Sends what's waiting: on start, when the signal returns, and every 30 seconds in case it returned unnoticed.
+  useEffect(() => {
+    const sendWaiting = () => flush().then(readWaitingNotes);
+    sendWaiting();
+    window.addEventListener("online", sendWaiting);
+    const timer = setInterval(sendWaiting, 30_000);
+    const stop = onOutboxProblem(setError);
+    return () => {
+      window.removeEventListener("online", sendWaiting);
+      clearInterval(timer);
+      stop();
+    };
+  }, []);
   const [screen, setScreen] = useState<"brief" | "log" | "check" | "results" | "class">("brief");
 
   return (
     <main className="mx-auto max-w-md space-y-4 p-4">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">{t("app")}</h1>
+        {waiting > 0 && (
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs text-amber-900" role="status">
+            ⏳ {t("pending", { count: waiting })}
+          </span>
+        )}
         <Button variant="outline" size="sm" onClick={() => setLanguage(i18n.language === "hi" ? "en" : "hi")}>
           {t("switchTo")}
         </Button>

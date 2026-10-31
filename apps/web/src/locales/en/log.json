@@ -23,6 +23,7 @@
     "matched": "Matched to {{concept}}.",
     "unknown": "Couldn't tell which concept.",
     "checkBelow": "Check the concept below, and change it if it's wrong.",
-    "nothingHeard": "Couldn't hear anything. Hold the phone closer and try again, or pick the concept below."
+    "nothingHeard": "Couldn't hear anything. Hold the phone closer and try again, or pick the concept below.",
+    "savedOffline": "No signal: the note is saved, and will be read when the phone is back online. You can pick the concept now."
   }
 }
