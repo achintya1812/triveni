@@ -16,6 +16,7 @@ import {
 import { useEffect, useState } from "react";
 import { symbols } from "@/components/AnswerGrid";
 import { ClipButton, ReadAloud, SpeakButton } from "@/components/ClipButton";
+import { SendToParents } from "@/components/SendToParents";
 import { Button } from "@/components/ui/button";
 import { versionsFor } from "@/check";
 import { content, useClassData } from "@/classData";
@@ -53,6 +54,7 @@ export function Brief({ klass, onError }: { klass: ClassRecord; onError: (messag
         ))}
       </div>
       <Reworded template={buildDailyBrief(today(), data, content, language)} language={language} />
+      <CatchUpList data={data} />
       <RecheckList data={data} onStart={(conceptId, children) => setRecheck({ conceptId, children })} />
       <GroupList
         title="Probe group"
@@ -135,6 +137,40 @@ function Reworded({ template, language }: { template: string; language: BriefLan
         {text ? "Reworded by Claude." : failed ? "Couldn't reach Claude, so this is the template." : "Rewording…"}
       </p>
       {language === "hi" && <ReadAloud text={text ?? template} />}
+    </section>
+  );
+}
+
+// Children who missed every lesson on a concept, by concept: their parents get the catch-up lesson on Telegram.
+function CatchUpList({ data }: { data: ClassData }) {
+  const all = results(data, content);
+  const byConcept = new Map<string, Child[]>();
+  for (const child of data.children) {
+    const record = childRecord(child, data, content, all);
+    for (const [conceptId, c] of Object.entries(record.concepts)) {
+      if (c.status === "not_taught") byConcept.set(conceptId, [...(byConcept.get(conceptId) ?? []), child]);
+    }
+  }
+  if (byConcept.size === 0) return null;
+  return (
+    <section className="space-y-3">
+      <h2 className="font-semibold">Catch-up for parents</h2>
+      <p className="text-sm text-muted-foreground">
+        Missed every lesson on a concept. Their parents get a short voice note in the home language, with an activity to do
+        at home.
+      </p>
+      {[...byConcept].map(([conceptId, children]) => (
+        <div key={conceptId} className="space-y-2 rounded-lg border p-3">
+          <p className="font-medium">{conceptName(conceptId)}</p>
+          <p className="text-sm">{children.map((c) => c.name).join(", ")}</p>
+          <SendToParents
+            kind="catch_up"
+            conceptId={conceptId}
+            children={children}
+            label={`Send catch-up to ${children.length} ${children.length === 1 ? "parent" : "parents"}`}
+          />
+        </div>
+      ))}
     </section>
   );
 }

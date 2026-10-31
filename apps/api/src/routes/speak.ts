@@ -18,15 +18,24 @@ const Speech = z.object({
 // The deployed API has no Bhili speech service, so every Bhili clip must be made beforehand (warm:speech).
 export const speak = new Hono().post("/speak", json(Speech), async (c) => {
   const { text, language, cachedOnly } = c.req.valid("json");
-  const file = `tts/${language}/${createHash("sha256").update(text).digest("hex")}.${language === "bhili" ? "wav" : "mp3"}`;
   if (cachedOnly) {
+    const file = speechFile(text, language);
     const { data: cached } = await db().storage.from("audio").exists(file);
     return cached ? c.json({ file }) : c.json({ error: "Not made yet" }, 404);
   }
+  return c.json({ file: await speech(text, language) });
+});
+
+const speechFile = (text: string, language: "bhili" | "hindi") =>
+  `tts/${language}/${createHash("sha256").update(text).digest("hex")}.${language === "bhili" ? "wav" : "mp3"}`;
+
+// The cached clip for a text, made first if it isn't cached yet. Returns its path in the `audio` bucket.
+export async function speech(text: string, language: "bhili" | "hindi") {
+  const file = speechFile(text, language);
   if (!speaking.has(file)) speaking.set(file, makeSpeech(file, text, language).finally(() => speaking.delete(file)));
   await speaking.get(file);
-  return c.json({ file });
-});
+  return file;
+}
 
 // Speech can take up to a minute on CPU, so a second request for the same text waits for the first.
 const speaking = new Map<string, Promise<void>>();

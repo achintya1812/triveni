@@ -692,7 +692,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 22: Telegram parent notes
+## [x] Stage 22: Telegram parent notes
 
 **Lane:** C. **Depends on:** 9, 18, 19 (and 21 for transcribing Hindi replies).
 
@@ -744,12 +744,31 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   Run it again whenever `PUBLIC_API_URL` changes. While developing, use a tunnel (`cloudflared tunnel --url http://localhost:8787`).
 - **Optional:** the teacher can start the bot too, and receive the morning brief the same way.
 
+**As built:**
+- **QR code:** it carries the whole child id (`?start=<child id>`), not the first 8 characters, because the demo children's ids all start with `00000000`.
+- **`ffmpeg`:** the conversion runs the system `ffmpeg` (with libopus). `ffmpeg-static` was blocked as untrusted code, since it downloads a binary at install. The deployed API needs `ffmpeg` too, or its parent voice notes made beforehand (Stage 23).
+- **Voice notes:** the cached clip, converted once to `audio/tg/<hash>.ogg`.
+  - The caption is "<name> के लिए:" and the steps in Hindi, the script parents can read. The audio is in the child's home language.
+  - A failed send is a `failed` row, with the reason returned to the app.
+- **Replies** (`parent_replies`, migration `20261031150000`):
+  - A tap is stored once per voice note.
+  - A text or voice reply goes to the child of the note it replies to, or else of the latest note sent to that chat.
+  - The parent gets a Hindi thank-you.
+- **Webhook:** it answers 403 without the right secret, or when `TELEGRAM_WEBHOOK_SECRET` isn't set.
+- **Web:**
+  - The Brief has "Catch-up for parents" (children who missed every lesson on a concept).
+  - The kit's "Send activity to parents" is live.
+  - The Class tab refreshes the children from the API (to see opt-ins), shows each parent's status, and has a printable sheet of QR codes.
+- **Development without a tunnel:** while no webhook is set, a relay that polls `getUpdates` and posts each update to the local webhook with the secret works in place of `cloudflared`.
+
 **Verify:**
-- [ ] A demo phone scans a child's QR code and taps Start, and the parent is opted in.
-- [ ] It receives a Bhili catch-up that plays as a voice message, with the activity as its caption.
-- [ ] Tapping "हो गया 👍" is stored, and so is a Hindi voice reply, with its transcript.
-- [ ] A webhook call without the right secret header is rejected.
-- [ ] A child whose parent hasn't opted in is listed, not sent.
+- [x] A demo phone scans a child's QR code and taps Start, and the parent is opted in.
+- [x] It receives a Bhili catch-up that plays as a voice message, with the activity as its caption.
+- [x] Tapping "हो गया 👍" is stored, and so is a Hindi voice reply, with its transcript.
+  - Taps and a voice reply were stored from the phone (Meena, Bhili, so no transcript).
+  - Saaras transcribed that stored Telegram OGG reply ("धन्यवाद।"), the same call a Hindi-home child's reply gets.
+- [x] A webhook call without the right secret header is rejected (403, also a test).
+- [x] A child whose parent hasn't opted in is listed, not sent.
 
 ---
 

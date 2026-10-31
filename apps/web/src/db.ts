@@ -1,13 +1,13 @@
-import type {
-  Answer,
-  Attendance,
-  Check,
+import {
+  type Answer,
+  type Attendance,
+  type Check,
   Child,
-  ClassRecord,
-  Lesson,
-  ListeningResult,
-  ParentMessage,
-  ProbeResult,
+  type ClassRecord,
+  type Lesson,
+  type ListeningResult,
+  type ParentMessage,
+  type ProbeResult,
 } from "@triveni/core";
 import { Dexie, type EntityTable, type Table } from "dexie";
 import type { Grid, UnplacedSlate } from "./check";
@@ -126,6 +126,24 @@ export async function saveProbes(classId: string, results: ProbeResult[]) {
 export async function saveChild(child: Child) {
   await db.children.put(child);
   await api("POST", `/classes/${child.classId}/children`, [child]);
+}
+
+// Sends parents a voice note on Telegram: a concept's catch-up lesson, or the kit's home activity.
+export type SendResult = {
+  messages: ParentMessage[];
+  failed: { childId: string; error: string }[];
+  notOptedIn: string[];
+};
+export async function sendToParents(kind: ParentMessage["kind"], conceptId: string, childIds: string[]) {
+  const result = (await (await api("POST", "/parents/send", { kind, conceptId, childIds })).json()) as SendResult;
+  await db.parentMessages.bulkPut(result.messages);
+  return result;
+}
+
+// Parents opt in on Telegram, which the server records, so the phone fetches the children again to see it.
+export async function refreshChildren(classId: string) {
+  const children = Child.array().parse(await (await api("GET", `/classes/${classId}/children`)).json());
+  await db.children.bulkPut(children);
 }
 
 // Marks one child absent or present on a day, keeping the rest of the day's attendance and its lesson.
