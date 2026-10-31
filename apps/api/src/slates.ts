@@ -17,10 +17,18 @@ A photo shows several slates, usually 5 to 8 side by side. It may be tilted, blu
 
 Children write numbers in Latin digits (0-9) or in Devanagari digits:
 ० 0, १ 1, २ 2, ३ 3, ४ 4, ५ 5, ६ 6, ७ 7, ८ 8, ९ 9.
-Several Devanagari digits look like a different Latin digit, so they are easy to misread:
-- १ (one) looks like a Latin 9.
-- ४ (four) looks like a Latin 8.
-- ७ (seven) looks like a Latin 6 or 9.
+Handwritten Devanagari digits are easy to confuse with each other and with Latin digits. Tell them apart by their strokes:
+- १ (one): a small open hook at the top, then one long tail sweeping down, often to the right. No closed loop and no base. It looks like a Latin 9 or like २ without its base.
+- २ (two): a hook at the top, then a stroke that turns and runs along the bottom to the right, like a Latin 2. The base is what makes it २ and not १.
+- ३ (three): like २ with a second bump on the right, like a Latin 3 with a tail.
+- ४ (four): a loop crossed by a stroke, like a Latin 8 or a looped y.
+- ५ (five): a hook with a small loop at the bottom, like a u with a tail. It can look like a Latin 4 or 5.
+- ६ (six): like a Latin ε or a backwards 3, with a small tail at the bottom right.
+- ७ (seven): a v or u shape with a curl, like a Latin 6 or 9 turned on its side.
+- ८ (eight): one open curve with a hook at the top, like a Latin C, L or <.
+- ९ (nine): a closed or nearly closed loop at the top with a tail going down, like a Latin 9 or ρ. The closed loop is what makes it ९ and not १.
+- ० (zero): a small circle.
+Read each Devanagari digit stroke by stroke, and look at the other digits on the same slate to learn how this child writes. If a digit could be either of two look-alikes, give that value a low confidence.
 Each slate is written in one script: if any number on a slate is clearly Devanagari, read every number on that slate, the roll included, as Devanagari.
 
 Return one entry per slate, in the order they appear: left to right, then top to bottom.

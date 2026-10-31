@@ -16,7 +16,7 @@ The Bhili speech service needs [uv](https://docs.astral.sh/uv/). The first run i
 
 `uv run services/bhili/translate.py` fills in any missing Bhili text in `packages/content/data` (C questions, key words, reteaching scripts). It never overwrites existing Bhili, so to redo one, delete its `bhili` value first. Run it with the speech service stopped, since it needs about 10 GB of free RAM. Then `pnpm --filter @triveni/api warm:speech` (with the API and speech service running) makes and caches every Bhili clip.
 
-`pnpm --filter @triveni/api slate:accuracy <folder>` measures how well Claude reads slate photos. The folder holds the photos and an `answers.csv` with the true answers (`photo,roll,A,B,C`, one row per slate). `apps/api/scripts/slate-samples` has three synthetic photos of the demo class made with a handwriting font; real slate photos give the number that counts. Each photo is one paid Claude call.
+`pnpm --filter @triveni/api slate:accuracy <folder>` measures how well Claude reads slate photos. The folder holds the photos and an `answers.csv` with the true answers (`photo,roll,A,B,C`, one row per slate). `apps/api/scripts/slate-samples` has three synthetic photos of the demo class made with a handwriting font; real slate photos give the number that counts: `apps/api/scripts/notebook-samples` has 18 real notebook slates (`answers.csv` adds `name` and `wrote` columns, and `--effort low|medium` picks the effort). Each photo is one paid Claude call. `pnpm --filter @triveni/api voice:accuracy scripts/voice-samples` does the same for voice notes, with a `truth.csv`.
 
 ## Environment variables
 
@@ -87,7 +87,7 @@ On the demo phone: the installed app, in Hindi. On a second phone: Telegram, sig
 
 1. **Load the demo class** (setup screen). In **रजिस्टर** (the daily log), hold the mic and say "आज borrowing पढ़ाया, page 65". The concept fills in from the page; save.
 2. **Run a two-concept check** (**जाँच**): the suggested concepts, in this week's rotated order. Show A on the board, play B in Hindi, then C in Bhili.
-3. **Choose the slate photos from the gallery.** When they're read, fix one highlighted box and give one slate from "यह स्लेट किसकी है?" to its child. Save.
+3. **Choose the slate photos from the gallery.** The demo slates use Latin digits (0–9), each with a roll, a name in Hindi or English, or both: Devanagari digits read too unreliably to show live. When they're read, fix one highlighted box and give one slate from "यह स्लेट किसकी है?" to its child. Save.
 4. **Results** (**नतीजे**): Ravi is in a confirmed language gap with his key words; Meena is in Never taught; Arjun's 11 points to borrowing.
 5. **The morning brief** (**आज**) in Hindi: read it aloud.
 6. **A quick re-check** that confirms Sita's word-problem gap.

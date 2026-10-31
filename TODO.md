@@ -637,7 +637,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 20: Slate reading v2
+## [x] Stage 20: Slate reading v2
 
 **Lane:** C. **Depends on:** nothing for the server part; 14 for the web part (it changes the grid and photo code).
 
@@ -675,15 +675,30 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - It pairs slates with the truth by reading order, so list them left to right, then top to bottom.
   - "Rolls read right" counts like mvp-demo-v1's "Rolls found", for the baseline.
 - **MVP samples, low effort:** rolls 18/18; placed 17/18, 1 unplaced (a right roll read with low confidence), 0 to the wrong child; boxes 51/54, 0 wrong and unflagged.
+- **Notebook test set** (`scripts/notebook-samples`: 18 real notebook slates in 3 photos, one writer; photo 1 all Devanagari, photo 2 Latin digits with names, photo 3 mixed):
+  - The first run gave Ravi's `१` to Meena: Claude read it as `२` at 0.80–0.85. In this hand `१`, `९` and `२` are near look-alikes.
+  - Fix: the prompt describes each Devanagari digit by its strokes (`१` has no base, `२` has one, `९` has a closed loop) and asks for low confidence when two look-alikes are possible. Over 4 sandbox runs it gave 0 slates to the wrong child, against 3 of 4 with the old prompt, with Latin slates unchanged.
+  - Tried and dropped: the photo enlarged to 2576 px, and each slate cropped and read alone. Neither read Devanagari better; enlarging made more wrong answers go unflagged.
+  - Final, with the stroke prompt (rolls counted on the 15 slates with a roll written):
+
+    | | Rolls read right | Wrong child | Boxes right | Wrong, not flagged |
+    |---|---|---|---|---|
+    | `mvp-demo-v1` | 11/15 | – | 26/44 | 0 |
+    | low effort (kept) | 14/15 | 0 | 39/54 | 0 |
+    | medium effort | 14/15 | 0 | 44/54 | 1 |
+
+  - Low is kept: it's the one with nothing wrong and unflagged, and about twice as fast (7 s against 15 s a photo).
+  - Devanagari digits are still weak: this writer's `९` reads as `१` or `२` (flagged, at about 0.6), so most Devanagari slates go to "Whose slate is this?" and about half their boxes need a tap. Latin slates read almost perfectly. **The demo uses Latin digits, with a roll, a name in Hindi or English, or both.**
+  - Not tried: sending photos above the app's 1500 px (Claude takes up to 2576 px). The test photos were only 1600 px, so it needs original camera photos to measure.
 
 **Verify** (merged on 2026-10-31 without these, by choice; they run when the notebook photos are in):
-- [ ] On the notebook test set, roll accuracy beats `mvp-demo-v1` (run the old prompt for the baseline).
-- [ ] Every misread roll shows as unplaced; none is given to the wrong child.
-- [ ] A slate with only a name is placed by name.
+- [x] On the notebook test set, roll accuracy beats `mvp-demo-v1` (run the old prompt for the baseline): 14/15 against 11/15.
+- [x] Every misread roll shows as unplaced; none is given to the wrong child.
+- [x] A slate with only a name is placed by name: 3/3.
 
 ---
 
-## [ ] Stage 21: Voice notes
+## [x] Stage 21: Voice notes
 
 **Lane:** C. **Depends on:** 9.
 
@@ -717,10 +732,13 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - **`voice:accuracy`:** a folder of notes plus `truth.csv` (`file,conceptId`, where conceptId may be `none`).
   - On 7 Bulbul-made notes, 6/7 were right: 3/3 by page and 3/4 by Claude.
   - The miss was Saaras hearing "कंकड़ हटाकर" (removing pebbles) as "उधार लेकर" (borrowing).
+  - On the 12 recorded notes (`scripts/voice-samples`, a phone recorder, `.m4a`), 11/12 were right: 6/6 by page (including pages said in words, and the noisy note 11) and 5/6 by Claude.
+    - The miss was note 07, "बारह में से चार हटाए" (pebbles, 12 − 4), transcribed right but matched to borrowing: 12 − 4 crosses a ten, and Claude sees only the probes (16 − 4 against 15 − 6), though the subtraction-within-20 reteach uses exactly "12 stones, take away 4".
+    - Note 11 came back as "Subtraction within 20 का revision किया page 64"; page 64 still gave borrowing.
 
 **Verify:**
 - [x] "Borrowing, page 65" maps by page, and a note with no page maps through Claude, both to the right concept.
-- [ ] The voice-accuracy script runs on the test notes, and the PR gives the result. (Merged on 2026-10-31 without this, by choice; it runs when the recorded notes are in.)
+- [x] The voice-accuracy script runs on the test notes, and the PR gives the result: 11/12.
 
 ---
 
@@ -823,7 +841,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - **Demo script** (about 5 minutes), written into README:
   1. Load the demo class. Log today with a voice note ("borrowing, page 65", Jyoti's garland story in the Class 2 book).
   2. Run a two-concept check in this week's rotated order. Show A, play B, then C in Bhili.
-  3. Choose the slate photos from the gallery; fix one flagged box and assign one unplaced slate.
+  3. Choose the slate photos from the gallery (slates in Latin digits, with names in Hindi or English); fix one flagged box and assign one unplaced slate.
   4. On the results, Ravi is in a confirmed language gap with his key words; Meena is in Never taught; Arjun's 11 points to borrowing.
   5. Show the Hindi morning brief, and read it aloud.
   6. Run a quick re-check that confirms Sita.
@@ -842,7 +860,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - **For people:**
   - Create the Render service (Starter plan) and the Vercel project, and set their environment.
   - Run `telegram:webhook` against the Render address, and `warm:speech --check` against it.
-  - Prepare slate photos for the live check (the demo class, both rows).
+  - Prepare slate photos for the live check (the demo class, both rows), in Latin digits (0–9), each with a roll, a name in Hindi or English, or both. Devanagari digits read too unreliably for a live demo (Stage 20).
   - Run the demo twice.
 
 **Verify:**
@@ -856,8 +874,8 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - [ ] A Sarvam key with Saaras speech-to-text (Stages 21, 22). Confirm the Bulbul version.
 - [ ] A Telegram bot made with @BotFather: its token and username (Stage 22).
 - [x] The textbook and page numbers for the 4 concepts (Stages 19, 21): NCERT Class 2, in `resources/TEXTBOOKS.md`.
-- [ ] The notebook slate test set with `answers.csv` (Stage 20).
-- [ ] About 10 recorded voice-note test files (Stage 21).
+- [x] The notebook slate test set with `answers.csv` (Stage 20).
+- [x] About 10 recorded voice-note test files (Stage 21): 12.
 - [ ] A Hindi speaker reviews the new questions, wrong-answer lists, kit and interface text on Day 2. The content was reviewed with Stage 19; the interface text (Stage 13) is still to do.
 - [ ] A Bhili speaker from the target area reviews every `bhili` field and how bhili-tts says it, especially numbers and single words. None was found in time. Known bad: the `dahai` and `ikai` key words, and "6 bundles" in the two-digit catch-up.
 - [ ] Demo phones: an Android phone for the teacher, and a phone with Telegram for the parent.
