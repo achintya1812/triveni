@@ -1,4 +1,4 @@
-import { SlateReading } from "@triveni/core";
+import { type Child, SlateReading } from "@triveni/core";
 import { useEffect, useRef, useState } from "react";
 import { Camera } from "@/components/Camera";
 import { Button } from "@/components/ui/button";
@@ -21,8 +21,17 @@ const atOnce = 3;
 type Photo = { id: number; file: File; state: "waiting" | "reading" | "read" | "failed"; error?: string };
 
 // Picks photos from the gallery (several at once) or takes several in a row with the in-app camera,
-// five to eight slates per photo, and has Claude read them, a few at a time.
-export function SlatePhotos({ onRead }: { onRead: (reading: SlateReading) => Promise<void> }) {
+// five to eight slates per photo, and has Claude read them, a few at a time, with the class list.
+// `onRead` gets each photo's number, counting from 1 in the order they were added.
+export function SlatePhotos({
+  roster,
+  rows,
+  onRead,
+}: {
+  roster: Child[];
+  rows: number;
+  onRead: (reading: SlateReading, photo: number) => Promise<void>;
+}) {
   const gallery = useRef<HTMLInputElement>(null);
   const nextId = useRef(0);
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -39,14 +48,16 @@ export function SlatePhotos({ onRead }: { onRead: (reading: SlateReading) => Pro
     for (const photo of photos.filter((p) => p.state === "waiting").slice(0, atOnce - busy)) {
       update(photo.id, { state: "reading", error: undefined });
       resize(photo.file)
-        .then((image) => api("POST", "/slates/read", { image, mediaType: "image/jpeg" }))
-        .then(async (res) => onRead(SlateReading.parse(await res.json())))
+        .then((image) =>
+          api("POST", "/slates/read", { image, mediaType: "image/jpeg", rows, roster: roster.map((c) => ({ roll: c.rollNo, name: c.name })) }),
+        )
+        .then(async (res) => onRead(SlateReading.parse(await res.json()), photo.id + 1))
         .then(
           () => update(photo.id, { state: "read" }),
           (e: Error) => update(photo.id, { state: "failed", error: e.message }),
         );
     }
-  }, [photos, onRead]);
+  }, [photos, onRead, roster, rows]);
 
   const read = photos.filter((p) => p.state === "read").length;
   const label: Record<Photo["state"], string> = { waiting: "Waiting", reading: "Reading…", read: "Read", failed: "Couldn't read" };

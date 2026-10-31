@@ -8,7 +8,7 @@ import { SlatePhotos } from "@/components/SlatePhotos";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { applySlates, type GridReads, isFlagged, markGrid, rollFlags } from "@/check";
+import { applySlates, fillSlate, type GridReads, isFlagged, markGrid, rollFlags, type UnplacedSlate } from "@/check";
 import { type Draft, db, saveCheck, setAbsent } from "@/db";
 import { cn } from "@/lib/utils";
 
@@ -61,6 +61,7 @@ function StartCheck({ klass, savedOn }: { klass: ClassRecord; savedOn?: string }
       questionIds,
       grids: questionIds.map(() => ({ values: {}, reads: {} })),
       rolls: [],
+      unplaced: [],
     };
     await db.drafts.put(draft);
   }
@@ -140,10 +141,21 @@ function RunCheck({
   const order = versionOrder(draft.date);
 
   const readPhoto = useCallback(
-    (reading: SlateReading) =>
-      change((d) => ({ ...d, grids: applySlates(roster, d.grids, reading), rolls: [...d.rolls, ...reading.slates.map((s) => s.roll)] })),
+    (reading: SlateReading, photo: number) =>
+      change((d) => {
+        const read = applySlates(roster, d.grids, reading, photo);
+        return { ...d, grids: read.grids, rolls: [...d.rolls, ...read.placed.map((c) => c.rollNo)], unplaced: [...d.unplaced, ...read.unplaced] };
+      }),
     [change, roster],
   );
+  const sameSlate = (a: UnplacedSlate, b: UnplacedSlate) => a.photo === b.photo && a.slate === b.slate;
+  const placeByHand = (slate: UnplacedSlate, child: Child | undefined) =>
+    change((d) => ({
+      ...d,
+      grids: child ? fillSlate(d.grids, child, slate.answers) : d.grids,
+      rolls: child ? [...d.rolls, child.rollNo] : d.rolls,
+      unplaced: d.unplaced.filter((u) => !sameSlate(u, slate)),
+    }));
 
   async function toggleAbsent(childId: string) {
     try {
@@ -249,8 +261,14 @@ function RunCheck({
         <p className="text-sm text-muted-foreground">
           Photograph five to eight slates at a time, or type the answers. Leave a box empty if the child left it blank.
         </p>
-        <SlatePhotos onRead={readPhoto} />
+        <SlatePhotos roster={roster} rows={rows.length} onRead={readPhoto} />
         <PhotoFlags roster={present} reads={draft.grids.map((g) => g.reads)} rolls={draft.rolls} />
+        <Unplaced
+          slates={draft.unplaced}
+          rows={rows.length}
+          children={present.filter((c) => !draft.rolls.includes(c.rollNo))}
+          onPlace={placeByHand}
+        />
         {rows.map((q, i) => (
           <div key={q.id} className="space-y-2">
             {rows.length > 1 && (
@@ -281,17 +299,15 @@ function RunCheck({
 const rollList = (children: Child[]) => children.map((c) => `${c.rollNo} ${c.name}`).join(", ");
 
 // What the teacher needs to check after reading photos.
-function PhotoFlags({ roster, reads, rolls }: { roster: Child[]; reads: GridReads[]; rolls: (number | null)[] }) {
+function PhotoFlags({ roster, reads, rolls }: { roster: Child[]; reads: GridReads[]; rolls: number[] }) {
   if (rolls.length === 0) return null;
-  const { unreadable, unknown, duplicate, missing } = rollFlags(roster, rolls);
+  const { duplicate, missing } = rollFlags(roster, rolls);
   const boxes = reads.flatMap((g) => Object.values(g).flatMap((r) => Object.values(r))).filter(isFlagged).length;
   const notes = [
     boxes > 0 && `${boxes} highlighted ${boxes === 1 ? "box needs" : "boxes need"} checking. Tap each one, and fix it if it's wrong.`,
     missing.length > 0 && `No slate found for roll ${rollList(missing)}. Photograph them again, or type their answers.`,
     duplicate.length > 0 &&
       `More than one slate says roll ${rollList(duplicate)}. The last photo's answers are shown, so check whose slate is whose.`,
-    unknown.length > 0 && `Roll ${unknown.join(", ")} isn't in this class.`,
-    unreadable > 0 && `${unreadable} ${unreadable === 1 ? "slate's" : "slates'"} roll number couldn't be read. Photograph again.`,
   ].filter(Boolean);
   if (notes.length === 0) return <p className="text-sm text-muted-foreground">Every slate was read clearly.</p>;
   return (
@@ -300,5 +316,60 @@ function PhotoFlags({ roster, reads, rolls }: { roster: Child[]; reads: GridRead
         <li key={note as string}>{note}</li>
       ))}
     </ul>
+  );
+}
+
+// Slates whose child couldn't be told for sure: an unclear roll, a roll and a name that disagree, or neither
+// in the class. The teacher gives each one to a child who has no slate yet, or ignores it.
+function Unplaced({
+  slates,
+  rows,
+  children,
+  onPlace,
+}: {
+  slates: UnplacedSlate[];
+  rows: number;
+  children: Child[];
+  onPlace: (slate: UnplacedSlate, child: Child | undefined) => void;
+}) {
+  if (slates.length === 0) return null;
+  const written = (s: UnplacedSlate) =>
+    [s.rollAsWritten ? `roll written '${s.rollAsWritten}'` : "no roll", s.name && `name '${s.name}'`].filter(Boolean).join(", ");
+  const answers = (s: UnplacedSlate) =>
+    s.answers
+      .filter((a) => a.row <= rows)
+      .map((a) => `${rows > 1 ? `${a.row}` : ""}${symbols[a.version]} ${a.value ?? "–"}`)
+      .join("  ");
+  return (
+    <section className="space-y-2 rounded-lg bg-amber-50 p-3 text-amber-950">
+      <h3 className="font-medium">Whose slate is this?</h3>
+      <p className="text-sm">These slates couldn't be matched to a child for sure. Pick whose each one is.</p>
+      {slates.map((s) => (
+        <div key={`${s.photo}-${s.slate}`} className="space-y-2 rounded-md border border-amber-200 bg-white p-2">
+          <p className="text-sm">
+            Photo {s.photo}, slate {s.slate}: {written(s)}
+          </p>
+          <p className="text-sm text-muted-foreground">{answers(s)}</p>
+          <div className="flex gap-2">
+            <NativeSelect
+              aria-label={`Whose is photo ${s.photo}, slate ${s.slate}`}
+              className="flex-1 [&_select]:h-11"
+              value=""
+              onChange={(e) => onPlace(s, children.find((c) => c.id === e.target.value))}
+            >
+              <NativeSelectOption value="">Choose a child…</NativeSelectOption>
+              {children.map((c) => (
+                <NativeSelectOption key={c.id} value={c.id}>
+                  {c.rollNo} {c.name}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+            <Button variant="outline" className="h-11" onClick={() => onPlace(s, undefined)}>
+              Ignore
+            </Button>
+          </div>
+        </div>
+      ))}
+    </section>
   );
 }

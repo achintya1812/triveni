@@ -1,5 +1,5 @@
 import { questions } from "@triveni/content";
-import type { AudioClip, Child } from "@triveni/core";
+import { type AudioClip, type Child, placeSlate, type Slate } from "@triveni/core";
 import { describe, expect, it } from "vitest";
 import { clipProblem } from "./audio";
 import { applySlates, isFlagged, markGrid, rollFlags } from "./check";
@@ -54,9 +54,9 @@ describe("markGrid", () => {
 
 describe("reading slate photos", () => {
   const roster = [
-    { ...child("ravi", "bhili"), rollNo: 1 },
-    { ...child("meena", "bhili"), rollNo: 2 },
-    { ...child("pooja", "hindi"), rollNo: 3 },
+    { ...child("ravi", "bhili"), rollNo: 1, name: "Ravi" },
+    { ...child("meena", "bhili"), rollNo: 2, name: "Meena" },
+    { ...child("pooja", "hindi"), rollNo: 3, name: "Pooja" },
   ];
   const empty = () => ({ values: {}, reads: {} });
   const box = (version: "A" | "B" | "C", value: number | null, confidence = 0.95, row = 1) => ({
@@ -65,35 +65,74 @@ describe("reading slate photos", () => {
     value,
     confidence,
   });
+  const slate = (roll: number | null, answers = [box("A", 9)], extra: Partial<Slate> = {}): Slate => ({
+    rollAsWritten: roll === null ? null : String(roll),
+    roll,
+    rollConfidence: 0.95,
+    name: null,
+    answers,
+    ...extra,
+  });
 
   it("fills each child's boxes by roll number, one grid per row", () => {
     const reading = {
       slates: [
-        { roll: 1, answers: [box("A", 9), box("B", 21, 0.6), box("C", null), box("A", 5, 0.95, 2)] },
-        { roll: 3, answers: [box("A", 9), box("B", 8), box("C", 6)] },
+        slate(1, [box("A", 9), box("B", 21, 0.6), box("C", null), box("A", 5, 0.95, 2)]),
+        slate(3, [box("A", 9), box("B", 8), box("C", 6)]),
       ],
     };
-    const [row1, row2] = applySlates(roster, [empty(), empty()], reading);
-    expect(row1.values).toEqual({ ravi: { A: "9", B: "21", C: "" }, pooja: { A: "9", B: "8" } });
-    expect(row2.values).toEqual({ ravi: { A: "5" } });
-    expect(isFlagged(row1.reads.ravi.B)).toBe(true);
-    expect(isFlagged(row1.reads.ravi.A)).toBe(false);
+    const { grids, placed } = applySlates(roster, [empty(), empty()], reading, 1);
+    expect(grids[0].values).toEqual({ ravi: { A: "9", B: "21", C: "" }, pooja: { A: "9", B: "8" } });
+    expect(grids[1].values).toEqual({ ravi: { A: "5" } });
+    expect(isFlagged(grids[0].reads.ravi.B)).toBe(true);
+    expect(isFlagged(grids[0].reads.ravi.A)).toBe(false);
+    expect(placed.map((c) => c.rollNo)).toEqual([1, 3]);
   });
 
   it("ignores rows beyond the check's, and keeps earlier reads of other children", () => {
-    const first = applySlates(roster, [empty()], { slates: [{ roll: 1, answers: [box("A", 9)] }] });
-    const second = applySlates(roster, first, { slates: [{ roll: 2, answers: [box("A", 8), box("A", 4, 0.9, 2)] }] });
+    const first = applySlates(roster, [empty()], { slates: [slate(1, [box("A", 9)])] }, 1).grids;
+    const second = applySlates(roster, first, { slates: [slate(2, [box("A", 8), box("A", 4, 0.9, 2)])] }, 2).grids;
     expect(second).toHaveLength(1);
     expect(second[0].values).toEqual({ ravi: { A: "9" }, meena: { A: "8" } });
   });
 
-  it("flags rolls that are missing, on two slates, not in the class, or unreadable", () => {
-    expect(rollFlags(roster, [1, 1, 7, null])).toEqual({
-      unreadable: 1,
-      unknown: [7],
-      duplicate: [roster[0]],
-      missing: [roster[1], roster[2]],
-    });
+  it("places a slate with only a name by the name, in any case", () => {
+    expect(placeSlate(roster, slate(null, [], { name: "meena" }))?.name).toBe("Meena");
+  });
+
+  it("places a slate by name when the roll is unsure, and by roll when the name matches no one", () => {
+    expect(placeSlate(roster, slate(1, [], { rollConfidence: 0.5, name: "Ravi" }))?.name).toBe("Ravi");
+    expect(placeSlate(roster, slate(9, [], { rollConfidence: 0.5, name: "Meena" }))?.name).toBe("Meena");
+    expect(placeSlate(roster, slate(2, [], { name: "मीना" }))?.name).toBe("Meena");
+  });
+
+  it("leaves a slate unplaced when the roll is unsure, not in the class, or disagrees with the name", () => {
+    const reading = {
+      slates: [
+        slate(1, [box("A", 9)], { rollAsWritten: "१?", rollConfidence: 0.5 }), // unsure, no name
+        slate(7), // not in the class
+        slate(null), // no roll, no name
+        slate(1, [box("A", 4)], { name: "Meena" }), // roll 1 is Ravi: a misread roll, or the wrong slate
+      ],
+    };
+    const { grids, placed, unplaced } = applySlates(roster, [empty()], reading, 2);
+    expect(placed).toEqual([]);
+    expect(grids[0].values).toEqual({});
+    expect(unplaced.map((u) => [u.photo, u.slate, u.rollAsWritten, u.name])).toEqual([
+      [2, 1, "१?", null],
+      [2, 2, "7", null],
+      [2, 3, null, null],
+      [2, 4, "1", "Meena"],
+    ]);
+  });
+
+  it("doesn't place by a name two children share", () => {
+    const twins = [...roster, { ...child("ravi-2", "bhili"), rollNo: 4, name: "Ravi" }];
+    expect(placeSlate(twins, slate(null, [], { name: "Ravi" }))).toBeUndefined();
+  });
+
+  it("flags rolls that are missing or on two slates", () => {
+    expect(rollFlags(roster, [1, 1])).toEqual({ duplicate: [roster[0]], missing: [roster[1], roster[2]] });
   });
 
   it("flags no missing rolls before any photo is read", () => {
