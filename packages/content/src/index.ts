@@ -12,6 +12,5 @@ export const concepts = Concept.array().parse(conceptsJson);
 export const keywords = Keyword.array().parse(keywordsJson);
 export const questions = Question.array().parse(questionsJson);
 export const stories = PracticeStory.array().parse(storiesJson);
-// Empty until Stage 19 writes them.
 export const kits = Kit.array().parse(kitsJson);
 export const listeningItems = ListeningItem.array().parse(listeningJson);

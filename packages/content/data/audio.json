@@ -2,9 +2,9 @@
   { "id": "check-b-numbers-to-20", "kind": "check_b", "language": "hindi", "source": "bulbul", "file": "standins/check-b-numbers-to-20.mp3" },
   { "id": "check-b-subtraction-within-20", "kind": "check_b", "language": "hindi", "source": "bulbul", "file": "standins/check-b-subtraction-within-20.mp3" },
   { "id": "check-b-borrowing", "kind": "check_b", "language": "hindi", "source": "bulbul", "file": "standins/check-b-borrowing.mp3" },
-  { "id": "check-b-numbers-to-20-recheck", "kind": "check_b", "language": "hindi", "source": "bulbul" },
-  { "id": "check-b-subtraction-within-20-recheck", "kind": "check_b", "language": "hindi", "source": "bulbul" },
-  { "id": "check-b-borrowing-recheck", "kind": "check_b", "language": "hindi", "source": "bulbul" },
-  { "id": "check-b-two-digit-subtraction", "kind": "check_b", "language": "hindi", "source": "bulbul" },
-  { "id": "check-b-two-digit-subtraction-recheck", "kind": "check_b", "language": "hindi", "source": "bulbul" }
+  { "id": "check-b-numbers-to-20-recheck", "kind": "check_b", "language": "hindi", "source": "bulbul", "file": "standins/check-b-numbers-to-20-recheck.mp3" },
+  { "id": "check-b-subtraction-within-20-recheck", "kind": "check_b", "language": "hindi", "source": "bulbul", "file": "standins/check-b-subtraction-within-20-recheck.mp3" },
+  { "id": "check-b-borrowing-recheck", "kind": "check_b", "language": "hindi", "source": "bulbul", "file": "standins/check-b-borrowing-recheck.mp3" },
+  { "id": "check-b-two-digit-subtraction", "kind": "check_b", "language": "hindi", "source": "bulbul", "file": "standins/check-b-two-digit-subtraction.mp3" },
+  { "id": "check-b-two-digit-subtraction-recheck", "kind": "check_b", "language": "hindi", "source": "bulbul", "file": "standins/check-b-two-digit-subtraction-recheck.mp3" }
 ]

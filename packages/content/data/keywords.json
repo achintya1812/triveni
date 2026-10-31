@@ -5,11 +5,11 @@
   { "id": "ab-kitni", "hindi": "अब कितनी", "roman": "ab kitni", "meaning": "how many now", "bhili": "आमी कोते हाय." },
   { "id": "de-diye", "hindi": "दे दिए", "roman": "de diye", "meaning": "gave away", "bhili": "देदलो" },
   { "id": "bache", "hindi": "बचे", "roman": "bache", "meaning": "left over", "bhili": "बाकी रेहलो" },
-  { "id": "kitne", "hindi": "कितने", "roman": "kitne", "meaning": "how many" },
-  { "id": "mein-se", "hindi": "में से", "roman": "mein se", "meaning": "out of" },
-  { "id": "ghatana", "hindi": "घटाना", "roman": "ghatana", "meaning": "to subtract" },
-  { "id": "shesh", "hindi": "शेष", "roman": "shesh", "meaning": "remaining" },
-  { "id": "dahai", "hindi": "दहाई", "roman": "dahai", "meaning": "a ten" },
-  { "id": "ikai", "hindi": "इकाई", "roman": "ikai", "meaning": "a one" },
-  { "id": "kholna", "hindi": "खोलना", "roman": "kholna", "meaning": "to open a bundle" }
+  { "id": "kitne", "hindi": "कितने", "roman": "kitne", "meaning": "how many", "bhili": "कोते हाय" },
+  { "id": "mein-se", "hindi": "में से", "roman": "mein se", "meaning": "out of", "bhili": "बारेने" },
+  { "id": "ghatana", "hindi": "घटाना", "roman": "ghatana", "meaning": "to subtract", "bhili": "कमी केरा खातोर" },
+  { "id": "shesh", "hindi": "शेष", "roman": "shesh", "meaning": "remaining", "bhili": "बाकी रेणारो" },
+  { "id": "dahai", "hindi": "दहाई", "roman": "dahai", "meaning": "tens, a bundle of ten", "bhili": "दहा पोयसा, दहा पोयसाहा गठ्ठो" },
+  { "id": "ikai", "hindi": "इकाई", "roman": "ikai", "meaning": "ones, single sticks", "bhili": "एखल लाकड्या, ऐखल लाकड्या, ऐखल लाकड्या" },
+  { "id": "kholna", "hindi": "खोलना", "roman": "kholna", "meaning": "to open a bundle", "bhili": "एक बंडल खोलनू." }
 ]

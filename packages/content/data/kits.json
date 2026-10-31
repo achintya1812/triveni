@@ -10,7 +10,8 @@
         },
         "says": {
           "english": "Let us count our sticks. 1 bundle of 10 and 3 loose sticks make 13.",
-          "hindi": "चलो अपनी तीलियाँ गिनें। 10 का 1 गट्ठर और 3 अलग तीलियाँ मिलकर 13 हुईं।"
+          "hindi": "चलो अपनी तीलियाँ गिनें। 10 का 1 गट्ठर और 3 अलग तीलियाँ मिलकर 13 हुईं।",
+          "bhili": "आमी आपु लाकड्या मोजतेहे 1 बंडल 10 आन 3 सुटे लाकड्या 13 बोनत्याहा."
         }
       },
       {
@@ -20,7 +21,8 @@
         },
         "says": {
           "english": "We must take away 7 sticks. But we have only 3 loose sticks. What can we do?",
-          "hindi": "हमें 7 तीलियाँ हटानी हैं। पर अलग तीलियाँ सिर्फ़ 3 हैं। अब क्या करें?"
+          "hindi": "हमें 7 तीलियाँ हटानी हैं। पर अलग तीलियाँ सिर्फ़ 3 हैं। अब क्या करें?",
+          "bhili": "आमी 7 लाकड्या काडी लेवनू. पेन आमी पेहेलाज 3 उघड्या लाकड्या हाय.आमी काय की शेकतेहे?"
         }
       },
       {
@@ -30,7 +32,8 @@
         },
         "says": {
           "english": "Let us open the bundle. Now all 13 sticks are loose.",
-          "hindi": "चलो गट्ठर खोलें। अब सारी 13 तीलियाँ अलग हैं।"
+          "hindi": "चलो गट्ठर खोलें। अब सारी 13 तीलियाँ अलग हैं।",
+          "bhili": "आमी बंडल उगडूला. आमी 13 लाकड्या ढीला वी गीयाहा."
         }
       },
       {
@@ -39,8 +42,9 @@
           "hindi": "बच्चों के साथ ज़ोर से गिनते हुए एक-एक करके 7 तीलियाँ हटाइए।"
         },
         "says": {
-          "english": "Take away 7 sticks. Count with me: 1, 2, 3, 4, 5, 6, 7.",
-          "hindi": "7 तीलियाँ हटाओ। मेरे साथ गिनो: 1, 2, 3, 4, 5, 6, 7।"
+          "english": "We take away 7 sticks. Count with me: 1, 2, 3, 4, 5, 6, 7.",
+          "hindi": "7 तीलियाँ हटाओ। मेरे साथ गिनो: 1, 2, 3, 4, 5, 6, 7।",
+          "bhili": "आमी 7 लाकड्या काडी लेताहा. मा आरी गोणा: 1, 2, 3, 4, 5, 6, 7."
         }
       },
       {
@@ -50,7 +54,8 @@
         },
         "says": {
           "english": "How many sticks are left? Let us count together. 6 sticks are left.",
-          "hindi": "कितनी तीलियाँ बचीं? चलो साथ गिनें। 6 तीलियाँ बचीं।"
+          "hindi": "कितनी तीलियाँ बचीं? चलो साथ गिनें। 6 तीलियाँ बचीं।",
+          "bhili": "कोते काठ्या बाकी हाय? आमा आरी गणीन वेरा. 6 काठ्या बाकी हाय."
         }
       },
       {
@@ -59,8 +64,9 @@
           "hindi": "बोर्ड पर 13 − 7 = 6 लिखिए और हर हिस्से की ओर इशारा कीजिए।"
         },
         "says": {
-          "english": "13 take away 7 leaves 6. When the loose sticks are not enough, we open a ten.",
-          "hindi": "13 में से 7 घटाने पर 6 बचे। जब अलग तीलियाँ कम हों, तो हम एक दहाई खोलते हैं।"
+          "english": "13 take away 7 is 6. When the loose sticks are not enough, we open a ten.",
+          "hindi": "13 में से 7 घटाने पर 6 बचे। जब अलग तीलियाँ कम हों, तो हम एक दहाई खोलते हैं।",
+          "bhili": "13 काडी लेवनू 7 6 वेहे. ढीला लाकड्या नाय वेया ताहा, आमी एक दोहो उगडनू."
         }
       }
     ],
@@ -76,8 +82,9 @@
       "kholna"
     ],
     "parentActivity": {
-      "english": "Make a bundle of 10 sticks and keep 4 loose: that is 14. Ask your child to take away 6. They will need to open the bundle. Count what is left together.",
-      "hindi": "10 तीलियों का एक गट्ठर बनाइए और 4 तीलियाँ अलग रखिए: ये 14 हुईं। बच्चे से 6 हटाने को कहिए। उन्हें गट्ठर खोलना पड़ेगा। साथ मिलकर गिनिए कि कितनी बचीं।"
+      "english": "Tie 10 sticks in a bundle. Keep 4 more sticks loose. Now there are 14 sticks. Ask your child to take away 6. They will need to open the bundle. Count what is left together.",
+      "hindi": "10 तीलियों का एक गट्ठर बनाइए और 4 तीलियाँ अलग रखिए: ये 14 हुईं। बच्चे से 6 हटाने को कहिए। उन्हें गट्ठर खोलना पड़ेगा। साथ मिलकर गिनिए कि कितनी बचीं।",
+      "bhili": "10 लाकड्या एक बंडल केरा. आजी 4 लाकड्या सुट्या थोवा. आमी 14 लाकड्या हाय. तुमा पोयराल 6 लाकड्या काडी ला आखजा. तियाहाल बंडल उगला पोडी. आजी रेहल्या लाकड्या गणा."
     }
   }
 ]

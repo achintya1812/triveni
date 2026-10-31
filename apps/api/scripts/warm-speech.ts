@@ -1,4 +1,4 @@
-import { concepts, keywords, questions } from "@triveni/content";
+import { concepts, keywords, kits, listeningItems, questions } from "@triveni/content";
 
 // Sends every fixed text in the content through POST /speak, so each clip is made and cached before a
 // teacher taps play. Run after the content changes, against an API that can reach services/bhili.
@@ -12,6 +12,15 @@ const texts: { text: string; language: "bhili" | "hindi" }[] = [
   ...keywords.map((k) => ({ text: k.bhili, language: "bhili" as const })),
   ...concepts.map((c) => ({ text: c.reteach.bhili, language: "bhili" as const })),
   ...keywords.map((k) => ({ text: k.hindi, language: "hindi" as const })),
+  // Catch-up lessons, the kit and the listening check, in both languages.
+  ...[
+    ...concepts.map((c) => c.catchUp),
+    ...kits.flatMap((kit) => [...kit.steps.map((s) => s.says), kit.parentActivity]),
+    ...listeningItems.map((l) => ({ hindi: l.hindi.text, bhili: l.bhili.text })),
+  ].flatMap((t) => [
+    { text: t.bhili, language: "bhili" as const },
+    { text: t.hindi, language: "hindi" as const },
+  ]),
 ];
 
 let missing = 0;

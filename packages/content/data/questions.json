@@ -47,6 +47,7 @@
     },
     "C": {
       "scriptHi": "गीता लड्डू गिन रही है: 17, 18, 19। इसके बाद कौन-सी संख्या आएगी?",
+      "bhili": "गीता लड्डू मोजती 17, 18, 19. इया फाचला नोबर आवेहे.",
       "english": "Geeta is counting laddoos: 17, 18, 19. Which number comes after this?",
       "answer": 20
     },
@@ -116,6 +117,7 @@
     },
     "C": {
       "scriptHi": "तार पर 16 चिड़ियाँ बैठी थीं। 4 चिड़ियाँ उड़ गईं। अब तार पर कितनी चिड़ियाँ हैं?",
+      "bhili": "16 चिडें वायराप बोठले आथे. 4 चिडें उडीं गिये. आमी वायरापे कोते चिडें हाय?",
       "english": "16 birds were sitting on a wire. 4 birds flew away. How many birds are on the wire now?",
       "answer": 12
     },
@@ -188,6 +190,7 @@
     },
     "C": {
       "scriptHi": "राधा के पास 13 चूड़ियाँ थीं। उसने 4 चूड़ियाँ बहन को दे दीं। अब उसके पास कितनी चूड़ियाँ बचीं?",
+      "bhili": "राधाव 13 बांगड्या आथ्या. तियी 4 बांगड्या तियी बाहाल देद्या. आमी तियी आथ्या कोत्या बांगड्या रेत्याहा.",
       "english": "Radha had 13 bangles. She gave 4 bangles to her sister. How many bangles are left with her now?",
       "answer": 9
     },
@@ -224,6 +227,7 @@
     },
     "C": {
       "scriptHi": "ज्योति के पास 54 फूल थे। उसने 28 फूल माँ को दे दिए। अब उसके पास कितने फूल बचे?",
+      "bhili": "ज्योतीही 54 फुले आथे. तियी 28 फुले तियी याहूल देदे. आमी तियूल कोते फुले रेतेहें?",
       "english": "Jyoti had 54 flowers. She gave 28 flowers to her mother. How many flowers are left with her now?",
       "answer": 26
     },
@@ -259,6 +263,7 @@
     },
     "C": {
       "scriptHi": "दुकानदार के पास 64 गुब्बारे थे। उसने 27 गुब्बारे बच्चों को दे दिए। अब उसके पास कितने गुब्बारे बचे?",
+      "bhili": "एगोहो दुकानदार 64 फुगे आथे. तियाय 27 फुगे पोयराहाल देदा. आमी कोते फुगे तियाही रेतेहे.",
       "english": "A shopkeeper had 64 balloons. He gave 27 balloons to the children. How many balloons are left with him now?",
       "answer": 37
     },

@@ -20,7 +20,8 @@ Uses AI4Bharat's Marathi -> Bhili (Dehvali) adapter on sarvamai/sarvam-translate
 There is no Hindi -> Bhili model, and pivoting through Marathi was unreliable (the base model often
 answered in English or copied the Hindi), while English in gave the most Bhili-like text.
 Only empty fields are filled, so text a Bhili speaker has corrected is never overwritten; to redo one,
-delete its "bhili". A Bhili speaker should check the output. Run after adding or changing content:
+delete its "bhili". A text whose numbers don't survive translation is left empty and listed at the end:
+reword its English and run again. A Bhili speaker should check the output. Run after adding or changing content:
   uv run services/bhili/translate.py
 Needs about 10 GB of free RAM, so stop the TTS server first.
 """
@@ -44,24 +45,35 @@ TO_BHILI = (
 )
 DATA = Path(__file__).parents[2] / "packages/content/data"
 DEVANAGARI_DIGITS = str.maketrans("०१२३४५६७८९", "0123456789")
+BEAMS = 4
 
 tokenizer = AutoTokenizer.from_pretrained(BASE)
 model = PeftModel.from_pretrained(AutoModelForCausalLM.from_pretrained(BASE, dtype=torch.bfloat16), ADAPTER).eval()
 
 
-def to_bhili(english: str) -> str:
+skipped = []
+
+
+def to_bhili(english: str) -> str | None:
     messages = [{"role": "system", "content": TO_BHILI}, {"role": "user", "content": english}]
     prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     inputs = tokenizer([prompt], return_tensors="pt")
     with torch.no_grad():
-        output = model.generate(**inputs, max_new_tokens=256, do_sample=False, num_beams=4, early_stopping=True)
+        output = model.generate(
+            **inputs, max_new_tokens=256, do_sample=False, num_beams=BEAMS, num_return_sequences=BEAMS, early_stopping=True
+        )
     # Digits stay 0-9, like A and B.
-    bhili = tokenizer.decode(output[0][len(inputs.input_ids[0]) :], skip_special_tokens=True).strip()
-    bhili = bhili.translate(DEVANAGARI_DIGITS)
-    print(f"en:  {english}\nbhb: {bhili}\n", flush=True)
+    beams = [
+        tokenizer.decode(o[len(inputs.input_ids[0]) :], skip_special_tokens=True).strip().translate(DEVANAGARI_DIGITS)
+        for o in output
+    ]
     # The numbers must survive translation, or the answer key is wrong. Bhili word order may move them.
-    if sorted(re.findall(r"\d+", bhili)) != sorted(re.findall(r"\d+", english)):
-        raise SystemExit("Numbers changed in translation; nothing was written.")
+    # Take the best beam that keeps them.
+    numbers = sorted(re.findall(r"\d+", english))
+    bhili = next((b for b in beams if sorted(re.findall(r"\d+", b)) == numbers), None)
+    print(f"en:  {english}\nbhb: {bhili or 'NUMBERS CHANGED: ' + beams[0]}\n", flush=True)
+    if bhili is None:
+        skipped.append(english)
     return bhili
 
 
@@ -78,7 +90,7 @@ def line(value) -> str:
     return dump(value)
 
 
-# Translate everything first, so a failure leaves every file untouched.
+# Translate everything first, so a crash leaves every file untouched.
 questions_path, keywords_path, concepts_path = (DATA / f for f in ("questions.json", "keywords.json", "concepts.json"))
 kits_path, listening_path = DATA / "kits.json", DATA / "listening.json"
 questions = questions_path.read_text()
@@ -88,24 +100,25 @@ kits = json.loads(kits_path.read_text())
 listening = json.loads(listening_path.read_text())
 
 c_bhili = {q["C"]["scriptHi"]: to_bhili(q["C"]["english"]) for q in json.loads(questions) if "bhili" not in q["C"]}
+c_bhili = {k: v for k, v in c_bhili.items() if v}
 for keyword in keywords:
-    if "bhili" not in keyword:
-        keyword["bhili"] = to_bhili(keyword["meaning"])
+    if "bhili" not in keyword and (bhili := to_bhili(keyword["meaning"])):
+        keyword["bhili"] = bhili
 for concept in concepts:
-    if "bhili" not in concept["reteach"]:
-        concept["reteach"]["bhili"] = to_bhili(concept["reteach"]["english"])
-    if "catchUp" in concept and "bhili" not in concept["catchUp"]:
-        concept["catchUp"]["bhili"] = to_bhili(concept["catchUp"]["english"])
+    if "bhili" not in concept["reteach"] and (bhili := to_bhili(concept["reteach"]["english"])):
+        concept["reteach"]["bhili"] = bhili
+    if "catchUp" in concept and "bhili" not in concept["catchUp"] and (bhili := to_bhili(concept["catchUp"]["english"])):
+        concept["catchUp"]["bhili"] = bhili
 for kit in kits:
     for step in kit["steps"]:
-        if "bhili" not in step["says"]:
-            step["says"]["bhili"] = to_bhili(step["says"]["english"])
-    if "bhili" not in kit["parentActivity"]:
-        kit["parentActivity"]["bhili"] = to_bhili(kit["parentActivity"]["english"])
+        if "bhili" not in step["says"] and (bhili := to_bhili(step["says"]["english"])):
+            step["says"]["bhili"] = bhili
+    if "bhili" not in kit["parentActivity"] and (bhili := to_bhili(kit["parentActivity"]["english"])):
+        kit["parentActivity"]["bhili"] = bhili
 for item in listening:
-    if "text" not in item["bhili"]:
+    if "text" not in item["bhili"] and (bhili := to_bhili(item["bhili"]["english"])):
         # The key order the schema reads best in: text first.
-        item["bhili"] = {"text": to_bhili(item["bhili"]["english"]), **item["bhili"]}
+        item["bhili"] = {"text": bhili, **item["bhili"]}
 
 # questions.json keeps its hand-made layout: put a "bhili" line after each "scriptHi" that lacks one.
 questions = re.sub(
@@ -118,3 +131,7 @@ for path, items in ((keywords_path, keywords), (concepts_path, concepts)):
     path.write_text("[\n" + ",\n".join(f"  {line(item)}" for item in items) + "\n]\n")
 for path, items in ((kits_path, kits), (listening_path, listening)):
     path.write_text(json.dumps(items, ensure_ascii=False, indent=2) + "\n")
+if skipped:
+    print("Numbers changed in these, so they were left empty. Reword the English and run again:")
+    print("\n".join(f"  {english}" for english in skipped))
+    raise SystemExit(1)

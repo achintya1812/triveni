@@ -28,6 +28,7 @@
       "answer": 1
     },
     "bhili": {
+      "text": "ज्या आकडा गावडी हाय तो आकडो लेखा.",
       "english": "Which number is the cow? Write that number.",
       "answer": 2
     }
@@ -61,6 +62,7 @@
       "answer": 2
     },
     "bhili": {
+      "text": "टोमाटो नंबर केलो हाय? तो नंबर लेखी थोवा.",
       "english": "Which number is the tomato? Write that number.",
       "answer": 4
     }
@@ -94,6 +96,7 @@
       "answer": 3
     },
     "bhili": {
+      "text": "ज्या आकडा चाडो हाय तिया आकडो लेखा",
       "english": "Which number is the tree? Write that number.",
       "answer": 1
     }
@@ -127,6 +130,7 @@
       "answer": 4
     },
     "bhili": {
+      "text": "माशा आकडो केलो हाय? तो आकडो लेखा.",
       "english": "Which number is the fish? Write that number.",
       "answer": 1
     }
