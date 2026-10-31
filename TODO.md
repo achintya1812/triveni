@@ -644,7 +644,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - "Rolls read right" counts like mvp-demo-v1's "Rolls found", for the baseline.
 - **MVP samples, low effort:** rolls 18/18; placed 17/18, 1 unplaced (a right roll read with low confidence), 0 to the wrong child; boxes 51/54, 0 wrong and unflagged.
 
-**Verify:**
+**Verify** (merged on 2026-10-31 without these, by choice; they run when the notebook photos are in):
 - [ ] On the notebook test set, roll accuracy beats `mvp-demo-v1` (run the old prompt for the baseline).
 - [ ] Every misread roll shows as unplaced; none is given to the wrong child.
 - [ ] A slate with only a name is placed by name.
