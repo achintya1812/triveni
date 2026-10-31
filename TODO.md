@@ -688,7 +688,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 **Verify:**
 - [x] "Borrowing, page 65" maps by page, and a note with no page maps through Claude, both to the right concept.
-- [ ] The voice-accuracy script runs on the test notes, and the PR gives the result.
+- [ ] The voice-accuracy script runs on the test notes, and the PR gives the result. (Merged on 2026-10-31 without this, by choice; it runs when the recorded notes are in.)
 
 ---
 
