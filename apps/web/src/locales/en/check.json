@@ -51,7 +51,8 @@
       "read": "Read",
       "failed": "Couldn't read"
     },
-    "retry": "Retry"
+    "retry": "Retry",
+    "offline": "No signal: these photos will be read when the phone is back online."
   },
   "camera": {
     "noCamera": "This browser can't open the camera here. Choose photos from the gallery instead.",

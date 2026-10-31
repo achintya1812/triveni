@@ -500,7 +500,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 17: Offline: PWA + outbox
+## [x] Stage 17: Offline: PWA + outbox
 
 **Lane:** B. **Depends on:** 14–16. **First to cut.**
 
@@ -516,9 +516,27 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - A small badge shows how many are waiting.
 - **Photos and voice notes** wait in the outbox as blobs, and are read or transcribed when the signal returns. The review screen appears then.
 
-**Verify:**
-- [ ] In airplane mode: log a day, run a check from the cache, and photograph slates.
-- [ ] When the phone reconnects, the rows reach Supabase, the photos are read, and the review screen appears.
+**As built:**
+- **PWA** (`vite-plugin-pwa` 2, `generateSW`):
+  - It precaches the app shell, with a manifest and icons, so the app installs to the home screen.
+  - It caches the public `audio` bucket's clips on first fetch, with range requests for `<audio>`.
+  - Opening a check fetches its B and C clips ahead.
+  - With no signal, `speak()` works out a clip's storage path from its text, the same SHA-256 the API uses (tested), so a cached clip still plays.
+- **Outbox** (Dexie version 3: `outbox`, `photos`, `notes`):
+  - Every API write in `db.ts` is queued, then sent in order on app start, on the browser's `online` event, and every 30 seconds.
+  - No connection or a 5xx keeps the row for later. A 4xx is dropped and shown in the app's error banner, so one bad row can't block the rest.
+  - A badge in the header counts what's waiting.
+  - `refreshChildren` skips while writes are waiting, so the server's copy can't undo them.
+- **Photos** live in Dexie (`photos`) until read.
+  - With no signal they wait, and are read when the signal returns, while the check screen is open. The flags and "Whose slate is this?" appear then.
+  - A failed attempt pauses reading for 15 seconds, or until the browser's `online` event.
+  - Saving or discarding the check deletes its photos.
+- **Voice notes:** one recorded with no signal is kept (`notes`) for the day on screen. When the signal returns it's read, and the day's lesson gains its transcript and page, plus its concept if none was picked.
+- **Sending to parents and refreshing the children** still need a signal; they're actions, not saved records.
+
+**Verify** (headless Firefox, the production build; "airplane mode" was the API and web server stopped):
+- [x] In airplane mode: the app reloads from the cache with the drafted check intact, a day is logged ("⏳ 1 भेजना बाकी"), and a slate photo waits ("सिग्नल नहीं है…"). The check's B and C clips were in the cache.
+- [x] When the servers return, the outbox drains, the attendance reaches Supabase, the photo is read, and the review (missing rolls) appears.
 
 ---
 

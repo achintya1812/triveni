@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { api } from "@/db";
+import { api, db, isNetworkError } from "@/db";
 
 export type NoteResult = { transcript: string; page: number | null; conceptId: string | null; via: "page" | "claude" };
 
@@ -19,17 +19,19 @@ const base64 = (blob: Blob) =>
   });
 
 // Hold to record what was taught today ("borrowing, page 65"), let go to send. The server transcribes it
-// and matches it to a concept.
-export function VoiceNote({ classId, onResult }: { classId: string; onResult: (result: NoteResult) => void }) {
+// and matches it to a concept. With no signal, the note is kept for `date` and read when the signal returns.
+export function VoiceNote({ classId, date, onResult }: { classId: string; date: string; onResult: (result: NoteResult) => void }) {
   const { t } = useTranslation("log");
   const [state, setState] = useState<"idle" | "starting" | "recording" | "sending">("idle");
   const [problem, setProblem] = useState("");
+  const [saved, setSaved] = useState(false);
   const held = useRef(false);
   const recorder = useRef<MediaRecorder>(null);
 
   async function start() {
     held.current = true;
     setProblem("");
+    setSaved(false);
     setState("starting");
     let stream: MediaStream;
     try {
@@ -49,12 +51,15 @@ export function VoiceNote({ classId, onResult }: { classId: string; onResult: (r
         return setProblem(t("voice.holdDown"));
       }
       setState("sending");
+      const blob = new Blob(chunks, { type: rec.mimeType });
       try {
-        const audio = await base64(new Blob(chunks, { type: rec.mimeType }));
-        const res = await api("POST", "/voice-notes", { classId, audio, mimeType: rec.mimeType });
+        const res = await api("POST", "/voice-notes", { classId, audio: await base64(blob), mimeType: rec.mimeType });
         onResult((await res.json()) as NoteResult);
       } catch (e) {
-        setProblem(t("voice.couldNotRead", { error: (e as Error).message }));
+        if (isNetworkError(e)) {
+          await db.notes.add({ classId, date, audio: blob, mimeType: rec.mimeType });
+          setSaved(true);
+        } else setProblem(t("voice.couldNotRead", { error: (e as Error).message }));
       }
       setState("idle");
     };
@@ -87,6 +92,7 @@ export function VoiceNote({ classId, onResult }: { classId: string; onResult: (r
         🎤 {label[state]}
       </Button>
       {problem && <p className="text-sm text-destructive">{problem}</p>}
+      {saved && <p className="text-sm text-amber-800">{t("voice.savedOffline")}</p>}
     </div>
   );
 }

@@ -113,6 +113,7 @@ export function DailyLog({ klass, onError }: { klass: ClassRecord; onError: (mes
         <Label htmlFor="concept">{t("concept")}</Label>
         <VoiceNote
           classId={klass.id}
+          date={date}
           onResult={(result) => {
             setSaved(false);
             setNote(result);

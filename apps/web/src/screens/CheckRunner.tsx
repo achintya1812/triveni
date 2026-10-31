@@ -1,9 +1,10 @@
-import { concepts, questions } from "@triveni/content";
+import { audioClips, concepts, questions } from "@triveni/content";
 import { type Check, type Child, type ClassRecord, pickConcepts, type SlateReading, versionOrder } from "@triveni/core";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AnswerGrid, symbols } from "@/components/AnswerGrid";
+import { cacheAudio, clipUrl, speak } from "@/audio";
 import { ClipButton, SpeakButton } from "@/components/ClipButton";
 import { SlatePhotos } from "@/components/SlatePhotos";
 import { Button } from "@/components/ui/button";
@@ -145,6 +146,16 @@ function RunCheck({
   const rows = draft.questionIds.map(questionFor);
   const order = versionOrder(draft.date);
 
+  // While there's a signal, the check's B and C clips go into the service worker's cache, so the check
+  // can run with none.
+  useEffect(() => {
+    const questions = draft.questionIds.map(questionFor);
+    const b = questions.flatMap((q) => audioClips.find((c) => c.id === q.B.audio)?.file ?? []).map(clipUrl);
+    Promise.all(questions.map((q) => speak(q.C.bhili).catch(() => null)))
+      .then((c) => cacheAudio([...b, ...c.filter((url): url is string => !!url)]))
+      .catch(() => {});
+  }, [draft.questionIds]);
+
   const readPhoto = useCallback(
     (reading: SlateReading, photo: number) =>
       change((d) => {
@@ -184,6 +195,7 @@ function RunCheck({
     try {
       await saveCheck(check, answers);
       await db.drafts.delete(klass.id);
+      await db.photos.where({ checkId: draft.checkId }).delete();
       onSaved(draft.date);
     } catch (e) {
       // Saved on this phone; the draft stays, so the teacher can save again to send it.
@@ -192,7 +204,9 @@ function RunCheck({
   }
 
   async function discard() {
-    if (window.confirm(t("discardConfirm"))) await db.drafts.delete(klass.id);
+    if (!window.confirm(t("discardConfirm"))) return;
+    await db.drafts.delete(klass.id);
+    await db.photos.where({ checkId: draft.checkId }).delete();
   }
 
   const rowLabel = (i: number) => (rows.length > 1 ? t("rowLabel", { row: i + 1 }) : "");
@@ -267,7 +281,7 @@ function RunCheck({
       <section className="space-y-3">
         <h2 className="font-semibold">{t("enterAnswers", { step: order.length + 1 })}</h2>
         <p className="text-sm text-muted-foreground">{t("enterHelp")}</p>
-        <SlatePhotos roster={roster} rows={rows.length} onRead={readPhoto} />
+        <SlatePhotos checkId={draft.checkId} roster={roster} rows={rows.length} onRead={readPhoto} />
         <PhotoFlags roster={present} reads={draft.grids.map((g) => g.reads)} rolls={draft.rolls} />
         <Unplaced
           slates={draft.unplaced}
