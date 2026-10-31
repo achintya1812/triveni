@@ -10,6 +10,7 @@ import { content, useClassData } from "@/classData";
 import { refreshChildren, saveChild, saveListening } from "@/db";
 import { useUiLanguage } from "@/i18n";
 import { cn } from "@/lib/utils";
+import { ParentMessages } from "@/screens/ParentMessages";
 import { Setup } from "@/screens/Setup";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
@@ -24,6 +25,7 @@ export function ClassScreen({ klass, onError }: { klass: ClassRecord; onError: (
   const [listening, setListening] = useState(false);
   const [qrCodes, setQrCodes] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [messages, setMessages] = useState(false);
   // Picks up parents who have opted in on Telegram since. Offline, the children stay as they were.
   useEffect(() => {
     refreshChildren(klass.id).catch(() => {});
@@ -31,6 +33,7 @@ export function ClassScreen({ klass, onError }: { klass: ClassRecord; onError: (
   if (!data) return null;
   if (listening) return <ListeningCheck klass={klass} children={data.children} onClose={() => setListening(false)} onError={onError} />;
   if (qrCodes) return <ParentQrCodes children={data.children} onClose={() => setQrCodes(false)} />;
+  if (messages) return <ParentMessages children={data.children} classId={klass.id} onClose={() => setMessages(false)} />;
   if (editing) return <Setup klass={klass} children={data.children} onDone={() => setEditing(false)} onError={onError} />;
 
   const all = results(data, content);
@@ -57,6 +60,9 @@ export function ClassScreen({ klass, onError }: { klass: ClassRecord; onError: (
         <p className="text-sm">{t("parents.about", { count: data.children.filter((c) => c.parentChatId).length, total: data.children.length })}</p>
         <Button className="h-11 w-full" variant="outline" onClick={() => setQrCodes(true)}>
           {t("parents.showQr")}
+        </Button>
+        <Button className="h-11 w-full" variant="outline" onClick={() => setMessages(true)}>
+          {t("parents.messages")}
         </Button>
       </section>
       <section className="space-y-3">

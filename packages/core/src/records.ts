@@ -114,14 +114,16 @@ export const ListeningResult = z.object({
 });
 export type ListeningResult = z.infer<typeof ListeningResult>;
 
-// A voice note sent to a parent on Telegram. Bots get no delivery or read receipts.
+// A message sent to a parent on Telegram: a catch-up or activity voice note, or the teacher's reply (its
+// `text`, or a voice note in the private `parent-media` bucket). Bots get no delivery or read receipts.
 export const ParentMessage = z.object({
   id: z.uuid(),
   classId: z.uuid(),
   childId: z.uuid(),
-  kind: z.enum(["catch_up", "activity"]),
-  conceptId: z.string(),
-  file: z.string(),
+  kind: z.enum(["catch_up", "activity", "reply"]),
+  conceptId: z.string().nullable(),
+  file: z.string().nullable(),
+  text: z.string().nullable().default(null),
   status: z.enum(["queued", "sent", "failed"]),
   telegramMessageId: z.number().int().nullable(),
   sentAt: timestamp.nullable(),

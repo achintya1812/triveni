@@ -11,7 +11,8 @@
   "parents": {
     "title": "Parents on Telegram",
     "about": "{{count}} of {{total}} parents get voice notes. Print each child's QR code and send it home: the parent scans it and taps Start.",
-    "showQr": "Show parent QR codes"
+    "showQr": "Show parent QR codes",
+    "messages": "Parents' messages"
   },
   "children": "Children",
   "atHome": "({{language}} at home)",

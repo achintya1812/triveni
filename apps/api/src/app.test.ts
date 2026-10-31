@@ -39,6 +39,15 @@ describe("bad input", () => {
     expect((await send("POST", "/slates/read", { image: "not base64!", mediaType: "image/jpeg", roster, rows: 1 })).status).toBe(400);
   });
 
+  it("rejects an empty reply to a parent", async () => {
+    expect((await send("POST", "/parents/reply", { childId: crypto.randomUUID(), text: "  " })).status).toBe(400);
+  });
+
+  it("rejects a voice reply Telegram can't play as a voice message", async () => {
+    const reply = { childId: crypto.randomUUID(), audio: "aGVsbG8=", mimeType: "audio/webm" };
+    expect((await send("POST", "/parents/reply", reply)).status).toBe(400);
+  });
+
   it("rejects a Telegram webhook call without the secret header", async () => {
     expect((await send("POST", "/telegram/webhook", { update_id: 1 })).status).toBe(403);
   });
@@ -117,7 +126,7 @@ describe.skipIf(!process.env.SUPABASE_URL)("round trip through Supabase", () => 
     { classId, childId: ravi.id, date: "2026-10-19", itemId: "l-goat", language: "bhili", value: 2, status: "right" },
     { classId, childId: ravi.id, date: "2026-10-19", itemId: "l-goat", language: "hindi", value: null, status: "no_data" },
   ];
-  const message = { id: crypto.randomUUID(), classId, childId: ravi.id, kind: "catch_up", conceptId: "borrowing", file: "tg/abc.ogg", status: "sent", telegramMessageId: 4242, sentAt: "2026-10-24T13:00:00+00:00" };
+  const message = { id: crypto.randomUUID(), classId, childId: ravi.id, kind: "catch_up", conceptId: "borrowing", file: "tg/abc.ogg", text: null, status: "sent", telegramMessageId: 4242, sentAt: "2026-10-24T13:00:00+00:00" };
   const omitClass = <T extends { classId: string }>({ classId: _, ...rest }: T) => rest;
   const byChild = (a: { childId: string }, b: { childId: string }) => a.childId.localeCompare(b.childId);
 
