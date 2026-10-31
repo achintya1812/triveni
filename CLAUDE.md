@@ -47,7 +47,7 @@ Full build (on `main`; lane in brackets):
 19. [done] Full content [C]: two-digit subtraction, pages, weekly and re-check questions, wrong-answer lists, probes, kit, listening items, catch-up scripts; translated and warmed. Verify: parses; numbers survive translation; reviewed by a person.
 20. Slate reading v2 [C]: roster in each request, Devanagari rules, roll confidence, name matching, unplaced slates, per-roll accuracy. Verify: roll accuracy beats `mvp-demo-v1`; no slate goes to the wrong child.
 21. Voice notes [C]: record, Saaras, page → concept, Claude fallback. Verify: page and no-page notes both map correctly.
-22. Telegram parent notes [C]: bot, QR deep-link opt-in, `.ogg` voice messages with the activity as caption, a webhook with a secret token for replies. Verify: a demo phone receives a Bhili catch-up voice message; replies are stored.
+22. [done] Telegram parent notes [C]: bot, QR deep-link opt-in, `.ogg` voice messages with the activity as caption, a webhook with a secret token for replies. Verify: a demo phone receives a Bhili catch-up voice message; replies are stored.
 23. Deploy + demo [all]: a second Render service and Vercel project from `main`, every Bhili clip cached beforehand, design slides, the 5-minute demo. Verify: the demo runs twice in a row on a phone.
 
 Follow these rules when you are building: 

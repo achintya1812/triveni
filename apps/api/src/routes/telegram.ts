@@ -83,7 +83,11 @@ async function handle({ message, callback_query }: Update) {
     // "done:<parent message id>", from the button under a voice note.
     const messageId = callback_query.data?.match(/^done:(.+)$/)?.[1];
     const [sent] = messageId ? await run(db().from("parent_messages").select("child_id").eq("id", messageId)) : [];
-    if (sent) await reply({ childId: sent.child_id as string, messageId: messageId!, type: "done", text: null, file: null, transcript: null });
+    // A second tap on the same button isn't stored again.
+    const [tapped] = sent ? await run(db().from("parent_replies").select("id").eq("message_id", messageId!).eq("type", "done")) : [];
+    if (sent && !tapped) {
+      await reply({ childId: sent.child_id as string, messageId: messageId!, type: "done", text: null, file: null, transcript: null });
+    }
     await telegram("answerCallbackQuery", { callback_query_id: callback_query.id, text: "धन्यवाद! 👍" });
     return;
   }
