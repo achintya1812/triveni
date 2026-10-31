@@ -104,6 +104,18 @@ export async function saveListening(classId: string, results: ListeningResult[])
   await api("POST", `/classes/${classId}/listening`, results);
 }
 
+// The step-down probe's results, one per child.
+export async function saveProbes(classId: string, results: ProbeResult[]) {
+  await db.probeResults.bulkPut(results);
+  for (const result of results) await api("POST", `/classes/${classId}/probes`, result);
+}
+
+// A change to one child, such as the teacher's view of how well they follow Hindi.
+export async function saveChild(child: Child) {
+  await db.children.put(child);
+  await api("POST", `/classes/${child.classId}/children`, [child]);
+}
+
 // Marks one child absent or present on a day, keeping the rest of the day's attendance and its lesson.
 export async function setAbsent(classId: string, date: string, childId: string, absent: boolean) {
   const rows = await db.attendance.where({ date }).and((r) => r.classId === classId).toArray();
