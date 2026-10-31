@@ -20,21 +20,29 @@ import { Button } from "@/components/ui/button";
 import { versionsFor } from "@/check";
 import { content, useClassData } from "@/classData";
 import { api, saveCheck } from "@/db";
+import { type Group, groupTime } from "@/group";
 import { cn } from "@/lib/utils";
+import { Kit } from "./Kit";
+import { Probe } from "./Probe";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
 const conceptName = (id: string) => concepts.find((c) => c.id === id)?.name ?? id;
 
-// The morning brief, and the quick re-checks it asks for.
+// The morning brief, and the group time it asks for: quick re-checks, the probe and the reteaching kit.
 export function Brief({ klass, onError }: { klass: ClassRecord; onError: (message: string) => void }) {
   const data = useClassData(klass.id);
   const [language, setLanguage] = useState<BriefLanguage>("en");
   const [recheck, setRecheck] = useState<{ conceptId: string; children: Child[] }>();
+  const [probe, setProbe] = useState<Group>();
+  const [kit, setKit] = useState<Group & { buddy: Child | undefined }>();
   if (!data) return null;
 
   if (recheck) {
     return <Recheck klass={klass} {...recheck} onClose={() => setRecheck(undefined)} onError={onError} />;
   }
+  if (probe) return <Probe klass={klass} {...probe} onClose={() => setProbe(undefined)} onError={onError} />;
+  if (kit) return <Kit {...kit} onClose={() => setKit(undefined)} />;
+  const group = groupTime(data);
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-2">
@@ -46,7 +54,53 @@ export function Brief({ klass, onError }: { klass: ClassRecord; onError: (messag
       </div>
       <Reworded template={buildDailyBrief(today(), data, content, language)} language={language} />
       <RecheckList data={data} onStart={(conceptId, children) => setRecheck({ conceptId, children })} />
+      <GroupList
+        title="Probe group"
+        about="Taught but not learned, seen once. The step-down probe finds where each child can restart."
+        action="Start probe"
+        groups={group.probe}
+        onStart={setProbe}
+      />
+      <GroupList
+        title="Reteaching group"
+        about="Taught but not learned, confirmed. Reteach from the concept they restart at."
+        action="Open reteaching kit"
+        groups={group.reteach}
+        onStart={(g) => setKit({ ...g, buddy: group.buddies.find((b) => !g.records.some((r) => r.child.id === b.id)) })}
+      />
     </div>
+  );
+}
+
+// The children in a group-time group, by concept, with a button to start.
+function GroupList({
+  title,
+  about,
+  action,
+  groups,
+  onStart,
+}: {
+  title: string;
+  about: string;
+  action: string;
+  groups: Group[];
+  onStart: (group: Group) => void;
+}) {
+  if (groups.length === 0) return null;
+  return (
+    <section className="space-y-3">
+      <h2 className="font-semibold">{title}</h2>
+      <p className="text-sm text-muted-foreground">{about}</p>
+      {groups.map((g) => (
+        <div key={g.conceptId} className="space-y-2 rounded-lg border p-3">
+          <p className="font-medium">{conceptName(g.conceptId)}</p>
+          <p className="text-sm">{g.records.map((r) => r.child.name).join(", ")}</p>
+          <Button className="h-11 w-full" onClick={() => onStart(g)}>
+            {action}
+          </Button>
+        </div>
+      ))}
+    </section>
   );
 }
 

@@ -435,7 +435,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 16: Group time: probe, reteaching kit, listening check
+## [x] Stage 16: Group time: probe, reteaching kit, listening check
 
 **Lane:** B. **Depends on:** 11; 19 for the probe, kit and listening content.
 
@@ -458,10 +458,31 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - Children write two numbers. The teacher enters them in a tap grid (two cells per child), saved as `ListeningResult`s.
   - On the class setup screen, the teacher can set each child's `hindiUnderstanding`.
 
+**As built:**
+- **Logic:** `apps/web/src/group.ts`, tested on the demo class in `group.test.ts`.
+  - `probeSteps` and `probeState` give each child's next step and outcome.
+  - `groupTime` gives the probe and reteaching groups, and the buddies.
+  - `kitLanguage` picks Bhili when `home` is the group's most common `reteachIn`, ties included.
+- **Probe:**
+  - When the root is the failed concept, its numbers step isn't asked twice.
+  - A child who fails every step restarts with real objects on the first concept in the chain (numbers to 20).
+- **Brief:** it has two new lists next to Stage 15's quick re-checks.
+  - "Probe group" (unconfirmed taught-but-not-learned) opens the probe runner (`screens/Probe.tsx`).
+  - "Reteaching group" (confirmed, by restart concept) opens the kit (`screens/Kit.tsx`).
+- **Kit:**
+  - The teacher's steps are in English until Stage 13; `teacherDoes.hindi` is there for it.
+  - The buddy is the first buddy who isn't in the group.
+  - "Send activity to parents" is a disabled button until Stage 22.
+- **Class tab** (`screens/ClassScreen.tsx`): it's new, because the setup screen only shows before a class exists (and the demo skips it). It shows:
+  - each child's language profile
+  - the teacher's Hindi-understanding setting
+  - the listening check: one item at a time, with two tap cells (Hindi, Bhili) per child. Only marked cells are saved.
+- **No API changes:** the probe, listening and children routes came with Stage 9.
+
 **Verify:**
-- [ ] The probe finds Arjun's restart point at borrowing, and a child who passes the first step is cleared.
-- [ ] The kit plays Bhili lines for a group whose profile says `home`, and Hindi for `school`.
-- [ ] Entering listening results changes the children's language profile and their kit language.
+- [x] The probe finds Arjun's restart point at borrowing, and a child who passes the first step is cleared.
+- [x] The kit plays Bhili lines for a group whose profile says `home`, and Hindi for `school`.
+- [x] Entering listening results changes the children's language profile and their kit language.
 
 ---
 
