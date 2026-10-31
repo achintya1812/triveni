@@ -2,6 +2,7 @@ import { concepts, questions } from "@triveni/content";
 import { type Check, type Child, type ClassRecord, pickConcepts, type SlateReading, versionOrder } from "@triveni/core";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AnswerGrid, symbols } from "@/components/AnswerGrid";
 import { ClipButton, SpeakButton } from "@/components/ClipButton";
 import { SlatePhotos } from "@/components/SlatePhotos";
@@ -10,10 +11,10 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { applySlates, fillSlate, type GridReads, isFlagged, markGrid, rollFlags, type UnplacedSlate } from "@/check";
 import { type Draft, db, saveCheck, setAbsent } from "@/db";
+import { useUiLanguage } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
-const conceptName = (id: string) => concepts.find((c) => c.id === id)?.name ?? id;
 const weeklyQuestion = (conceptId: string) => questions.find((q) => q.conceptId === conceptId && q.use === "weekly");
 const questionFor = (id: string) => questions.find((q) => q.id === id)!;
 
@@ -40,6 +41,8 @@ export function CheckRunner({ klass, onError }: { klass: ClassRecord; onError: (
 
 // Picks the concepts, suggested from what was taught since the last weekly check.
 function StartCheck({ klass, savedOn }: { klass: ClassRecord; savedOn?: string }) {
+  const { t } = useTranslation("check");
+  const { conceptName } = useUiLanguage();
   const suggestion = useLiveQuery(async () => {
     const lessons = await db.lessons.where({ classId: klass.id }).toArray();
     const checks = await db.checks.where({ classId: klass.id }).toArray();
@@ -68,32 +71,32 @@ function StartCheck({ klass, savedOn }: { klass: ClassRecord; savedOn?: string }
 
   return (
     <div className="space-y-4">
-      {savedOn && <p className="rounded-lg bg-muted p-3 text-sm">Saved the check for {savedOn}. See it in Results.</p>}
+      {savedOn && <p className="rounded-lg bg-muted p-3 text-sm">{t("savedOn", { date: savedOn })}</p>}
       <p className="text-sm text-muted-foreground">
         {suggestion?.length
-          ? "Suggested from what was taught since the last check. A check covers at most two concepts."
-          : "Nothing new has been taught since the last check. Pick what to check."}
+          ? t("suggested")
+          : t("nothingNew")}
       </p>
       {([0, 1] as const).map((i) => (
         <div key={i} className="space-y-2">
-          <Label htmlFor={`check-row-${i}`}>{i === 0 ? "Row 1 on the slate" : "Row 2 (optional)"}</Label>
+          <Label htmlFor={`check-row-${i}`}>{i === 0 ? t("row1") : t("row2")}</Label>
           <NativeSelect
             id={`check-row-${i}`}
             className="w-full [&_select]:h-11"
             value={rows[i]}
             onChange={(e) => setRows(i === 0 ? [e.target.value, rows[1]] : [rows[0], e.target.value])}
           >
-            <NativeSelectOption value="">{i === 0 ? "Pick a concept" : "None"}</NativeSelectOption>
+            <NativeSelectOption value="">{i === 0 ? t("pick") : t("none")}</NativeSelectOption>
             {checkable.map((c) => (
               <NativeSelectOption key={c.id} value={c.id}>
-                {c.name}
+                {conceptName(c.id)}
               </NativeSelectOption>
             ))}
           </NativeSelect>
         </div>
       ))}
       <Button className="h-12 w-full" disabled={!rows[0]} onClick={start}>
-        Start the check
+        {t("start")}
       </Button>
     </div>
   );
@@ -112,6 +115,8 @@ function RunCheck({
   onSaved: (date: string) => void;
   onError: (message: string) => void;
 }) {
+  const { t } = useTranslation("check");
+  const { language, conceptName, formatDate } = useUiLanguage();
   // The screen's copy of the draft, so typing stays smooth. Every change goes to both copies, so a photo
   // read that finishes after the teacher has switched screens still lands in the stored draft.
   const [draft, setDraft] = useState(stored);
@@ -187,10 +192,10 @@ function RunCheck({
   }
 
   async function discard() {
-    if (window.confirm("Discard this check and everything entered in it?")) await db.drafts.delete(klass.id);
+    if (window.confirm(t("discardConfirm"))) await db.drafts.delete(klass.id);
   }
 
-  const rowLabel = (i: number) => (rows.length > 1 ? `Row ${i + 1}: ` : "");
+  const rowLabel = (i: number) => (rows.length > 1 ? t("rowLabel", { row: i + 1 }) : "");
   const { missing, duplicate } = rollFlags(present, draft.rolls);
   const flagged = new Set([...missing, ...duplicate].map((c) => c.id));
 
@@ -198,17 +203,17 @@ function RunCheck({
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-semibold">Check on {draft.date}</h2>
+          <h2 className="font-semibold">{t("title", { date: formatDate(draft.date) })}</h2>
           <p className="text-sm text-muted-foreground">{rows.map((q, i) => `${rowLabel(i)}${conceptName(q.conceptId)}`).join(" · ")}</p>
         </div>
         <Button variant="outline" size="sm" onClick={discard}>
-          Discard
+          {t("common:discard")}
         </Button>
       </div>
 
       <section className="space-y-2">
-        <h2 className="font-semibold">Who is absent today?</h2>
-        <p className="text-sm text-muted-foreground">Tap to mark. Absent children get no boxes and are never marked wrong.</p>
+        <h2 className="font-semibold">{t("whoAbsent")}</h2>
+        <p className="text-sm text-muted-foreground">{t("absentHelp")}</p>
         <div className="flex flex-wrap gap-2">
           {roster.map((c) => (
             <button
@@ -228,39 +233,40 @@ function RunCheck({
       {order.map((version, step) => (
         <section key={version} className="space-y-3">
           <h2 className="font-semibold">
-            {step + 1}. Now fill the {symbols[version]} box
+            {t("fillBox", { step: step + 1, symbol: symbols[version] })}
           </h2>
           {rows.map((q, i) => (
             <div key={q.id} className="space-y-1">
               {version === "A" && (
                 <>
-                  <p className="text-sm text-muted-foreground">{rowLabel(i)}write this on the board</p>
+                  <p className="text-sm text-muted-foreground">
+                    {rowLabel(i)}
+                    {t("writeOnBoard")}
+                  </p>
                   <p className="rounded-lg border p-5 text-center text-4xl font-semibold">{q.A.prompt}</p>
                 </>
               )}
               {version === "B" && (
                 <>
-                  <ClipButton clipId={q.B.audio} label={`Play ${rowLabel(i).toLowerCase()}in Hindi`} />
-                  <p className="text-sm text-muted-foreground">{q.B.english}</p>
+                  <ClipButton clipId={q.B.audio} label={`${rowLabel(i)}${t("common:playInHindi")}`} />
+                  <p className="text-sm text-muted-foreground">{language === "hi" ? q.B.hindi : q.B.english}</p>
                 </>
               )}
               {version === "C" && (
                 <>
-                  <SpeakButton text={q.C.bhili} label={`Play ${rowLabel(i).toLowerCase()}in Bhili`} />
-                  <p className="text-sm text-muted-foreground">{q.C.english}</p>
+                  <SpeakButton text={q.C.bhili} label={`${rowLabel(i)}${t("common:playInBhili")}`} />
+                  <p className="text-sm text-muted-foreground">{language === "hi" ? q.C.scriptHi : q.C.english}</p>
                 </>
               )}
             </div>
           ))}
-          {version === "C" && <p className="text-sm text-muted-foreground">Children who speak Hindi at home skip this box.</p>}
+          {version === "C" && <p className="text-sm text-muted-foreground">{t("hindiSkip")}</p>}
         </section>
       ))}
 
       <section className="space-y-3">
-        <h2 className="font-semibold">{order.length + 1}. Enter the answers from the slates</h2>
-        <p className="text-sm text-muted-foreground">
-          Photograph five to eight slates at a time, or type the answers. Leave a box empty if the child left it blank.
-        </p>
+        <h2 className="font-semibold">{t("enterAnswers", { step: order.length + 1 })}</h2>
+        <p className="text-sm text-muted-foreground">{t("enterHelp")}</p>
         <SlatePhotos roster={roster} rows={rows.length} onRead={readPhoto} />
         <PhotoFlags roster={present} reads={draft.grids.map((g) => g.reads)} rolls={draft.rolls} />
         <Unplaced
@@ -290,7 +296,7 @@ function RunCheck({
       </section>
 
       <Button className="h-12 w-full" onClick={save}>
-        Save answers
+        {t("saveAnswers")}
       </Button>
     </div>
   );
@@ -300,16 +306,16 @@ const rollList = (children: Child[]) => children.map((c) => `${c.rollNo} ${c.nam
 
 // What the teacher needs to check after reading photos.
 function PhotoFlags({ roster, reads, rolls }: { roster: Child[]; reads: GridReads[]; rolls: number[] }) {
+  const { t } = useTranslation("check");
   if (rolls.length === 0) return null;
   const { duplicate, missing } = rollFlags(roster, rolls);
   const boxes = reads.flatMap((g) => Object.values(g).flatMap((r) => Object.values(r))).filter(isFlagged).length;
   const notes = [
-    boxes > 0 && `${boxes} highlighted ${boxes === 1 ? "box needs" : "boxes need"} checking. Tap each one, and fix it if it's wrong.`,
-    missing.length > 0 && `No slate found for roll ${rollList(missing)}. Photograph them again, or type their answers.`,
-    duplicate.length > 0 &&
-      `More than one slate says roll ${rollList(duplicate)}. The last photo's answers are shown, so check whose slate is whose.`,
+    boxes > 0 && t("flags.boxes", { count: boxes }),
+    missing.length > 0 && t("flags.missing", { list: rollList(missing) }),
+    duplicate.length > 0 && t("flags.duplicate", { list: rollList(duplicate) }),
   ].filter(Boolean);
-  if (notes.length === 0) return <p className="text-sm text-muted-foreground">Every slate was read clearly.</p>;
+  if (notes.length === 0) return <p className="text-sm text-muted-foreground">{t("flags.allClear")}</p>;
   return (
     <ul className="list-disc space-y-1 rounded-lg bg-amber-50 p-3 pl-7 text-sm text-amber-900">
       {notes.map((note) => (
@@ -332,9 +338,15 @@ function Unplaced({
   children: Child[];
   onPlace: (slate: UnplacedSlate, child: Child | undefined) => void;
 }) {
+  const { t } = useTranslation("check");
   if (slates.length === 0) return null;
   const written = (s: UnplacedSlate) =>
-    [s.rollAsWritten ? `roll written '${s.rollAsWritten}'` : "no roll", s.name && `name '${s.name}'`].filter(Boolean).join(", ");
+    [
+      s.rollAsWritten ? t("unplaced.rollWritten", { roll: s.rollAsWritten }) : t("unplaced.noRoll"),
+      s.name && t("unplaced.nameWritten", { name: s.name }),
+    ]
+      .filter(Boolean)
+      .join(", ");
   const answers = (s: UnplacedSlate) =>
     s.answers
       .filter((a) => a.row <= rows)
@@ -342,22 +354,22 @@ function Unplaced({
       .join("  ");
   return (
     <section className="space-y-2 rounded-lg bg-amber-50 p-3 text-amber-950">
-      <h3 className="font-medium">Whose slate is this?</h3>
-      <p className="text-sm">These slates couldn't be matched to a child for sure. Pick whose each one is.</p>
+      <h3 className="font-medium">{t("unplaced.title")}</h3>
+      <p className="text-sm">{t("unplaced.help")}</p>
       {slates.map((s) => (
         <div key={`${s.photo}-${s.slate}`} className="space-y-2 rounded-md border border-amber-200 bg-white p-2">
           <p className="text-sm">
-            Photo {s.photo}, slate {s.slate}: {written(s)}
+            {t("unplaced.where", { photo: s.photo, slate: s.slate, written: written(s) })}
           </p>
           <p className="text-sm text-muted-foreground">{answers(s)}</p>
           <div className="flex gap-2">
             <NativeSelect
-              aria-label={`Whose is photo ${s.photo}, slate ${s.slate}`}
+              aria-label={t("unplaced.whose", { photo: s.photo, slate: s.slate })}
               className="flex-1 [&_select]:h-11"
               value=""
               onChange={(e) => onPlace(s, children.find((c) => c.id === e.target.value))}
             >
-              <NativeSelectOption value="">Choose a child…</NativeSelectOption>
+              <NativeSelectOption value="">{t("unplaced.chooseChild")}</NativeSelectOption>
               {children.map((c) => (
                 <NativeSelectOption key={c.id} value={c.id}>
                   {c.rollNo} {c.name}
@@ -365,7 +377,7 @@ function Unplaced({
               ))}
             </NativeSelect>
             <Button variant="outline" className="h-11" onClick={() => onPlace(s, undefined)}>
-              Ignore
+              {t("common:ignore")}
             </Button>
           </div>
         </div>

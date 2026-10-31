@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { api } from "@/db";
 
@@ -20,6 +21,7 @@ const base64 = (blob: Blob) =>
 // Hold to record what was taught today ("borrowing, page 65"), let go to send. The server transcribes it
 // and matches it to a concept.
 export function VoiceNote({ classId, onResult }: { classId: string; onResult: (result: NoteResult) => void }) {
+  const { t } = useTranslation("log");
   const [state, setState] = useState<"idle" | "starting" | "recording" | "sending">("idle");
   const [problem, setProblem] = useState("");
   const held = useRef(false);
@@ -34,7 +36,7 @@ export function VoiceNote({ classId, onResult }: { classId: string; onResult: (r
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch {
       setState("idle");
-      return setProblem("The microphone isn't allowed. Allow it in the browser's settings, or pick the concept below.");
+      return setProblem(t("voice.noMic"));
     }
     const rec = new MediaRecorder(stream, { mimeType: mimeType() });
     const chunks: Blob[] = [];
@@ -44,7 +46,7 @@ export function VoiceNote({ classId, onResult }: { classId: string; onResult: (r
       stream.getTracks().forEach((t) => t.stop());
       if (Date.now() - startedAt < 700) {
         setState("idle");
-        return setProblem("Hold the button down while you speak.");
+        return setProblem(t("voice.holdDown"));
       }
       setState("sending");
       try {
@@ -52,7 +54,7 @@ export function VoiceNote({ classId, onResult }: { classId: string; onResult: (r
         const res = await api("POST", "/voice-notes", { classId, audio, mimeType: rec.mimeType });
         onResult((await res.json()) as NoteResult);
       } catch (e) {
-        setProblem(`Couldn't read the note: ${(e as Error).message}. Pick the concept below.`);
+        setProblem(t("voice.couldNotRead", { error: (e as Error).message }));
       }
       setState("idle");
     };
@@ -69,7 +71,7 @@ export function VoiceNote({ classId, onResult }: { classId: string; onResult: (r
     if (recorder.current?.state === "recording") recorder.current.stop();
   }
 
-  const label = { idle: "Hold to say what you taught", starting: "Starting…", recording: "Recording… let go to send", sending: "Reading the note…" };
+  const label = { idle: t("voice.hold"), starting: t("voice.starting"), recording: t("voice.recording"), sending: t("voice.sending") };
   return (
     <div className="space-y-1">
       <Button

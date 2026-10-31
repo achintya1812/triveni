@@ -2,19 +2,20 @@ import { concepts } from "@triveni/content";
 import type { ClassRecord } from "@triveni/core";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { type NoteResult, VoiceNote } from "@/components/VoiceNote";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { db, saveDay } from "@/db";
+import { useUiLanguage } from "@/i18n";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
-const conceptName = (id: string) => concepts.find((c) => c.id === id)?.name ?? id;
-const formatDate = (date: string) =>
-  new Date(date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
 
 export function DailyLog({ klass, onError }: { klass: ClassRecord; onError: (message: string) => void }) {
+  const { t } = useTranslation("log");
+  const { conceptName } = useUiLanguage();
   const [date, setDate] = useState(today);
   const [absent, setAbsent] = useState<string[]>([]);
   const [conceptId, setConceptId] = useState("");
@@ -69,11 +70,11 @@ export function DailyLog({ klass, onError }: { klass: ClassRecord; onError: (mes
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground">
-        {klass.school}, Grade {klass.grade}
+        {t("school", { school: klass.school, grade: klass.grade })}
       </p>
 
       <div className="space-y-2">
-        <Label htmlFor="date">Date</Label>
+        <Label htmlFor="date">{t("date")}</Label>
         <Input
           id="date"
           type="date"
@@ -88,7 +89,7 @@ export function DailyLog({ klass, onError }: { klass: ClassRecord; onError: (mes
       </div>
 
       <div className="space-y-2">
-        <Label>Tap the children who are absent</Label>
+        <Label>{t("tapAbsent")}</Label>
         <div className="grid grid-cols-4 gap-2">
           {children?.map((child) => {
             const isAbsent = absent.includes(child.id);
@@ -109,7 +110,7 @@ export function DailyLog({ klass, onError }: { klass: ClassRecord; onError: (mes
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="concept">Concept taught today</Label>
+        <Label htmlFor="concept">{t("concept")}</Label>
         <VoiceNote
           classId={klass.id}
           onResult={(result) => {
@@ -119,17 +120,17 @@ export function DailyLog({ klass, onError }: { klass: ClassRecord; onError: (mes
           }}
         />
         {note && !note.transcript.trim() && (
-          <p className="text-sm text-destructive">Couldn't hear anything. Hold the phone closer and try again, or pick the concept below.</p>
+          <p className="text-sm text-destructive">{t("voice.nothingHeard")}</p>
         )}
         {note?.transcript.trim() && (
           <p className="text-sm text-muted-foreground">
-            Heard: “{note.transcript}”.{" "}
+            {t("voice.heard", { transcript: note.transcript })}{" "}
             {note.conceptId
               ? note.via === "page"
-                ? `Page ${note.page} is ${conceptName(note.conceptId)}.`
-                : `Matched to ${conceptName(note.conceptId)}.`
-              : "Couldn't tell which concept."}{" "}
-            Check the concept below, and change it if it's wrong.
+                ? t("voice.byPage", { page: note.page, concept: conceptName(note.conceptId) })
+                : t("voice.matched", { concept: conceptName(note.conceptId) })
+              : t("voice.unknown")}{" "}
+            {t("voice.checkBelow")}
           </p>
         )}
         <NativeSelect
@@ -141,17 +142,17 @@ export function DailyLog({ klass, onError }: { klass: ClassRecord; onError: (mes
             setConceptId(e.target.value);
           }}
         >
-          <NativeSelectOption value="">No maths lesson</NativeSelectOption>
+          <NativeSelectOption value="">{t("noLesson")}</NativeSelectOption>
           {concepts.map((c) => (
             <NativeSelectOption key={c.id} value={c.id}>
-              {c.name}
+              {conceptName(c.id)}
             </NativeSelectOption>
           ))}
         </NativeSelect>
       </div>
 
       <Button className="h-12 w-full" onClick={save}>
-        {saved ? "Saved" : `Save (${absent.length} absent)`}
+        {saved ? t("saved") : t("save", { count: absent.length })}
       </Button>
 
       <History classId={klass.id} />
@@ -160,6 +161,8 @@ export function DailyLog({ klass, onError }: { klass: ClassRecord; onError: (mes
 }
 
 function History({ classId }: { classId: string }) {
+  const { t } = useTranslation("log");
+  const { conceptName, formatDate } = useUiLanguage();
   const days = useLiveQuery(async () => {
     const [rows, lessons, children] = await Promise.all([
       db.attendance.where({ classId }).toArray(),
@@ -179,16 +182,16 @@ function History({ classId }: { classId: string }) {
   if (!days?.length) return null;
   return (
     <section className="space-y-2">
-      <h2 className="font-semibold">History</h2>
+      <h2 className="font-semibold">{t("history")}</h2>
       <ul className="divide-y rounded-lg border text-sm">
         {days.map((day) => (
           <li key={day.date} className="p-3">
             <div className="flex justify-between gap-2">
               <span className="font-medium">{formatDate(day.date)}</span>
-              <span className="text-muted-foreground">{day.conceptId ? conceptName(day.conceptId) : "No lesson"}</span>
+              <span className="text-muted-foreground">{day.conceptId ? conceptName(day.conceptId) : t("noLessonDay")}</span>
             </div>
             <div className="text-muted-foreground">
-              {day.absent.length ? `Absent: ${day.absent.join(", ")}` : "Everyone present"}
+              {day.absent.length ? t("absentList", { names: day.absent.join(", ") }) : t("everyonePresent")}
             </div>
           </li>
         ))}

@@ -40,7 +40,7 @@ describe("placedOnRow on the demo class, after this week's live check", () => {
   });
 
   it("explains a copied number", () => {
-    expect(of("Pooja")).toMatchObject({ placement: "unclear", notes: ["B: wrote 15, a number copied from the question"] });
+    expect(of("Pooja")).toMatchObject({ placement: "unclear", notes: [{ version: "B", value: 15, cause: "copied" }] });
   });
 
   it("only places the children on that row", () => {

@@ -1,0 +1,15 @@
+{
+  "loadDemo": "डेमो कक्षा लोड करें",
+  "school": "स्कूल",
+  "grade": "कक्षा",
+  "gradeOption": "कक्षा {{grade}}",
+  "children": "बच्चे",
+  "rollNumber": "रोल नंबर",
+  "name": "नाम",
+  "homeLanguage": "घर की भाषा",
+  "addChild": "बच्चा जोड़ें",
+  "saveClass": "कक्षा सहेजें",
+  "enterSchool": "स्कूल का नाम लिखें।",
+  "rollAndName": "हर बच्चे का रोल नंबर और नाम चाहिए।",
+  "sameRoll": "दो बच्चों का रोल नंबर एक ही है।"
+}

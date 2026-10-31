@@ -1,9 +1,10 @@
 import type { AudioClip } from "@triveni/core";
 import { api } from "./db";
+import i18n from "./i18n";
 
 // Why a clip can't play, or undefined if it can.
 export function clipProblem(clip: AudioClip | undefined): string | undefined {
-  if (!clip?.file) return "This clip has not been made yet.";
+  if (!clip?.file) return i18n.t("audio.clipNotMade");
 }
 
 // `file` is the path in the public Supabase Storage bucket `audio`.
@@ -18,6 +19,6 @@ export async function speak(text: string, language: "bhili" | "hindi" = "bhili")
 
 // What to tell the teacher when speech can't be had.
 export function speechProblem(e: Error & { status?: number }, language: "bhili" | "hindi") {
-  if (e.status === 503) return "This Bhili clip hasn't been made yet. Ask whoever runs the app to make the Bhili audio.";
-  return `Could not make the ${language === "bhili" ? "Bhili" : "Hindi"} audio: ${e.message}`;
+  if (e.status === 503) return i18n.t("audio.bhiliNotMade");
+  return i18n.t("audio.speechFailed", { language: i18n.t(`languages.${language}`), error: e.message });
 }

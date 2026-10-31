@@ -1,0 +1,34 @@
+{
+  "reworded": "Reworded by Claude.",
+  "templateOnly": "Couldn't reach Claude, so this is the template.",
+  "rewording": "Rewording…",
+  "catchUp": {
+    "title": "Catch-up for parents",
+    "about": "Missed every lesson on a concept. Their parents get a short voice note in the home language, with an activity to do at home.",
+    "send_one": "Send catch-up to {{count}} parent",
+    "send_other": "Send catch-up to {{count}} parents"
+  },
+  "rechecks": {
+    "title": "Quick re-checks",
+    "about": "Patterns seen once. A fresh A, B and C, marked by tap: two or three minutes in group time.",
+    "start": "Start re-check"
+  },
+  "probeGroup": {
+    "title": "Probe group",
+    "about": "Taught but not learned, seen once. The step-down probe finds where each child can restart.",
+    "action": "Start probe"
+  },
+  "reteachGroup": {
+    "title": "Reteaching group",
+    "about": "Taught but not learned, confirmed. Reteach from the concept they restart at.",
+    "action": "Open reteaching kit"
+  },
+  "recheck": {
+    "title": "Quick re-check: {{concept}}",
+    "noRecheckQuestion": "There's no re-check question for this concept yet, so this uses the weekly question's numbers.",
+    "fillBox": "{{step}}. Now fill the {{symbol}} box",
+    "tapEach": "{{step}}. Tap each box: right, then wrong",
+    "save": "Save the re-check",
+    "saveCount": "Save the re-check ({{children}})"
+  }
+}

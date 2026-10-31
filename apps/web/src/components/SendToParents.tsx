@@ -1,5 +1,6 @@
 import type { Child, ParentMessage } from "@triveni/core";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { type SendResult, sendToParents } from "@/db";
 
@@ -19,6 +20,7 @@ export function SendToParents({
   children: Child[];
   label: string;
 }) {
+  const { t } = useTranslation("parents");
   const [state, setState] = useState<"idle" | "sending">("idle");
   const [result, setResult] = useState<SendResult>();
   const [problem, setProblem] = useState("");
@@ -35,7 +37,7 @@ export function SendToParents({
         ),
       );
     } catch (e) {
-      setProblem(`Couldn't send: ${(e as Error).message}`);
+      setProblem(t("couldNotSend", { error: (e as Error).message }));
     }
     setState("idle");
   }
@@ -44,19 +46,17 @@ export function SendToParents({
   return (
     <div className="space-y-2">
       <Button className="h-11 w-full" variant="outline" disabled={state === "sending"} onClick={send}>
-        {state === "sending" ? "Sending…" : label}
+        {state === "sending" ? t("sending") : label}
       </Button>
       {result && (
         <ul className="space-y-1 text-sm">
-          {sent.length > 0 && <li>Sent on Telegram to the parents of {names(children, sent.map((m) => m.childId))}.</li>}
+          {sent.length > 0 && <li>{t("sent", { names: names(children, sent.map((m) => m.childId)) })}</li>}
           {result.notOptedIn.length > 0 && (
-            <li className="text-amber-800">
-              Not on Telegram yet: {names(children, result.notOptedIn)}. Give their parents the QR code from the Class tab.
-            </li>
+            <li className="text-amber-800">{t("notOptedIn", { names: names(children, result.notOptedIn) })}</li>
           )}
           {result.failed.map((f) => (
             <li key={f.childId} className="text-destructive">
-              Couldn't send to {names(children, [f.childId])}'s parent: {f.error}
+              {t("failed", { name: names(children, [f.childId]), error: f.error })}
             </li>
           ))}
         </ul>

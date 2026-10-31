@@ -1,7 +1,9 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { db } from "./db";
+import { setLanguage } from "./i18n";
 import { Brief } from "./screens/Brief";
 import { CheckRunner } from "./screens/CheckRunner";
 import { ClassScreen } from "./screens/ClassScreen";
@@ -12,33 +14,31 @@ import { Setup } from "./screens/Setup";
 // One teacher and one class: set it up once, then read the morning brief, log each day, run checks, see the results
 // and look after the class (its language profiles and listening check).
 export default function App() {
+  const { t, i18n } = useTranslation();
   const classes = useLiveQuery(() => db.classes.toArray());
   const [error, setError] = useState("");
   const [screen, setScreen] = useState<"brief" | "log" | "check" | "results" | "class">("brief");
 
   return (
     <main className="mx-auto max-w-md space-y-4 p-4">
-      <h1 className="text-2xl font-semibold">Triveni</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">{t("app")}</h1>
+        <Button variant="outline" size="sm" onClick={() => setLanguage(i18n.language === "hi" ? "en" : "hi")}>
+          {t("switchTo")}
+        </Button>
+      </div>
       {error && (
         <button className="w-full rounded-lg bg-destructive/10 p-3 text-left text-sm text-destructive" onClick={() => setError("")}>
-          Saved on this phone, but not sent to the server: {error}. Tap to dismiss.
+          {t("notSent", { error })}
         </button>
       )}
       {classes && !classes[0] && <Setup onError={setError} />}
       {classes?.[0] && (
         <>
           <nav className="grid grid-cols-5 gap-1">
-            {(
-              [
-                ["brief", "Brief"],
-                ["log", "Daily log"],
-                ["check", "Check"],
-                ["results", "Results"],
-                ["class", "Class"],
-              ] as const
-            ).map(([id, label]) => (
+            {(["brief", "log", "check", "results", "class"] as const).map((id) => (
               <Button key={id} variant={screen === id ? "default" : "outline"} className="h-11 px-1 text-xs" onClick={() => setScreen(id)}>
-                {label}
+                {t(`nav.${id}`)}
               </Button>
             ))}
           </nav>

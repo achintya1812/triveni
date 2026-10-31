@@ -21,19 +21,21 @@ export type Placed = {
   placement: Placement;
   // What still has to happen before the child joins a group: a quick re-check, or the probe.
   pending: "recheck" | "probe" | null;
-  // What the child's wrong answers show, such as "B: wrote 22, added instead of subtracted".
-  notes: string[];
+  // What the child's wrong answers show: B was 22, "added" (a cause from the question's wrong-answer list,
+  // or "copied" for a number copied from the question). The screen words it in the interface language.
+  notes: Note[];
 };
+
+export type Note = { version: Version; value: number | null; cause: string };
 
 const versions: Version[] = ["A", "B", "C"];
 
-function notes(r: RowResult): string[] {
+function notes(r: RowResult): Note[] {
   return versions.flatMap((v) => {
     const a = r.answers[v];
     if (!a?.cause) return [];
-    if (a.cause === "copied") return [`${v}: wrote ${a.value}, a number copied from the question`];
-    const listed = r.question.wrongAnswers[v].find((w) => w.cause === a.cause);
-    return listed ? [`${v}: wrote ${a.value}, ${listed.meaning.charAt(0).toLowerCase()}${listed.meaning.slice(1)}`] : [];
+    const known = a.cause === "copied" || r.question.wrongAnswers[v].some((w) => w.cause === a.cause);
+    return known ? [{ version: v, value: a.value, cause: a.cause }] : [];
   });
 }
 

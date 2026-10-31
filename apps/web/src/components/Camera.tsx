@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
 // A full-screen camera for taking several slate photos in a row. The phone's own camera app
 // (`<input capture>`) takes one shot and returns, so this keeps the camera open until Done.
 export function Camera({ onDone, onCancel }: { onDone: (files: File[]) => void; onCancel: () => void }) {
+  const { t } = useTranslation("check");
   const video = useRef<HTMLVideoElement>(null);
   const [shots, setShots] = useState<{ file: File; url: string }[]>([]);
   const [error, setError] = useState("");
@@ -12,7 +14,7 @@ export function Camera({ onDone, onCancel }: { onDone: (files: File[]) => void; 
     let stream: MediaStream | undefined;
     let closed = false;
     if (!navigator.mediaDevices?.getUserMedia) {
-      setError("This browser can't open the camera here. Choose photos from the gallery instead.");
+      setError(t("camera.noCamera"));
       return;
     }
     navigator.mediaDevices
@@ -22,7 +24,7 @@ export function Camera({ onDone, onCancel }: { onDone: (files: File[]) => void; 
         stream = s;
         if (video.current) video.current.srcObject = s;
       })
-      .catch((e: Error) => setError(`Couldn't open the camera (${e.message}). Choose photos from the gallery instead.`));
+      .catch((e: Error) => setError(t("camera.failed", { error: e.message })));
     return () => {
       closed = true;
       stream?.getTracks().forEach((t) => t.stop());
@@ -45,7 +47,7 @@ export function Camera({ onDone, onCancel }: { onDone: (files: File[]) => void; 
         if (!blob) return;
         const url = URL.createObjectURL(blob);
         urls.current.push(url);
-        setShots((s) => [...s, { file: new File([blob], `Photo ${s.length + 1}.jpg`, { type: "image/jpeg" }), url }]);
+        setShots((s) => [...s, { file: new File([blob], t("camera.file", { n: s.length + 1 }), { type: "image/jpeg" }), url }]);
       },
       "image/jpeg",
       0.9,
@@ -68,16 +70,16 @@ export function Camera({ onDone, onCancel }: { onDone: (files: File[]) => void; 
       )}
       <div className="grid grid-cols-3 items-center gap-3 p-4">
         <Button variant="secondary" className="h-12" onClick={onCancel}>
-          Cancel
+          {t("common:cancel")}
         </Button>
         <button
-          aria-label="Take photo"
+          aria-label={t("camera.take")}
           disabled={!!error}
           onClick={shoot}
           className="mx-auto size-16 rounded-full border-4 border-white bg-white/30 active:bg-white disabled:opacity-30"
         />
         <Button className="h-12" disabled={shots.length === 0} onClick={() => onDone(shots.map((s) => s.file))}>
-          Done ({shots.length})
+          {t("camera.done", { count: shots.length })}
         </Button>
       </div>
     </div>

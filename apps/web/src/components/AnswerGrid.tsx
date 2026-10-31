@@ -1,4 +1,5 @@
 import type { Child } from "@triveni/core";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { type GridReads, type GridValues, isFlagged, type Version, versionsFor } from "@/check";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ export function AnswerGrid({
   absent: Set<string>;
   onChange: (values: GridValues, reads: GridReads) => void;
 }) {
+  const { t } = useTranslation("check");
   // Tapping or editing a box read from a photo counts as the teacher checking it.
   const reviewed = (childId: string, version: Version): GridReads => {
     const read = reads[childId]?.[version];
@@ -40,8 +42,8 @@ export function AnswerGrid({
   return (
     <div className="space-y-2">
       <div className={`${columns} text-sm font-medium text-muted-foreground`}>
-        <span>Roll</span>
-        <span>Name</span>
+        <span>{t("grid.roll")}</span>
+        <span>{t("grid.name")}</span>
         {(["A", "B", "C"] as const).map((v) => (
           <span key={v} className="text-center">
             {symbols[v]} {v}
@@ -53,7 +55,7 @@ export function AnswerGrid({
           return (
             <div key={child.id} className={cn(columns, "text-muted-foreground")}>
               <span className="text-lg">{child.rollNo}</span>
-              <span className="col-span-4 truncate">{child.name}: absent today</span>
+              <span className="col-span-4 truncate">{t("grid.absentToday", { name: child.name })}</span>
             </div>
           );
         }
@@ -79,7 +81,7 @@ export function AnswerGrid({
                   onChange={(e) => set(child.id, v, e.target.value)}
                 />
               ) : (
-                <span key={v} className="text-center text-xs text-muted-foreground" title="Hindi at home: no C">
+                <span key={v} className="text-center text-xs text-muted-foreground" title={t("grid.noC")}>
                   —
                 </span>
               ),

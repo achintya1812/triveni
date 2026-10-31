@@ -1,0 +1,40 @@
+{
+  "app": "त्रिवेणी",
+  "nav": {
+    "brief": "आज",
+    "log": "रजिस्टर",
+    "check": "जाँच",
+    "results": "नतीजे",
+    "class": "कक्षा"
+  },
+  "switchTo": "English",
+  "notSent": "इस फ़ोन पर सहेज लिया, पर सर्वर को नहीं भेज सके: {{error}}। हटाने के लिए छुएँ।",
+  "cancel": "रद्द करें",
+  "close": "बंद करें",
+  "discard": "छोड़ दें",
+  "undo": "वापस लें",
+  "next": "आगे",
+  "previous": "पीछे",
+  "save": "सहेजें",
+  "ignore": "छोड़ दें",
+  "languages": {
+    "hindi": "हिंदी",
+    "bhili": "भीली"
+  },
+  "playInHindi": "हिंदी में सुनाएँ",
+  "playInBhili": "भीली में सुनाएँ",
+  "children_one": "{{count}} बच्चा",
+  "children_other": "{{count}} बच्चे",
+  "audio": {
+    "clipNotMade": "यह क्लिप अभी बनी नहीं है।",
+    "bhiliNotMade": "यह भीली क्लिप अभी बनी नहीं है। ऐप चलाने वाले से भीली आवाज़ बनवाएँ।",
+    "speechFailed": "{{language}} आवाज़ नहीं बन सकी: {{error}}",
+    "preparing": "आवाज़ तैयार हो रही है…",
+    "playing": "चल रहा है…",
+    "readAloud": "पढ़कर सुनाएँ",
+    "reading": "सुना रहे हैं…",
+    "couldNotPlay": "आवाज़ नहीं चल सकी।",
+    "couldNotPlayClip": "क्लिप नहीं चल सकी: {{error}}",
+    "fileNotLoaded": "फ़ाइल नहीं खुल सकी"
+  }
+}

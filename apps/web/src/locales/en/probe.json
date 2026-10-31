@@ -1,0 +1,22 @@
+{
+  "title": "Probe: {{concept}}",
+  "help": "Ask each child their step, out loud. Tap ✓ if they get it right, ✗ if not. A child stops at their first ✓.",
+  "step": "Step {{n}}: {{concept}}, {{form}}",
+  "forms": {
+    "abstract": "in numbers",
+    "pictorial": "with drawings",
+    "concrete": "with real objects"
+  },
+  "answer": "Answer: {{answer}}",
+  "right": "{{name}} right",
+  "wrong": "{{name}} wrong",
+  "passed": "Passed at once: back with the class.",
+  "restart": "Start with {{concept}} {{how}}.",
+  "how": {
+    "concrete": "using real objects, then move to drawings",
+    "pictorial": "using drawings, then move to numbers",
+    "abstract": "in numbers"
+  },
+  "save": "Save the probe",
+  "saveCount": "Save the probe ({{children}})"
+}
