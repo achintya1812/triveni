@@ -47,9 +47,11 @@ const chain = ["numbers-to-20", "subtraction-within-20", "borrowing", "two-digit
 const concepts: Concept[] = chain.map((id, i) => ({
   id,
   name: id,
+  nameHi: id,
   prerequisites: i === 0 ? [] : [chain[i - 1]],
   pages: [],
   reteach: { english: "", bhili: "" },
+  catchUp: { english: "", hindi: "", bhili: "" },
   probe: [],
 }));
 // Only the marks matter here, so the questions have no numbers worth reading.

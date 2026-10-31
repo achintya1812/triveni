@@ -29,20 +29,19 @@ export const ProbeStep = z.object({
 });
 export type ProbeStep = z.infer<typeof ProbeStep>;
 
-// The full-build fields are optional until Stage 19 fills them in.
 export const Concept = z.object({
   id: z.string(),
   name: z.string(),
-  nameHi: z.string().optional(),
+  nameHi: z.string(),
   prerequisites: z.array(z.string()),
   // Textbook pages, for matching the teacher's voice note to a concept.
-  pages: z.array(z.number().int().positive()).default([]),
+  pages: z.array(z.number().int().positive()),
   // Played to children who were taught the concept but didn't learn it, while the teacher uses real objects.
   // `bhili` is spoken live; services/bhili/translate.py makes it from `english`.
   reteach: z.object({ english: z.string(), bhili: z.string() }),
   // The parent's catch-up lesson, with a household activity, for a child who missed the concept.
-  catchUp: Trilingual.optional(),
-  probe: z.array(ProbeStep).default([]),
+  catchUp: Trilingual,
+  probe: z.array(ProbeStep),
 });
 export type Concept = z.infer<typeof Concept>;
 
@@ -77,10 +76,8 @@ export const Question = z.object({
   B: z.object({ hindi: z.string(), english: z.string(), answer: z.number().int(), audio: z.string() }),
   C: z.object({ scriptHi: z.string(), bhili: z.string(), english: z.string(), answer: z.number().int() }),
   // A weekly check and a quick re-check use different questions, so the numbers are fresh.
-  use: z.enum(["weekly", "recheck"]).default("weekly"),
-  wrongAnswers: z
-    .object({ A: z.array(WrongAnswer), B: z.array(WrongAnswer), C: z.array(WrongAnswer) })
-    .default({ A: [], B: [], C: [] }),
+  use: z.enum(["weekly", "recheck"]),
+  wrongAnswers: z.object({ A: z.array(WrongAnswer), B: z.array(WrongAnswer), C: z.array(WrongAnswer) }),
 });
 export type Question = z.infer<typeof Question>;
 

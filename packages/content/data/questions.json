@@ -15,6 +15,57 @@
       "bhili": "मीना बोकड्या मोजेहे: 16, 17, 18. इया फासला केल्लो नंबर आवेहे?",
       "english": "Meena is counting goats: 16, 17, 18. Which number comes after this?",
       "answer": 19
+    },
+    "use": "weekly",
+    "wrongAnswers": {
+      "A": [
+        { "value": 19, "cause": "skipped", "meaning": "Skipped a number when counting on", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 81, "cause": "reversed", "meaning": "Wrote the digits the wrong way round", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ],
+      "B": [
+        { "value": 15, "cause": "skipped", "meaning": "Skipped a number when counting on", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 41, "cause": "reversed", "meaning": "Wrote the digits the wrong way round", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 10, "cause": "before", "meaning": "Gave the number before, not after", "pointsTo": "keyword" }
+      ],
+      "C": [
+        { "value": 20, "cause": "skipped", "meaning": "Skipped a number when counting on", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 91, "cause": "reversed", "meaning": "Wrote the digits the wrong way round", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 15, "cause": "before", "meaning": "Gave the number before, not after", "pointsTo": "keyword" }
+      ]
+    }
+  },
+  {
+    "id": "q-numbers-to-20-recheck",
+    "conceptId": "numbers-to-20",
+    "keywordIds": ["ginna", "ke-baad"],
+    "A": { "prompt": "12, 13, 14, ?", "answer": 15 },
+    "B": {
+      "hindi": "गीता लड्डू गिन रही है: 14, 15, 16। इसके बाद कौन-सी संख्या आएगी?",
+      "english": "Geeta is counting laddoos: 14, 15, 16. Which number comes after this?",
+      "answer": 17,
+      "audio": "check-b-numbers-to-20-recheck"
+    },
+    "C": {
+      "scriptHi": "गीता लड्डू गिन रही है: 17, 18, 19। इसके बाद कौन-सी संख्या आएगी?",
+      "bhili": "गीता लड्डू मोजती 17, 18, 19. इया फाचला नोबर आवेहे.",
+      "english": "Geeta is counting laddoos: 17, 18, 19. Which number comes after this?",
+      "answer": 20
+    },
+    "use": "recheck",
+    "wrongAnswers": {
+      "A": [
+        { "value": 16, "cause": "skipped", "meaning": "Skipped a number when counting on", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 51, "cause": "reversed", "meaning": "Wrote the digits the wrong way round", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ],
+      "B": [
+        { "value": 18, "cause": "skipped", "meaning": "Skipped a number when counting on", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 71, "cause": "reversed", "meaning": "Wrote the digits the wrong way round", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 13, "cause": "before", "meaning": "Gave the number before, not after", "pointsTo": "keyword" }
+      ],
+      "C": [
+        { "value": 21, "cause": "skipped", "meaning": "Skipped a number when counting on", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 16, "cause": "before", "meaning": "Gave the number before, not after", "pointsTo": "keyword" }
+      ]
     }
   },
   {
@@ -33,6 +84,60 @@
       "bhili": "16 चिडें एका चाडाव बोठले आथे. 5 चिडें उडीं गिये. आमी चाडाव कोते चिडें हाय?",
       "english": "16 birds were sitting on a tree. 5 birds flew away. How many birds are on the tree now?",
       "answer": 11
+    },
+    "use": "weekly",
+    "wrongAnswers": {
+      "A": [
+        { "value": 21, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "concept", "conceptId": "subtraction-within-20" },
+        { "value": 12, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 14, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ],
+      "B": [
+        { "value": 21, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "keyword" },
+        { "value": 14, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 16, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ],
+      "C": [
+        { "value": 21, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "keyword" },
+        { "value": 10, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 12, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ]
+    }
+  },
+  {
+    "id": "q-subtraction-within-20-recheck",
+    "conceptId": "subtraction-within-20",
+    "keywordIds": ["ud-gayin", "ab-kitni"],
+    "A": { "prompt": "19 − 5 = ?", "answer": 14 },
+    "B": {
+      "hindi": "तार पर 19 चिड़ियाँ बैठी थीं। 6 चिड़ियाँ उड़ गईं। अब तार पर कितनी चिड़ियाँ हैं?",
+      "english": "19 birds were sitting on a wire. 6 birds flew away. How many birds are on the wire now?",
+      "answer": 13,
+      "audio": "check-b-subtraction-within-20-recheck"
+    },
+    "C": {
+      "scriptHi": "तार पर 16 चिड़ियाँ बैठी थीं। 4 चिड़ियाँ उड़ गईं। अब तार पर कितनी चिड़ियाँ हैं?",
+      "bhili": "16 चिडें वायराप बोठले आथे. 4 चिडें उडीं गिये. आमी वायरापे कोते चिडें हाय?",
+      "english": "16 birds were sitting on a wire. 4 birds flew away. How many birds are on the wire now?",
+      "answer": 12
+    },
+    "use": "recheck",
+    "wrongAnswers": {
+      "A": [
+        { "value": 24, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "concept", "conceptId": "subtraction-within-20" },
+        { "value": 13, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 15, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ],
+      "B": [
+        { "value": 25, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "keyword" },
+        { "value": 12, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 14, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ],
+      "C": [
+        { "value": 20, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "keyword" },
+        { "value": 11, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 13, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ]
     }
   },
   {
@@ -51,6 +156,133 @@
       "bhili": "रवि 13 आंबा आथा. तियाय 7 आंबा देद्या. आमी तियाही कोता आंबा रेताहा.",
       "english": "Ravi had 13 mangoes. He gave away 7 mangoes. How many mangoes are left with him now?",
       "answer": 6
+    },
+    "use": "weekly",
+    "wrongAnswers": {
+      "A": [
+        { "value": 11, "cause": "borrowing", "meaning": "Took the smaller digit from the larger one", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 19, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "concept", "conceptId": "subtraction-within-20" },
+        { "value": 8, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 10, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ],
+      "B": [
+        { "value": 12, "cause": "borrowing", "meaning": "Took the smaller digit from the larger one", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 22, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "keyword" },
+        { "value": 9, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ],
+      "C": [
+        { "value": 14, "cause": "borrowing", "meaning": "Took the smaller digit from the larger one", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 20, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "keyword" },
+        { "value": 5, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ]
+    }
+  },
+  {
+    "id": "q-borrowing-recheck",
+    "conceptId": "borrowing",
+    "keywordIds": ["de-diye", "bache"],
+    "A": { "prompt": "17 − 9 = ?", "answer": 8 },
+    "B": {
+      "hindi": "राधा के पास 12 चूड़ियाँ थीं। उसने 5 चूड़ियाँ बहन को दे दीं। अब उसके पास कितनी चूड़ियाँ बचीं?",
+      "english": "Radha had 12 bangles. She gave 5 bangles to her sister. How many bangles are left with her now?",
+      "answer": 7,
+      "audio": "check-b-borrowing-recheck"
+    },
+    "C": {
+      "scriptHi": "राधा के पास 13 चूड़ियाँ थीं। उसने 4 चूड़ियाँ बहन को दे दीं। अब उसके पास कितनी चूड़ियाँ बचीं?",
+      "bhili": "राधाव 13 बांगड्या आथ्या. तियी 4 बांगड्या तियी बाहाल देद्या. आमी तियी आथ्या कोत्या बांगड्या रेत्याहा.",
+      "english": "Radha had 13 bangles. She gave 4 bangles to her sister. How many bangles are left with her now?",
+      "answer": 9
+    },
+    "use": "recheck",
+    "wrongAnswers": {
+      "A": [
+        { "value": 12, "cause": "borrowing", "meaning": "Took the smaller digit from the larger one", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 26, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "concept", "conceptId": "subtraction-within-20" },
+        { "value": 7, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ],
+      "B": [
+        { "value": 13, "cause": "borrowing", "meaning": "Took the smaller digit from the larger one", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 17, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "keyword" },
+        { "value": 6, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" },
+        { "value": 8, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ],
+      "C": [
+        { "value": 11, "cause": "borrowing", "meaning": "Took the smaller digit from the larger one", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 17, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "keyword" },
+        { "value": 10, "cause": "counting", "meaning": "Counted one too many or one too few", "pointsTo": "concept", "conceptId": "numbers-to-20" }
+      ]
+    }
+  },
+  {
+    "id": "q-two-digit-subtraction",
+    "conceptId": "two-digit-subtraction",
+    "keywordIds": ["de-diye", "bache"],
+    "A": { "prompt": "52 − 27 = ?", "answer": 25 },
+    "B": {
+      "hindi": "ज्योति के पास 46 फूल थे। उसने 18 फूल माँ को दे दिए। अब उसके पास कितने फूल बचे?",
+      "english": "Jyoti had 46 flowers. She gave 18 flowers to her mother. How many flowers are left with her now?",
+      "answer": 28,
+      "audio": "check-b-two-digit-subtraction"
+    },
+    "C": {
+      "scriptHi": "ज्योति के पास 54 फूल थे। उसने 28 फूल माँ को दे दिए। अब उसके पास कितने फूल बचे?",
+      "bhili": "ज्योतीही 54 फुले आथे. तियी 28 फुले तियी याहूल देदे. आमी तियूल कोते फुले रेतेहें?",
+      "english": "Jyoti had 54 flowers. She gave 28 flowers to her mother. How many flowers are left with her now?",
+      "answer": 26
+    },
+    "use": "weekly",
+    "wrongAnswers": {
+      "A": [
+        { "value": 35, "cause": "borrowing", "meaning": "Took the smaller digit from the larger one", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 38, "cause": "kept-the-ten", "meaning": "Opened a ten but didn't take it from the tens", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 79, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "concept", "conceptId": "subtraction-within-20" }
+      ],
+      "B": [
+        { "value": 32, "cause": "borrowing", "meaning": "Took the smaller digit from the larger one", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 38, "cause": "kept-the-ten", "meaning": "Opened a ten but didn't take it from the tens", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 64, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "keyword" }
+      ],
+      "C": [
+        { "value": 34, "cause": "borrowing", "meaning": "Took the smaller digit from the larger one", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 36, "cause": "kept-the-ten", "meaning": "Opened a ten but didn't take it from the tens", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 82, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "keyword" }
+      ]
+    }
+  },
+  {
+    "id": "q-two-digit-subtraction-recheck",
+    "conceptId": "two-digit-subtraction",
+    "keywordIds": ["de-diye", "bache"],
+    "A": { "prompt": "63 − 35 = ?", "answer": 28 },
+    "B": {
+      "hindi": "दुकानदार के पास 71 गुब्बारे थे। उसने 36 गुब्बारे बच्चों को दे दिए। अब उसके पास कितने गुब्बारे बचे?",
+      "english": "A shopkeeper had 71 balloons. He gave 36 balloons to the children. How many balloons are left with him now?",
+      "answer": 35,
+      "audio": "check-b-two-digit-subtraction-recheck"
+    },
+    "C": {
+      "scriptHi": "दुकानदार के पास 64 गुब्बारे थे। उसने 27 गुब्बारे बच्चों को दे दिए। अब उसके पास कितने गुब्बारे बचे?",
+      "bhili": "एगोहो दुकानदार 64 फुगे आथे. तियाय 27 फुगे पोयराहाल देदा. आमी कोते फुगे तियाही रेतेहे.",
+      "english": "A shopkeeper had 64 balloons. He gave 27 balloons to the children. How many balloons are left with him now?",
+      "answer": 37
+    },
+    "use": "recheck",
+    "wrongAnswers": {
+      "A": [
+        { "value": 32, "cause": "borrowing", "meaning": "Took the smaller digit from the larger one", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 38, "cause": "kept-the-ten", "meaning": "Opened a ten but didn't take it from the tens", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 98, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "concept", "conceptId": "subtraction-within-20" }
+      ],
+      "B": [
+        { "value": 45, "cause": "borrowing", "meaning": "Took the smaller digit from the larger one", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 107, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "keyword" }
+      ],
+      "C": [
+        { "value": 43, "cause": "borrowing", "meaning": "Took the smaller digit from the larger one", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 47, "cause": "kept-the-ten", "meaning": "Opened a ten but didn't take it from the tens", "pointsTo": "concept", "conceptId": "borrowing" },
+        { "value": 91, "cause": "added", "meaning": "Added instead of subtracted", "pointsTo": "keyword" }
+      ]
     }
   }
 ]

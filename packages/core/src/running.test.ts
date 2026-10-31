@@ -19,6 +19,7 @@ const concept = (id: string, name: string, nameHi: string, prerequisites: string
   prerequisites,
   pages: [],
   reteach: { english: "", bhili: "" },
+  catchUp: { english: "", hindi: "", bhili: "" },
   probe: [],
 });
 const concepts = [

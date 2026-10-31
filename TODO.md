@@ -533,7 +533,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 19: Full content
+## [x] Stage 19: Full content
 
 **Lane:** C. **Depends on:** 9.
 
@@ -562,11 +562,25 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - Extend `warm:speech` to every Bhili and Hindi text, then run both. Warming is a local API plus a local `tts_server.py`, pointed at the full-build Supabase project, so the shared bucket gets the clips. Colab or Kaggle make it faster (Stage 18).
 - Once everything is filled, make the new content fields required in `content.ts`.
 
+**As built:**
+- **Drafting:** the content was drafted by Claude in a working session, not through a Batches script, so there's no `draft-content.ts`. Instead, `pnpm --filter @triveni/api review:content [path]` writes every text to one printable page (English, Hindi, Bhili, answer, a notes column) for the reviewers. The page isn't committed.
+- **`translate.py`:**
+  - It takes the best of its 4 beams that keeps the numbers.
+  - If none does, it leaves the text empty, writes the rest, lists what it skipped and exits 1. Reword the English and run it again: it only fills empty fields.
+  - To get every number through, five English texts were reworded into short sentences (two catch-ups, two kit lines, the home activity). Their Hindi already said the same thing, so it wasn't changed.
+- **Bhili for the reviewer to look at:**
+  - `dahai` and `ikai` (the glosses were reworded to "tens, a bundle of ten" and "ones, single sticks", which still translate poorly).
+  - The two-digit catch-up, which says "6 bundles" where it means 6 loose sticks.
+- **`warm:speech`** also covers the catch-up lessons, the kit and the listening prompts, in Bhili and Hindi.
+- **B clips:** the 5 new ones were made with `make:standins` and seeded with `seed:audio`.
+- **Review:** Achintya Mathur reviewed the Hindi. No one has reviewed the Bhili yet (see Open items).
+- **Warming:** all 68 clips (40 Bhili, 28 Hindi) are cached. `tts_server.py` tries again when a very short text (such as "मोना.") comes back with no speech.
+
 **Verify:**
-- [ ] All content parses with the fields required, and every audio ref resolves.
-- [ ] `translate.py` reports no changed numbers.
-- [ ] `warm:speech --check` lists no uncached texts.
-- [ ] A person has reviewed the Hindi, and the PR says who.
+- [x] All content parses with the fields required, and every audio ref resolves.
+- [x] `translate.py` reports no changed numbers.
+- [x] `warm:speech --check` lists no uncached texts.
+- [x] A person has reviewed the Hindi, and the PR says who.
 
 ---
 
@@ -732,6 +746,6 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - [x] The textbook and page numbers for the 4 concepts (Stages 19, 21): NCERT Class 2, in `resources/TEXTBOOKS.md`.
 - [ ] The notebook slate test set with `answers.csv` (Stage 20).
 - [ ] About 10 recorded voice-note test files (Stage 21).
-- [ ] A Hindi speaker reviews the new questions, wrong-answer lists, kit and interface text on Day 2.
-- [ ] A Bhili speaker from the target area reviews every `bhili` field and how bhili-tts says it, especially numbers and single words.
+- [ ] A Hindi speaker reviews the new questions, wrong-answer lists, kit and interface text on Day 2. The content was reviewed with Stage 19; the interface text (Stage 13) is still to do.
+- [ ] A Bhili speaker from the target area reviews every `bhili` field and how bhili-tts says it, especially numbers and single words. None was found in time. Known bad: the `dahai` and `ikai` key words, and "6 bundles" in the two-digit catch-up.
 - [ ] Demo phones: an Android phone for the teacher, and a phone with Telegram for the parent.

@@ -8,6 +8,7 @@
     "seed:audio": "tsx --env-file=.env scripts/seed-audio.ts",
     "make:standins": "tsx --env-file=.env scripts/make-standins.ts",
     "warm:speech": "tsx scripts/warm-speech.ts",
+    "review:content": "tsx scripts/review-content.ts",
     "slate:accuracy": "tsx --env-file=.env scripts/slate-accuracy.ts",
     "typecheck": "tsc",
     "test": "vitest run"

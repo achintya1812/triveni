@@ -265,9 +265,11 @@ describe("pickConcepts", () => {
   const concept = (id: string, prerequisites: string[]): Concept => ({
     id,
     name: id,
+    nameHi: id,
     prerequisites,
     pages: [],
     reteach: { english: "", bhili: "" },
+    catchUp: { english: "", hindi: "", bhili: "" },
     probe: [],
   });
   const chain = [
