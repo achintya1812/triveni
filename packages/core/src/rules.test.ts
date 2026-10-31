@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildBrief } from "./brief";
-import type { Concept, Keyword, Question } from "./content";
+import type { Concept, Question } from "./content";
 import {
   type AttendanceLog,
   isoWeek,
@@ -299,30 +298,5 @@ describe("pickConcepts", () => {
       { date: "2026-10-28", conceptId: "y" },
     ];
     expect(pickConcepts(lessons, flat, null)).toEqual(["y", "x"]);
-  });
-});
-
-describe("buildBrief", () => {
-  const bache: Keyword = { id: "bache", hindi: "बचे", roman: "bache", meaning: "left over", bhili: "…" };
-
-  it("lists non-empty groups in a fixed order", () => {
-    const brief = buildBrief({
-      conceptName: "Borrowing",
-      keywords: [bache],
-      children: [
-        { name: "Asha", placement: "ready" },
-        { name: "Ravi", placement: "language_gap" },
-        { name: "Meena", placement: "never_taught" },
-        { name: "Arjun", placement: "taught_not_learned" },
-        { name: "Kiran", placement: "ready" },
-      ],
-    });
-    expect(brief).toMatchInlineSnapshot(`
-      "Check on Borrowing: 5 children.
-      - Language gap (1): Ravi. Teach the Hindi words bache (बचे, "left over") first, with the Bhili audio.
-      - Never taught (absent) (1): Meena. Recap the lesson on Borrowing.
-      - Taught but not learned (1): Arjun. Play the Bhili reteaching clip and use real objects.
-      - Ready (2): Asha, Kiran. Move on."
-    `);
   });
 });

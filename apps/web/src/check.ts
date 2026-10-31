@@ -8,6 +8,9 @@ export type GridValues = Record<string, Partial<Record<Version, string>>>;
 // Boxes read from a slate photo: Claude's confidence, and whether the teacher has since checked the box.
 export type GridReads = Record<string, Partial<Record<Version, { confidence: number; reviewed: boolean }>>>;
 
+// One grid per row on the slate (one row per concept in the check).
+export type Grid = { values: GridValues; reads: GridReads };
+
 // Below this, a box read from a photo is flagged for the teacher to check.
 export const lowConfidence = 0.8;
 
@@ -25,6 +28,7 @@ export function markGrid(
   children: Child[],
   values: GridValues,
   reads: GridReads = {},
+  row = 1,
 ): Answer[] {
   return children.flatMap((child) =>
     versionsFor(child).map((version) => {
@@ -35,7 +39,7 @@ export function markGrid(
         checkId,
         childId: child.id,
         questionId: question.id,
-        row: 1, // Until Stage 14, a check has one concept, so one row.
+        row,
         version,
         value,
         ...markAnswer(value, question, version),
@@ -46,19 +50,19 @@ export function markGrid(
   );
 }
 
-// Puts the slates read from one photo into the grid, matching slates to children by roll number.
-// The MVP checks one concept, so only the top row counts. A later photo overwrites a roll read earlier.
-export function applySlates(roster: Child[], values: GridValues, reads: GridReads, reading: SlateReading) {
-  const next = { values: { ...values }, reads: { ...reads } };
+// Puts the slates read from one photo into the grids, matching slates to children by roll number.
+// Row n on a slate goes into grids[n - 1]; rows beyond the check's are ignored.
+// A later photo overwrites a roll read earlier.
+export function applySlates(roster: Child[], grids: Grid[], reading: SlateReading): Grid[] {
+  const next = grids.map((g) => ({ values: { ...g.values }, reads: { ...g.reads } }));
   for (const slate of reading.slates) {
     const child = roster.find((c) => c.rollNo === slate.roll);
     if (!child) continue;
-    next.values[child.id] = { ...next.values[child.id] };
-    next.reads[child.id] = { ...next.reads[child.id] };
     for (const answer of slate.answers) {
-      if (answer.row !== 1 || !versionsFor(child).includes(answer.version)) continue;
-      next.values[child.id][answer.version] = answer.value === null ? "" : String(answer.value);
-      next.reads[child.id][answer.version] = { confidence: answer.confidence, reviewed: false };
+      const grid = next[answer.row - 1];
+      if (!grid || !versionsFor(child).includes(answer.version)) continue;
+      grid.values[child.id] = { ...grid.values[child.id], [answer.version]: answer.value === null ? "" : String(answer.value) };
+      grid.reads[child.id] = { ...grid.reads[child.id], [answer.version]: { confidence: answer.confidence, reviewed: false } };
     }
   }
   return next;

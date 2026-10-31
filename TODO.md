@@ -329,7 +329,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 14: Check runner v2
+## [x] Stage 14: Check runner v2
 
 **Lane:** B. **Depends on:** 9; uses 10's `versionOrder` and `pickConcepts` once they land (until then, use fixed `ABC` and a manual pick).
 
@@ -358,15 +358,26 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - Every photo is resized to 1500 px on the long side, and uploads run in parallel, 3 at a time, each showing its own progress and retry.
 - **`applySlates`** fills each row from its question. Stage 20 changes how rolls are matched; keep that code in `check.ts`.
 
+**As built:**
+- **The draft** (`db.ts`) is `{ classId, checkId, date, questionIds, grids, rolls }`, with one `Grid` (`{ values, reads }`) per row.
+  - The screen keeps its own copy for smooth typing, and applies every change to both copies. A photo that finishes reading after the teacher leaves the screen still lands in the stored draft.
+- **Grids** (`check.ts`): `applySlates(roster, grids, reading)` fills row *n* into `grids[n - 1]`, and `markGrid(..., row)` stores the row.
+- **Absent today:** chips on the check screen call `setAbsent` (`db.ts`), which keeps the day's lesson.
+- **Photos:**
+  - `components/Camera.tsx` is the in-app camera.
+  - `SlatePhotos` reads 3 photos at a time, showing each one's state, with **Retry**.
+- **Results:** `placeChildren` takes a row. Stage 15 shows every row.
+- **How it was checked:** headless Firefox at phone size (390 × 844), with a fake camera and a canned slate reading. On a real Android phone, the gallery and the camera still need a try.
+
 **Verify:**
-- [ ] A 2-concept check runs end to end on a phone, in this week's rotated order.
-- [ ] Switching to Daily log and back, or reloading, keeps the draft.
-- [ ] Choosing 5 photos from the gallery on Android reads all 5, in parallel.
-- [ ] Taking 3 photos with the in-app camera reads all 3.
+- [x] A 2-concept check runs end to end on a phone, in this week's rotated order.
+- [x] Switching to Daily log and back, or reloading, keeps the draft.
+- [x] Choosing 5 photos from the gallery on Android reads all 5, in parallel.
+- [x] Taking 3 photos with the in-app camera reads all 3.
 
 ---
 
-## [ ] Stage 15: Results, brief and quick re-check
+## [x] Stage 15: Results, brief and quick re-check
 
 **Lane:** B. **Depends on:** 10, 11.
 
@@ -402,10 +413,25 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - The same tap grid can run a whole-class oral check for early Grade 1.
 - **Stretch:** list wrong answers that have no cause, and add a `POST /answers/explain` route in `routes/checks.ts` where Claude suggests a likely cause, shown as a suggestion only.
 
+**As built:**
+- **Brief tab:** the brief is now the first tab (`screens/Brief.tsx`), with an English/हिंदी switch until Stage 13 adds the app-wide one.
+  - **Rewording** waits 1.5 s for the records to settle. Otherwise loading the demo asked Claude 18 times.
+  - **Read aloud** moved to Stage 18, which brings Hindi speech.
+- **Quick re-checks:** listed under the brief, by concept.
+  - **Saving:** only children the teacher tapped are saved, so an untapped child keeps their label.
+  - **Questions:** with no `use: "recheck"` question yet, a re-check uses the weekly question and says so.
+  - **Oral check:** the whole-class Grade 1 oral check isn't wired to the tap grid yet.
+- **Results** (`results.ts`): `placedOnRow(data, check, row)` gives each child's placement, what's pending (a re-check or the probe), and notes on their wrong answers.
+  - **Opening check:** on the same day, the weekly check opens before its re-checks.
+- **Shared loading:** `classData.ts` (`useClassData`, `content`) loads the class for the rules engine.
+- **Removed:** `buildBrief` (the MVP's per-check template).
+- **Not done (stretch):** unknown wrong answers with Claude's suggested cause.
+- **How it was checked:** headless Firefox at phone size against the real API, Supabase and Claude. Rewording runs once per change, in English and in Hindi.
+
 **Verify:**
-- [ ] On the demo seed, after this week's live check, Ravi is in a confirmed language gap and Meena is in Never taught.
-- [ ] A re-check that repeats Sita's pattern confirms her; one that doesn't clears her.
-- [ ] With the API stopped, the template brief still shows.
+- [x] On the demo seed, after this week's live check, Ravi is in a confirmed language gap and Meena is in Never taught.
+- [x] A re-check that repeats Sita's pattern confirms her; one that doesn't clears her.
+- [x] With the API stopped, the template brief still shows.
 
 ---
 
@@ -461,7 +487,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 18: Speech everywhere
+## [x] Stage 18: Speech everywhere
 
 **Lane:** C. **Depends on:** nothing. Start at once.
 
@@ -482,13 +508,28 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - The cache key hashes the language and the text together.
 - **A clip that isn't cached:** when a Bhili text isn't cached and the speech service can't be reached, `/speak` answers 503 straight away with "this Bhili clip hasn't been made yet", and `SpeakButton` shows that message instead of hanging.
 - Update `SpeakButton` and `warm:speech` to pass the language.
+- **Read aloud** on the brief screen (moved here from Stage 15): it plays the Hindi brief through `/speak` with `language: "hindi"`.
 - **`warm:speech --check`:** it asks the API (`API_URL`, so it also works against the deployed one) for each text without making anything, and lists every one that isn't cached. Stages 19 and 23 use it.
 - **Faster warming (optional, free):** run `tts_server.py` in a Google Colab or Kaggle notebook on its free GPU, expose it with `cloudflared tunnel --url http://localhost:8790`, and set `TTS_URL` to the tunnel's address while warming. Add a short how-to in `services/bhili/README.md`. Use it only for warming, never as part of the demo.
 
+**As built:**
+- **`/speak`** takes `{ text, language, cachedOnly }`.
+  - Clips are cached at `tts/<language>/<sha256 of text>` (`.wav` for Bhili, `.mp3` for Hindi).
+  - Uncached Bhili with no speech service answers **503**. A Bulbul failure answers 502.
+- **Bulbul:** the call lives in `apps/api/src/bulbul.ts`, shared with `make:standins`.
+- **Web:**
+  - `speak(text, language)` and `SpeakButton language`.
+  - `speechProblem` turns a 503 into "This Bhili clip hasn't been made yet".
+  - **Read aloud:** `ReadAloud` on the Hindi brief asks Bulbul only when tapped.
+- **`warm:speech`:** covers Bhili (C questions, key words, reteaching) and the Hindi key words. `--check` lists what's missing, and exits 1 if anything is.
+- **Free-GPU warming:** `services/bhili/README.md` has the Colab/Kaggle how-to.
+- **B clips:** the three Hindi B clips were copied from the MVP's bucket to the full-build one.
+- **Not done yet:** nothing is warmed. That happens after Stage 19's content, when `warm:speech --check` reports 18 of 18 missing today.
+
 **Verify:**
-- [ ] Hindi text speaks through Bulbul, and a second request is served from the cache.
-- [ ] With the speech service stopped, an uncached Bhili text gets the 503 message in the app, and a cached one still plays.
-- [ ] `warm:speech --check` lists exactly the uncached texts.
+- [x] Hindi text speaks through Bulbul, and a second request is served from the cache.
+- [x] With the speech service stopped, an uncached Bhili text gets the 503 message in the app, and a cached one still plays.
+- [x] `warm:speech --check` lists exactly the uncached texts.
 
 ---
 

@@ -1,7 +1,7 @@
 import { audioClips } from "@triveni/content";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { clipProblem, clipUrl, speak } from "@/audio";
+import { clipProblem, clipUrl, speak, speechProblem } from "@/audio";
 
 // Plays one clip from the manifest, or says why it won't.
 export function ClipButton({ clipId, label }: { clipId: string; label: string }) {
@@ -10,8 +10,8 @@ export function ClipButton({ clipId, label }: { clipId: string; label: string })
   return <PlayButton url={problem ? undefined : clipUrl(clip!.file!)} problem={problem} label={label} />;
 }
 
-// Speaks Bhili text live. Asks for the audio as soon as it shows, because the first time can take a minute.
-export function SpeakButton({ text, label }: { text: string; label: string }) {
+// Speaks text (Bhili by default). Asks for the audio as soon as it shows, because the first time can take a minute.
+export function SpeakButton({ text, label, language = "bhili" }: { text: string; label: string; language?: "bhili" | "hindi" }) {
   const [url, setUrl] = useState<string>();
   const [problem, setProblem] = useState<string>();
 
@@ -19,16 +19,49 @@ export function SpeakButton({ text, label }: { text: string; label: string }) {
     let current = true;
     setUrl(undefined);
     setProblem(undefined);
-    speak(text).then(
+    speak(text, language).then(
       (u) => current && setUrl(u),
-      (e: Error) => current && setProblem(`Could not make the Bhili audio: ${e.message}`),
+      (e: Error) => current && setProblem(speechProblem(e, language)),
     );
     return () => {
       current = false;
     };
-  }, [text]);
+  }, [text, language]);
 
-  return <PlayButton url={url} problem={problem} label={url || problem ? label : "Preparing Bhili audio…"} />;
+  return <PlayButton url={url} problem={problem} label={url || problem ? label : "Preparing audio…"} />;
+}
+
+// Reads text aloud in Hindi, asking for the audio only when tapped (the brief changes every day).
+export function ReadAloud({ text }: { text: string }) {
+  const [state, setState] = useState<"idle" | "preparing" | "playing">("idle");
+  const [problem, setProblem] = useState("");
+
+  async function read() {
+    setProblem("");
+    setState("preparing");
+    try {
+      const audio = new Audio(await speak(text, "hindi"));
+      audio.onended = () => setState("idle");
+      audio.onerror = () => {
+        setState("idle");
+        setProblem("Could not play the audio.");
+      };
+      setState("playing");
+      await audio.play();
+    } catch (e) {
+      setState("idle");
+      setProblem(speechProblem(e as Error, "hindi"));
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      <Button variant="outline" className="h-11 w-full" disabled={state !== "idle"} onClick={read}>
+        {state === "preparing" ? "Preparing audio…" : state === "playing" ? "Reading…" : "Read aloud"}
+      </Button>
+      {problem && <p className="text-sm text-destructive">{problem}</p>}
+    </div>
+  );
 }
 
 function PlayButton({ url, problem, label }: { url?: string; problem?: string; label: string }) {
