@@ -44,8 +44,14 @@ voice_ids = AutoTokenizer.from_pretrained(model.config.text_encoder._name_or_pat
 
 def speak(text: str) -> bytes:
     prompt_ids = tokenizer(text, return_tensors="pt").input_ids.to(device)
-    with torch.no_grad():
-        audio = model.generate(input_ids=voice_ids, prompt_input_ids=prompt_ids).cpu().numpy().squeeze()
+    # Generation samples, and on a very short text it sometimes stops at once; try again then.
+    for _ in range(3):
+        with torch.no_grad():
+            audio = model.generate(input_ids=voice_ids, prompt_input_ids=prompt_ids).cpu().numpy().reshape(-1)
+        if audio.size >= model.config.sampling_rate // 4:
+            break
+    else:
+        raise RuntimeError(f"No speech made for {text!r}")
     out = io.BytesIO()
     sf.write(out, audio, model.config.sampling_rate, format="WAV", subtype="PCM_16")
     return out.getvalue()

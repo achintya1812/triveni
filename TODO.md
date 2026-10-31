@@ -573,11 +573,12 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - The two-digit catch-up, which says "6 bundles" where it means 6 loose sticks.
 - **`warm:speech`** also covers the catch-up lessons, the kit and the listening prompts, in Bhili and Hindi.
 - **B clips:** the 5 new ones were made with `make:standins` and seeded with `seed:audio`.
+- **Warming:** all 68 clips (40 Bhili, 28 Hindi) are cached. `tts_server.py` tries again when a very short text (such as "मोना.") comes back with no speech.
 
 **Verify:**
 - [x] All content parses with the fields required, and every audio ref resolves.
 - [x] `translate.py` reports no changed numbers.
-- [ ] `warm:speech --check` lists no uncached texts.
+- [x] `warm:speech --check` lists no uncached texts.
 - [ ] A person has reviewed the Hindi, and the PR says who.
 
 ---
