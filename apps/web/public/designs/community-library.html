@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Community audio library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="slide" style="grid-template-columns: minmax(0, 1fr) 560px">
+      <div>
+        <span class="tag">Design: not built yet</span>
+        <h1>A community audio library, on Telegram</h1>
+        <p class="lead">Today the Bhili is machine-made. Local speakers turn it into real voices, and fix the words.</p>
+        <ul class="points">
+          <li><b>One line at a time.</b> The recorder bot sends a speaker a script line; they reply with a voice note.</li>
+          <li><b>A second speaker checks it</b> with one tap: right, or record again.</li>
+          <li><b>Approved recordings replace the generated audio</b> for every class that uses the line, and corrections to the Bhili text go back into the content.</li>
+          <li><b>Who records:</b> the teacher, the anganwadi worker, a parent, an older student.</li>
+          <li><b>Next languages:</b> Gondi and Kurukh need their own speech models; the library can start with people's voices.</li>
+        </ul>
+        <p class="note">The script line is the app's own Bhili (from the borrowing kit). The names and counts are illustrative.</p>
+        <nav><a href="teacher-words.html">← Teacher's words</a><a href="index.html">All designs</a><a href="simulation.html">Simulation →</a></nav>
+      </div>
+      <div class="phones">
+        <div class="phone">
+          <div class="bar">Triveni रिकॉर्डर<small>सविता (भीली)</small></div>
+          <div class="chat">
+            <div class="msg">नमस्ते सविता जी! आज की 3 में से पहली पंक्ति बोलकर भेजें:
+              <div class="line">आमी 7 लाकड्या काडी लेताहा. मा आरी गोणा: 1, 2, 3, 4, 5, 6, 7.<span class="en">We take away 7 sticks. Count with me: 1 to 7.</span></div>
+            </div>
+            <div class="msg mine"><div class="voice">▶ <span class="wave"></span> 0:07</div></div>
+            <div class="msg">धन्यवाद! दूसरा वक्ता इसे सुनकर जाँचेगा। अगली पंक्ति:</div>
+          </div>
+        </div>
+        <div class="phone">
+          <div class="bar">Triveni रिकॉर्डर<small>रमेश (जाँच)</small></div>
+          <div class="chat">
+            <div class="msg">यह रिकॉर्डिंग सुनें। क्या यह सही भीली है?
+              <div class="line">आमी 7 लाकड्या काडी लेताहा…</div>
+            </div>
+            <div class="msg"><div class="voice">▶ <span class="wave"></span> 0:07</div></div>
+            <div class="buttons"><span>✓ सही है</span><span>↻ फिर से रिकॉर्ड हो</span></div>
+            <div class="msg">भीली लाइब्रेरी: 412 पंक्तियाँ · 368 जाँची गईं · इस हफ़्ते 23 नई (illustrative)</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

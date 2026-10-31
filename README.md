@@ -46,6 +46,55 @@ Both `.env` files are gitignored. Get the keys from a teammate privately and nev
 
 Vite reads `apps/web/.env` only at startup, so restart the dev server after changing it.
 
+## Deploy (full build)
+
+The full build deploys from `main`, to its own Render service and Vercel project. The MVP's service and project stay on `mvp`, untouched.
+
+**Before deploying** (on a laptop, against the full-build Supabase project), make every clip the deployed API needs, since it has no Bhili speech service and no `ffmpeg`:
+
+```
+pnpm --filter @triveni/api warm:speech            # every Bhili and Hindi clip (with the API and services/bhili running)
+pnpm --filter @triveni/api telegram:warm          # every parent voice note as OGG/Opus (needs ffmpeg)
+pnpm --filter @triveni/api telegram:warm --check  # lists anything missing
+```
+
+Run them again after any content change.
+
+**API on Render:** New → Web Service → this repo.
+- Branch `main`, root directory left empty, runtime Node. Build command `corepack enable && pnpm install --frozen-lockfile`; start command `pnpm start`.
+- Plan: **Starter**, which doesn't sleep. On the free plan the first Telegram update after 15 idle minutes waits up to a minute for the API to wake.
+- Environment: the full-build `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `SARVAM_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `PUBLIC_API_URL` (this service's `https://<name>.onrender.com`), and `WEB_ORIGIN` (the Vercel address, once it exists). Leave `TTS_URL` unset.
+- Check that `https://<name>.onrender.com/health` returns `{"ok":true}`.
+
+**Web app on Vercel:** Add New → Project → this repo, as a **new** project.
+- Root Directory `apps/web`; Production Branch `main`.
+- Environment variables: `VITE_API_URL` (the Render address, no trailing slash), `VITE_AUDIO_BASE_URL` (the full-build bucket, as above) and `VITE_TELEGRAM_BOT`.
+- Then set `WEB_ORIGIN` on Render to this address.
+
+**Telegram:** with `PUBLIC_API_URL` in `apps/api/.env` set to the Render address, run `pnpm --filter @triveni/api telegram:webhook`. Telegram then sends updates to the deployed API. Run it again whenever that address changes.
+
+**Check before a demo:**
+
+```
+API_URL=https://<name>.onrender.com pnpm --filter @triveni/api warm:speech --check   # must list nothing
+```
+
+On the phone, open the Vercel address in Chrome and choose "Add to Home screen": the app then opens and runs a check with no signal (Stage 17). To try the offline build locally, use `pnpm --filter @triveni/web build && pnpm --filter @triveni/web exec vite preview --port 5173`: the dev server has no service worker.
+
+## Demo (full build, about 5 minutes)
+
+On the demo phone: the installed app, in Hindi. On a second phone: Telegram, signed in and opted in as Meena's parent (scan her QR code from the Class tab, tap Start). Open the API's `/health` first.
+
+1. **Load the demo class** (setup screen). In **रजिस्टर** (the daily log), hold the mic and say "आज borrowing पढ़ाया, page 65". The concept fills in from the page; save.
+2. **Run a two-concept check** (**जाँच**): the suggested concepts, in this week's rotated order. Show A on the board, play B in Hindi, then C in Bhili.
+3. **Choose the slate photos from the gallery.** When they're read, fix one highlighted box and give one slate from "यह स्लेट किसकी है?" to its child. Save.
+4. **Results** (**नतीजे**): Ravi is in a confirmed language gap with his key words; Meena is in Never taught; Arjun's 11 points to borrowing.
+5. **The morning brief** (**आज**) in Hindi: read it aloud.
+6. **A quick re-check** that confirms Sita's word-problem gap.
+7. **The probe for Arjun** (✗ in numbers, ✓ with drawings), then open the reteaching kit: it plays in Bhili. Switch the app to English for a moment to show the toggle.
+8. **Send the catch-up to Meena's parent** (Catch-up for parents on **आज**): the second phone receives the Bhili voice note on Telegram, live. Tap "हो गया 👍".
+9. **Close** with the design slides and the simulation table: `<web address>/designs/`.
+
 ## Deploy (the MVP backup)
 
 The MVP deploys from the `mvp` branch, so work on `main` never changes it. Both hosts redeploy on every push to `mvp`.
