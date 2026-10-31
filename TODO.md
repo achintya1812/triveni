@@ -533,7 +533,7 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 
 ---
 
-## [ ] Stage 19: Full content
+## [x] Stage 19: Full content
 
 **Lane:** C. **Depends on:** 9.
 
@@ -573,13 +573,14 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
   - The two-digit catch-up, which says "6 bundles" where it means 6 loose sticks.
 - **`warm:speech`** also covers the catch-up lessons, the kit and the listening prompts, in Bhili and Hindi.
 - **B clips:** the 5 new ones were made with `make:standins` and seeded with `seed:audio`.
+- **Review:** Achintya Mathur reviewed the Hindi. No one has reviewed the Bhili yet (see Open items).
 - **Warming:** all 68 clips (40 Bhili, 28 Hindi) are cached. `tts_server.py` tries again when a very short text (such as "मोना.") comes back with no speech.
 
 **Verify:**
 - [x] All content parses with the fields required, and every audio ref resolves.
 - [x] `translate.py` reports no changed numbers.
 - [x] `warm:speech --check` lists no uncached texts.
-- [ ] A person has reviewed the Hindi, and the PR says who.
+- [x] A person has reviewed the Hindi, and the PR says who.
 
 ---
 
@@ -745,6 +746,6 @@ Parallel PRs all edit `CLAUDE.md` and `TODO.md`, so expect small merge conflicts
 - [x] The textbook and page numbers for the 4 concepts (Stages 19, 21): NCERT Class 2, in `resources/TEXTBOOKS.md`.
 - [ ] The notebook slate test set with `answers.csv` (Stage 20).
 - [ ] About 10 recorded voice-note test files (Stage 21).
-- [ ] A Hindi speaker reviews the new questions, wrong-answer lists, kit and interface text on Day 2.
-- [ ] A Bhili speaker from the target area reviews every `bhili` field and how bhili-tts says it, especially numbers and single words.
+- [ ] A Hindi speaker reviews the new questions, wrong-answer lists, kit and interface text on Day 2. The content was reviewed with Stage 19; the interface text (Stage 13) is still to do.
+- [ ] A Bhili speaker from the target area reviews every `bhili` field and how bhili-tts says it, especially numbers and single words. None was found in time. Known bad: the `dahai` and `ikai` key words, and "6 bundles" in the two-digit catch-up.
 - [ ] Demo phones: an Android phone for the teacher, and a phone with Telegram for the parent.
